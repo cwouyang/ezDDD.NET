@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\EzDdd.UseCase\EzDdd.UseCase.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>12</LangVersion>
+
+    <!-- Package Information -->
+    <PackageId>ezDDD.Cqrs</PackageId>
+    <Version>1.0.0-alpha.1</Version>
+    <Authors>TeddySoft</Authors>
+    <Company>TeddySoft</Company>
+    <Description>CQRS patterns for ezDDD.NET - Command, Query, Projection, Projector, and Archive</Description>
+    <PackageTags>ddd;domain-driven-design;cqrs;command;query;projection;read-model</PackageTags>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/TeddyChen/ezddd.NET</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/TeddyChen/ezddd.NET</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+
+    <!-- Build Settings -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>
