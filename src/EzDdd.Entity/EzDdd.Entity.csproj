@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EzDdd.Common\EzDdd.Common.csproj" />
+    <ProjectReference Include="..\..\..\uContract.NET\src\uContract\uContract.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
