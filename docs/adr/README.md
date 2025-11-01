@@ -244,6 +244,11 @@ CLAUDE.md
 | [ADR-0004](0004-zero-third-party-dependency-principle.md) | Zero Third-Party Dependency Principle | 2025-10-31 | Accepted |
 | [ADR-0005](0005-complete-reimplementation-approach.md) | Complete Reimplementation Approach | 2025-10-31 | Accepted |
 | [ADR-0006](0006-ucontract-integration-design-by-contract.md) | uContract.NET Integration for Design by Contract | 2025-10-31 | Accepted |
+| [ADR-0007](0007-ientity-ivalueobject-design.md) | IEntity and IValueObject Design | 2025-11-01 | Accepted |
+| [ADR-0008](0008-idomain-event-hierarchy.md) | IDomainEvent Hierarchy Design | 2025-11-01 | Accepted |
+| [ADR-0009](0009-aggregate-root-base-class-design.md) | AggregateRoot Base Class Design | 2025-11-01 | Accepted |
+| [ADR-0010](0010-esaggregate-root-event-sourcing-implementation.md) | EsAggregateRoot Event Sourcing Implementation (R1, R2, R3 Rules) | 2025-11-01 | Accepted |
+| [ADR-0011](0011-event-replay-invariant-checking.md) | Event Replay and Invariant Checking | 2025-11-01 | Accepted |
 
 ### Proposed
 
@@ -337,4 +342,4 @@ done
 ---
 
 *This README follows the ADR maintenance workflow defined above.*
-*Last Updated: 2025-10-31*
+*Last Updated: 2025-11-01*
