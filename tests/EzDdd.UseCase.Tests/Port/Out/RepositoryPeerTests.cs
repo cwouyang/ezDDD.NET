@@ -13,7 +13,7 @@ public class RepositoryPeerTests
 
     private class TestStoreDataImpl : IStoreData<TestDataId>
     {
-        public int Version { get; set; } = -1;
+        public long Version { get; set; } = -1;
         public TestDataId Id { get; set; } = new("default");
         public IReadOnlyList<IDomainEvent> Events { get; set; } = new List<IDomainEvent>();
         public string StreamName { get; set; } = string.Empty;

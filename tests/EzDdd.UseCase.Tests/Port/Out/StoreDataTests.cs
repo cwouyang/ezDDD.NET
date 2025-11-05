@@ -9,7 +9,7 @@ public class StoreDataTests
 
     private class TestStoreData : IStoreData<string>
     {
-        public int Version { get; set; } = -1;
+        public long Version { get; set; } = -1;
         public string Id { get; set; } = string.Empty;
         public IReadOnlyList<IDomainEvent> Events { get; set; } = new List<IDomainEvent>();
         public string StreamName { get; set; } = string.Empty;

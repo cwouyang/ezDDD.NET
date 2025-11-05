@@ -36,7 +36,7 @@ public interface IStoreData<TId>
     ///         <item><c>0+</c> for existing aggregates</item>
     ///     </list>
     /// </value>
-    int Version { get; set; }
+    long Version { get; set; }
 
     /// <summary>
     ///     Gets or sets the aggregate identifier.
@@ -86,7 +86,7 @@ public interface IStoreData<TId>
     /// UPDATE table SET version = @expectedVersion WHERE id = @id AND version = @currentVersion
     /// </code>
     /// </remarks>
-    int GetOptimisticLockVersion()
+    long GetOptimisticLockVersion()
     {
         return Version + Events.Count;
     }
