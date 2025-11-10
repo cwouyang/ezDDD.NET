@@ -64,10 +64,26 @@ namespace EzDdd.UseCase.Port.Out;
 ///         </item>
 ///     </list>
 ///     <para>
-///         <strong>⚠️ CRITICAL: Transaction Management</strong>
+///         <strong>⚠️ CRITICAL ARCHITECTURE RULE - Transaction Boundary:</strong>
 ///     </para>
 ///     <para>
-///         <see cref="SaveAsync" /> implementations MUST use transactions to ensure atomicity:
+///         ✅ <strong>CORRECT</strong>: IRepositoryPeer implementations MUST manage transactions
+///         to ensure atomic persistence of aggregate state and domain events.
+///     </para>
+///     <para>
+///         ❌ <strong>WRONG</strong>: Transaction logic belongs ONLY here, NOT in IRepository
+///         implementations (which reside in the Use Cases layer).
+///     </para>
+///     <para>
+///         <strong>Rationale</strong>: This enforces Clean Architecture layer separation.
+///         Transaction management is an infrastructure concern (Interface Adapters layer),
+///         not a domain concern (Use Cases layer).
+///     </para>
+///     <para>
+///         See <c>docs/TRANSACTION_BOUNDARY_GUIDE.md</c> for detailed examples and best practices.
+///     </para>
+///     <para>
+///         <strong>Transaction Implementation Examples:</strong>
 ///     </para>
 ///     <code>
 /// public async Task SaveAsync(TData data)

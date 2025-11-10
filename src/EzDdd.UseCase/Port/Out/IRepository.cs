@@ -183,9 +183,23 @@ public interface IRepository<TAggregate, in TId, TEvent>
     ///         with the message <see cref="RepositorySaveException.OptimisticLockingFailure" />.
     ///     </para>
     ///     <para>
-    ///         <strong>⚠️ Important:</strong>
-    ///         Repository does NOT manage transactions. Transaction boundaries MUST be
-    ///         implemented at the <see cref="IRepositoryPeer{TData,TId}" /> layer.
+    ///         <strong>⚠️ CRITICAL ARCHITECTURE RULE - Transaction Boundary:</strong>
+    ///     </para>
+    ///     <para>
+    ///         ❌ <strong>WRONG</strong>: IRepository implementations MUST NOT contain transaction logic
+    ///         (no <c>BeginTransaction()</c>, <c>TransactionScope</c>, or similar).
+    ///     </para>
+    ///     <para>
+    ///         ✅ <strong>CORRECT</strong>: Transaction boundaries MUST be implemented ONLY at the
+    ///         <see cref="IRepositoryPeer{TData,TId}" /> layer (Interface Adapters layer).
+    ///     </para>
+    ///     <para>
+    ///         <strong>Rationale</strong>: This enforces Clean Architecture layer separation.
+    ///         IRepository resides in the Use Cases layer (domain logic), while IRepositoryPeer
+    ///         resides in the Interface Adapters layer (infrastructure concerns like transactions).
+    ///     </para>
+    ///     <para>
+    ///         See <c>docs/TRANSACTION_BOUNDARY_GUIDE.md</c> for detailed examples and best practices.
     ///     </para>
     /// </remarks>
     /// <example>
