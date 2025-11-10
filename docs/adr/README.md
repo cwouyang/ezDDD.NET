@@ -250,6 +250,7 @@ CLAUDE.md
 | [ADR-0010](0010-esaggregate-root-event-sourcing-implementation.md) | EsAggregateRoot Event Sourcing Implementation (R1, R2, R3 Rules) | 2025-11-01 | Accepted |
 | [ADR-0011](0011-event-replay-invariant-checking.md) | Event Replay and Invariant Checking | 2025-11-01 | Accepted |
 | [ADR-0012](0012-resource-management-event-bus-producers.md) | Resource Management Pattern for External Event Bus Producers | 2025-11-10 | Accepted |
+| [ADR-0013](0013-transaction-boundaries-repository-pattern.md) | Transaction Boundaries in Repository Pattern | 2025-11-10 | Accepted |
 
 ### Proposed
 
