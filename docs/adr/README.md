@@ -249,6 +249,7 @@ CLAUDE.md
 | [ADR-0009](0009-aggregate-root-base-class-design.md) | AggregateRoot Base Class Design | 2025-11-01 | Accepted |
 | [ADR-0010](0010-esaggregate-root-event-sourcing-implementation.md) | EsAggregateRoot Event Sourcing Implementation (R1, R2, R3 Rules) | 2025-11-01 | Accepted |
 | [ADR-0011](0011-event-replay-invariant-checking.md) | Event Replay and Invariant Checking | 2025-11-01 | Accepted |
+| [ADR-0012](0012-resource-management-event-bus-producers.md) | Resource Management Pattern for External Event Bus Producers | 2025-11-10 | Accepted |
 
 ### Proposed
 
