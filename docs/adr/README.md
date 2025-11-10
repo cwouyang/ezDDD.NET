@@ -252,6 +252,7 @@ CLAUDE.md
 | [ADR-0012](0012-resource-management-event-bus-producers.md) | Resource Management Pattern for External Event Bus Producers | 2025-11-10 | Accepted |
 | [ADR-0013](0013-transaction-boundaries-repository-pattern.md) | Transaction Boundaries in Repository Pattern | 2025-11-10 | Accepted |
 | [ADR-0014](0014-domaineventdata-equality-semantics.md) | DomainEventData Equality Semantics | 2025-11-10 | Accepted |
+| [ADR-0015](0015-cross-platform-dto-structure.md) | Cross-Platform DTO Structure (InternalDomainEventDto) | 2025-11-10 | Accepted |
 
 ### Proposed
 
