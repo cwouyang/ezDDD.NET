@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\EzDdd.Cqrs\EzDdd.Cqrs.csproj" />
+    <ProjectReference Include="..\EzDdd.UseCase.Tests\EzDdd.UseCase.Tests.csproj" />
   </ItemGroup>
 
 </Project>
