@@ -254,6 +254,7 @@ CLAUDE.md
 | [ADR-0014](0014-domaineventdata-equality-semantics.md) | DomainEventData Equality Semantics | 2025-11-10 | Accepted |
 | [ADR-0015](0015-cross-platform-dto-structure.md) | Cross-Platform DTO Structure (InternalDomainEventDto) | 2025-11-10 | Accepted |
 | [ADR-0016](0016-async-await-throughout.md) | Async/Await Throughout (All I/O Operations) | 2025-11-10 | Accepted |
+| [ADR-0017](0017-cqrsoutput-implementation-strategy.md) | CqrsOutput Implementation Strategy | 2025-11-17 | Accepted |
 
 ### Proposed
 
@@ -347,4 +348,4 @@ done
 ---
 
 *This README follows the ADR maintenance workflow defined above.*
-*Last Updated: 2025-11-01*
+*Last Updated: 2025-11-17*
