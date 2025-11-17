@@ -256,6 +256,7 @@ CLAUDE.md
 | [ADR-0016](0016-async-await-throughout.md) | Async/Await Throughout (All I/O Operations) | 2025-11-10 | Accepted |
 | [ADR-0017](0017-cqrsoutput-implementation-strategy.md) | CqrsOutput Implementation Strategy | 2025-11-17 | Accepted |
 | [ADR-0018](0018-iarchive-async-method-design.md) | IArchive Async Method Design | 2025-11-17 | Accepted |
+| [ADR-0019](0019-iinquiry-iprojection-independence.md) | IInquiry and IProjection Independence from IUseCase | 2025-11-17 | Accepted |
 
 ### Proposed
 
