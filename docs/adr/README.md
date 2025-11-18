@@ -259,6 +259,7 @@ CLAUDE.md
 | [ADR-0019](0019-iinquiry-iprojection-independence.md) | IInquiry and IProjection Independence from IUseCase | 2025-11-17 | Accepted |
 | [ADR-0020](0020-iprojector-lifecycle-management.md) | IProjector Lifecycle Management Integration | 2025-11-18 | Accepted |
 | [ADR-0021](0021-generic-variance-annotations.md) | Generic Variance Annotations for CQRS Interfaces | 2025-11-18 | Accepted |
+| [ADR-0022](0022-read-model-design-patterns.md) | Read Model Design Patterns | 2025-11-18 | Accepted |
 
 ### Proposed
 
