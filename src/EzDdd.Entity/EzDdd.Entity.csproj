@@ -6,27 +6,54 @@
   </ItemGroup>
 
   <PropertyGroup>
+    <!-- Target Framework -->
     <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <LangVersion>12</LangVersion>
+    <LangVersion>12.0</LangVersion>
 
-    <!-- Package Information -->
+    <!-- Code Quality -->
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+
+    <!-- Assembly Information -->
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Copyright>Copyright (c) 2025 ezDDD.NET Contributors</Copyright>
+
+    <!-- Package Metadata -->
     <PackageId>ezDDD.Entity</PackageId>
     <Version>1.0.0-alpha.1</Version>
     <Authors>TeddySoft</Authors>
     <Company>TeddySoft</Company>
-    <Description>Core DDD tactical patterns for ezDDD.NET - Entity, AggregateRoot, EsAggregateRoot, DomainEvent</Description>
-    <PackageTags>ddd;domain-driven-design;aggregate-root;entity;value-object;domain-events;event-sourcing</PackageTags>
+    <Product>ezDDD.NET</Product>
+    <Description>Core DDD tactical patterns for ezDDD.NET - Entity, AggregateRoot, EsAggregateRoot, and DomainEvent.
+
+Features:
+• IEntity&lt;TId&gt; - Covariant entity interface
+• IValueObject - Marker for immutable value objects
+• IDomainEvent - Base domain event with metadata
+• AggregateRoot&lt;TId, TEvent&gt; - State sourcing aggregate root
+• EsAggregateRoot&lt;TId, TEvent&gt; - Event sourcing with R1/R2/R3 correctness rules
+• DomainEventTypeMapper - BiMap-based event type mapping
+• Template method pattern for invariant checking
+• Event replay from history
+
+Designed for Domain-Driven Design with event sourcing and state sourcing.</Description>
+    <PackageTags>ddd;domain-driven-design;aggregate-root;entity;value-object;domain-events;event-sourcing;tactical-ddd;dotnet;csharp</PackageTags>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/TeddyChen/ezddd.NET</PackageProjectUrl>
     <RepositoryUrl>https://github.com/TeddyChen/ezddd.NET</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageProjectUrl>https://github.com/TeddyChen/ezddd.NET</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReleaseNotes>See https://github.com/TeddyChen/ezddd.NET/blob/master/CHANGELOG.md for release notes.</PackageReleaseNotes>
 
-    <!-- Build Settings -->
+    <!-- Documentation -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\EzDdd.Entity.xml</DocumentationFile>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+
+    <!-- Symbols and Debugging -->
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <ItemGroup>

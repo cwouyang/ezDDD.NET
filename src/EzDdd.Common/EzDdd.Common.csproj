@@ -1,27 +1,50 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <!-- Target Framework -->
     <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <LangVersion>12</LangVersion>
+    <LangVersion>12.0</LangVersion>
 
-    <!-- Package Information -->
+    <!-- Code Quality -->
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+
+    <!-- Assembly Information -->
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Copyright>Copyright (c) 2025 ezDDD.NET Contributors</Copyright>
+
+    <!-- Package Metadata -->
     <PackageId>ezDDD.Common</PackageId>
     <Version>1.0.0-alpha.1</Version>
     <Authors>TeddySoft</Authors>
     <Company>TeddySoft</Company>
-    <Description>Foundation utilities for ezDDD.NET - Tactical Domain-Driven Design patterns library for .NET</Description>
-    <PackageTags>ddd;domain-driven-design;utilities;bimap</PackageTags>
+    <Product>ezDDD.NET</Product>
+    <Description>Foundation utilities for ezDDD.NET - Tactical Domain-Driven Design patterns library for .NET 8+.
+
+Features:
+• BiMap&lt;TKey, TValue&gt; - Thread-safe bidirectional map
+• Converter&lt;TSource, TTarget&gt; - Type conversion delegate
+• JsonUtil - Deep copy utilities with System.Text.Json
+• Zero external dependencies
+
+Part of the ezDDD.NET family of DDD tactical patterns libraries.</Description>
+    <PackageTags>ddd;domain-driven-design;utilities;bimap;json;converter;tactical-ddd;dotnet;csharp</PackageTags>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/TeddyChen/ezddd.NET</PackageProjectUrl>
     <RepositoryUrl>https://github.com/TeddyChen/ezddd.NET</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageProjectUrl>https://github.com/TeddyChen/ezddd.NET</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReleaseNotes>See https://github.com/TeddyChen/ezddd.NET/blob/master/CHANGELOG.md for release notes.</PackageReleaseNotes>
 
-    <!-- Build Settings -->
+    <!-- Documentation -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\EzDdd.Common.xml</DocumentationFile>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+
+    <!-- Symbols and Debugging -->
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
