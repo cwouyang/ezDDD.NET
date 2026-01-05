@@ -23,6 +23,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Overview
 Initial alpha release of ezDDD.NET, a .NET port of Java ezddd providing tactical Domain-Driven Design patterns, CQRS, and Clean Architecture support. Supports both **event sourcing** and **state sourcing** for implementing aggregates and repositories.
 
+This is a faithful port of the **Java ezddd 2.1.0** library (GitLab commit: `6e94aee`) with .NET-specific improvements.
+
+**Based on**: Java ezddd 2.1.0
+- **Java Repository**: https://gitlab.com/TeddyChen/ezddd
+- **Commit**: `6e94aee` (Release 2.1.0)
+
 This release represents ~97% completion of the core framework with 501 tests passing and 23 architecture decision records documenting all major design decisions.
 
 ### Added
@@ -511,9 +517,9 @@ Aggregator package for convenient installation:
 
 ## Version History Summary
 
-| Version | Date | Modules | Tests | ADRs | Status |
-|---------|------|---------|-------|------|--------|
-| 1.0.0-alpha.1 | 2025-11-18 | 5 (Common, Entity, UseCase, Cqrs, Core) | 501 | 23 | ✅ Alpha release |
+| .NET Version | Date | Java Version | Modules | Tests | ADRs | Status |
+|--------------|------|--------------|---------|-------|------|--------|
+| 1.0.0-alpha.1 | 2025-11-18 | Java 2.1.0 (`6e94aee`) | 5 (Common, Entity, UseCase, Cqrs, Core) | 501 | 23 | ✅ Alpha release |
 
 ---
 
@@ -555,11 +561,18 @@ Copyright (c) 2025 ezDDD.NET Contributors
 
 ## Credits
 
-- **Original Java ezddd**: [Teddy Chen](https://gitlab.com/TeddyChen) (TeddySoft)
-- **Inspiration**: Domain-Driven Design by Eric Evans
-- **Architecture**: Clean Architecture by Robert C. Martin
-- **Event Sourcing**: Martin Fowler's Event Sourcing pattern
-- **CQRS**: Greg Young's CQRS pattern
+- **Original Java version**: [Java ezddd 2.1.0](https://gitlab.com/TeddyChen/ezddd) (GitLab commit: `6e94aee`)
+  - Author: Teddy Chen (TeddySoft)
+  - JDK: Java 17+
+  - Dependencies: Jackson, uContract 2.0.0
+- **.NET port**: ezDDD.NET Contributors
+  - Target: .NET 8+
+  - Dependencies: uContract.NET 1.0.0+ (zero external dependencies)
+- **Design by Contract**: Bertrand Meyer
+- **Tactical DDD**: Eric Evans (Domain-Driven Design)
+- **Clean Architecture**: Robert C. Martin
+- **Event Sourcing**: Martin Fowler
+- **CQRS**: Greg Young
 
 ---
 

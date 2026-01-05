@@ -1,8 +1,10 @@
 # ezDDD.NET
 
 > **Tactical Domain-Driven Design patterns library for .NET 8+**
+>
+> Based on [Java ezddd 2.1.0](https://gitlab.com/TeddyChen/ezddd)
 
-A modern tactical DDD library for .NET, specifically designed for Domain-Driven Design with event sourcing, state sourcing, and CQRS patterns. This is a faithful .NET port of the [Java ezddd library](https://gitlab.com/TeddyChen/ezddd) with **~98% semantic parity** and .NET-specific improvements.
+A modern tactical DDD library for .NET, specifically designed for Domain-Driven Design with event sourcing, state sourcing, and CQRS patterns. This is a faithful .NET port of the **Java ezddd 2.1.0** library (GitLab commit: `6e94aee`) with **~98% semantic parity** and .NET-specific improvements.
 
 [![.NET](https://img.shields.io/badge/.NET-8.0+-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
@@ -1168,7 +1170,9 @@ See [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 
-- **Original Java ezddd**: [Teddy Chen](https://gitlab.com/TeddyChen) (TeddySoft) - Original library design and implementation
+- **Original Java ezddd 2.1.0**: [Teddy Chen](https://gitlab.com/TeddyChen) (TeddySoft)
+  - Repository: https://gitlab.com/TeddyChen/ezddd
+  - Commit: `6e94aee` (Release 2.1.0)
 - **Inspiration**: Domain-Driven Design by Eric Evans - Tactical DDD patterns
 - **Architecture**: Clean Architecture by Robert C. Martin - Layered architecture design
 - **Event Sourcing**: Martin Fowler's Event Sourcing pattern - Event sourcing concepts
@@ -1189,7 +1193,7 @@ See [LICENSE](LICENSE) file for details.
 
 ## Links
 
-- **Java ezddd (original)**: https://gitlab.com/TeddyChen/ezddd
+- **Java ezddd (original) 2.1.0**: https://gitlab.com/TeddyChen/ezddd (commit: `6e94aee`)
 - **uContract.NET**: https://github.com/cwouyang/uContract.NET
 - **NuGet Packages**: (will be published soon)
 - **API Documentation**: [docs/examples/API_REFERENCE.md](docs/examples/API_REFERENCE.md)
