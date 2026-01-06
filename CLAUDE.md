@@ -36,7 +36,7 @@ This file provides guidance to Claude Code when working on the **.NET port** of 
   - ✅ **Phase 5** - EzDdd.Core + Documentation (11,212+ lines) - Complete
 - 📋 **Phase 6 Planned** (Sync to Java ezddd 4.1.0):
   - 44 commits to sync (+5,167/-2,132 lines)
-  - 8 new ADRs to write (ADR-0024 to ADR-0031)
+  - 7 new ADRs to write (ADR-0024 to ADR-0030)
   - Estimated: 44-62 hours (~1-2 weeks)
 
 **ADRs Status**:
@@ -46,10 +46,10 @@ This file provides guidance to Claude Code when working on the **.NET port** of 
   - Stage 3 (5 ADRs): Phase 3 Post-Review
   - Stage 4 (3 ADRs): Phase 4 Critical
   - Stage 5 (4 ADRs): Phase 4 Post-Implementation
-- 📋 **Planned**: 8 ADRs (Stage 6, Phase 6)
-  - ADR-0024 to ADR-0031 (Java 4.1.0 sync)
+- 📋 **Planned**: 7 ADRs (Stage 6, Phase 6)
+  - ADR-0024 to ADR-0030 (Java 4.1.0 sync)
 
-**Test Coverage**: 501 tests passing (100% pass rate, >90% code coverage)
+**Test Coverage**: 516 tests passing (100% pass rate, >90% code coverage) - Updated 2026-01-06 after S1
 
 **Current Status** (2026-01-06):
 - ✅ Phase 1-5 complete (based on Java ezddd 2.1.0, commit `6e94aee`)
@@ -531,20 +531,20 @@ This ensures users receive a complete, up-to-date API aligned with Java 4.1.0 fr
 
 | Stage | Description | Est. Hours | Status | ADRs |
 |-------|-------------|------------|--------|------|
-| **S0** | Planning & Preparation | 4-6 | 📋 Current | - |
-| **S1** | IDomainEvent.Metadata | 6-8 | ⏳ Pending | ADR-0024 |
-| **S2** | IReconciler Interface | 4-6 | ⏳ Pending | ADR-0025 |
-| **S3** | MessageProducer Refactoring | 10-14 | ⏳ Pending | ADR-0026 |
-| **S4** | Service Layer Pattern | 6-8 | ⏳ Pending | ADR-0027 |
-| **S5** | Thread/Null Safety Review | 6-8 | ⏳ Pending | ADR-0028 |
-| **S6** | Integration Testing & Docs | 6-8 | ⏳ Pending | ADR-0029 |
-| **S7** | Final Review & Completion | 2-4 | ⏳ Pending | ADR-0030, ADR-0031 |
-| **TOTAL** | | **44-62 hours** | | **8 ADRs** |
+| **S0** | Planning & Preparation | 4-6 | ✅ Complete | - |
+| **S1** | IDomainEvent.Metadata | 6-8 | ✅ Complete | ADR-0008 (existing) |
+| **S2** | IReconciler Interface | 4-6 | ⏳ Pending | ADR-0024 |
+| **S3** | MessageProducer Refactoring | 10-14 | ⏳ Pending | ADR-0025 |
+| **S4** | Service Layer Pattern | 6-8 | ⏳ Pending | ADR-0026 |
+| **S5** | Thread/Null Safety Review | 6-8 | ⏳ Pending | ADR-0027 |
+| **S6** | Integration Testing & Docs | 6-8 | ⏳ Pending | ADR-0028 |
+| **S7** | Final Review & Completion | 2-4 | ⏳ Pending | ADR-0029, ADR-0030 |
+| **TOTAL** | | **44-62 hours** | | **7 ADRs** |
 
 ### 🎯 Success Criteria
 
 **Phase 6 Complete When**:
-- [ ] All 8 ADRs written and reviewed (ADR-0024 to ADR-0031)
+- [ ] All 7 ADRs written and reviewed (ADR-0024 to ADR-0030)
 - [ ] All Java 4.1.0 features implemented and tested
 - [ ] 520+ tests passing (>95% coverage, up from current 501)
 - [ ] Zero compiler warnings
@@ -564,7 +564,7 @@ See [DOTNET_PORT.md](DOTNET_PORT.md) "Java 4.1.0 Synchronization Plan" section (
 - Risk analysis
 - Reference commits from Java ezddd
 
-**Current Progress**: Stage S0 (Planning) - 0/8 stages complete, 0/8 ADRs written
+**Current Progress**: Stage S1 Complete - 2/8 stages complete (25%), 0/7 new ADRs written (ADR-0008 existing covers S1)
 
 ---
 
@@ -651,7 +651,7 @@ See [DOTNET_PORT.md](DOTNET_PORT.md) "Java 4.1.0 Synchronization Plan" section (
 **Scope**:
 - 44 commits to synchronize (+5,167/-2,132 lines)
 - 8 implementation stages (S0-S7)
-- 8 new ADRs (ADR-0024 to ADR-0031)
+- 7 new ADRs (ADR-0024 to ADR-0030)
 - Estimated: 44-62 hours (~1-2 weeks across multiple sessions)
 
 **Major Changes**:

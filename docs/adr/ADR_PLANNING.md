@@ -289,26 +289,12 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
 ---
 
 ### 🚀 Stage 6: Phase 6 Java 4.1.0 Synchronization (NEW - Planned)
-**Status**: ⏳ Planned (8 ADRs to write)
+**Status**: ⏳ Planned (7 ADRs to write)
 **Phase**: Phase 6 - Java 4.1.0 Synchronization
-**Timeline**: 2026-01-06 to TBD (~44-62 hours / 1-2 weeks)
+**Timeline**: 2026-01-06 to TBD (~40-58 hours / 1-2 weeks)
 
-#### ADR-0024: IDomainEvent Metadata Property for Idempotency Support
-- **Topic**: Add Metadata property to IDomainEvent interface for distributed system idempotency
-- **Key Points**:
-  - BREAKING CHANGE: All events must implement Metadata property
-  - IReadOnlyDictionary<string, string> Metadata { get; }
-  - Enables idempotency checking via request IDs
-  - Java 4.1.0 feature parity
-- **Status**: ⏳ Planned (S1)
-- **Priority**: 🔴 CRITICAL (Breaking)
-- **Planning Docs Section**: DOTNET_PORT.md - "Java 4.1.0 Synchronization Plan, Stage 2"
-- **Dependencies**: ADR-0008 (extends IDomainEvent)
-- **Related**: ADR-0014 (affects DomainEventData equality)
-- **Estimated Effort**: 6-8 hours
-- **Java Commits**: d7249cc, 3b5fde7
 
-#### ADR-0025: IReconciler Interface for System State Reconciliation
+#### ADR-0024: IReconciler Interface for System State Reconciliation
 - **Topic**: Add IReconciler<TContext, TReport> pattern for periodic state consistency checks
 - **Key Points**:
   - NEW FEATURE: No breaking changes
@@ -323,7 +309,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
 - **Estimated Effort**: 4-6 hours
 - **Java Commits**: da156c6, f377dcf, d4ed869
 
-#### ADR-0026: MessageBus to MessageProducer Pattern Refactoring
+#### ADR-0025: MessageBus to MessageProducer Pattern Refactoring
 - **Topic**: Replace IMessageBus<T> with simplified IMessageProducer<T> pattern
 - **Key Points**:
   - BREAKING CHANGE: Removes subscription from producer
@@ -339,7 +325,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
 - **Estimated Effort**: 10-14 hours (most complex)
 - **Java Commits**: 676e0e0, 4acead6
 
-#### ADR-0027: Service Layer Pattern for Complex Business Logic
+#### ADR-0026: Service Layer Pattern for Complex Business Logic
 - **Topic**: Document and recommend Service layer pattern for extracting reusable business logic
 - **Key Points**:
   - OPTIONAL PATTERN: Not required, recommended
@@ -354,7 +340,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
 - **Estimated Effort**: 6-8 hours
 - **Java Commits**: Multiple refactorings
 
-#### ADR-0028: Thread Safety and Null Safety Standards
+#### ADR-0027: Thread Safety and Null Safety Standards
 - **Topic**: Comprehensive thread safety and null validation standards
 - **Key Points**:
   - FIX: DomainEventTypeMapper initialization (Lazy<T> or lock)
@@ -369,7 +355,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
 - **Estimated Effort**: 6-8 hours
 - **Java Commits**: a18512a, d2353cd, bfbe7ca, c345a10, 5088058, 3b862c6, 9decbba
 
-#### ADR-0029: Version 1.0.0 Pre-Publication Synchronization Strategy
+#### ADR-0028: Version 1.0.0 Pre-Publication Synchronization Strategy
 - **Topic**: Decision to incorporate all Java 4.1.0 changes into initial 1.0.0 release before NuGet publication
 - **Key Points**:
   - PROCESS DECISION: Synchronize before first publication
@@ -380,10 +366,10 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
 - **Priority**: 🟠 PROCESS
 - **Planning Docs Section**: DOTNET_PORT.md - "Java 4.1.0 Synchronization Plan, Stage 7"
 - **Dependencies**: All Stage 6 ADRs
-- **Related**: ADR-0024, ADR-0026 (breaking changes incorporated in 1.0.0)
+- **Related**: ADR-0024, ADR-0025 (breaking changes incorporated in 1.0.0)
 - **Estimated Effort**: 6-8 hours (documentation + integration testing)
 
-#### ADR-0030: Phase 6 Post-Implementation Review
+#### ADR-0029: Phase 6 Post-Implementation Review
 - **Topic**: Summary and retrospective of Java 4.1.0 synchronization effort
 - **Key Points**:
   - Summary of all 44 commits synchronized
@@ -396,7 +382,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
 - **Dependencies**: All Stage 6 implementation ADRs (0024-0029)
 - **Estimated Effort**: 2-4 hours
 
-#### ADR-0031: Java 4.1.0 Feature Parity Verification
+#### ADR-0030: Java 4.1.0 Feature Parity Verification
 - **Topic**: Detailed comparison matrix of Java ezddd 4.1.0 vs. ezDDD.NET 1.0.0
 - **Key Points**:
   - Feature-by-feature comparison
@@ -406,7 +392,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
 - **Status**: ⏳ Planned (S7) - Optional
 - **Priority**: ✅ VERIFICATION
 - **Planning Docs Section**: DOTNET_PORT.md - "Java 4.1.0 Synchronization Plan, Stage 8"
-- **Dependencies**: ADR-0030 (post-implementation review)
+- **Dependencies**: ADR-0029 (post-implementation review)
 - **Related**: ADR-0005 (reimplementation approach)
 - **Estimated Effort**: 2-4 hours
 
@@ -421,23 +407,23 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
 | Stage 3 | 0012-0016 | Post-Phase 3 Review | 5 | 5 | 100% ✅ |
 | Stage 4 | 0017-0019 | Phase 4 Critical ADRs | 3 | 3 | 100% ✅ |
 | Stage 5 | 0020-0023 | Phase 4 Post-Implementation | 4 | 4 | 100% ✅ |
-| Stage 6 | 0024-0031 | Java 4.1.0 Synchronization | 8 | 0 | 0% ⏳ |
-| **TOTAL** | **0001-0031** | | **31** | **23** | **74%** |
+| Stage 6 | 0024-0030 | Java 4.1.0 Synchronization | 7 | 0 | 0% ⏳ |
+| **TOTAL** | **0001-0030** | | **30** | **23** | **77%** |
 
 ### Phase 6 (Stage 6) Detailed Progress
 
 | ADR | Title | Priority | Status | Iteration | Hours |
 |-----|-------|----------|--------|-----------|-------|
-| 0024 | IDomainEvent Metadata | 🔴 CRITICAL | ⏳ Planned | S1 | 6-8 |
-| 0025 | IReconciler Interface | 🟢 NEW | ⏳ Planned | S2 | 4-6 |
-| 0026 | MessageProducer Refactoring | 🔴 BREAKING | ⏳ Planned | S3 | 10-14 |
-| 0027 | Service Layer Pattern | 🟡 OPTIONAL | ⏳ Planned | S4 | 6-8 |
-| 0028 | Thread/Null Safety | 🔵 QUALITY | ⏳ Planned | S5 | 6-8 |
-| 0029 | Pre-Publication Sync | 🟠 PROCESS | ⏳ Planned | S6 | 6-8 |
-| 0030 | Post-Implementation Review | 📊 REVIEW | ⏳ Planned | S7 | 2-4 |
-| 0031 | Feature Parity Verification | ✅ VERIFY | ⏳ Planned | S7 | 2-4 |
+| ~~N/A~~ | ~~IDomainEvent Metadata~~ | ~~N/A~~ | ✅ Covered by ADR-0008 | S1 | ~~N/A~~ |
+| 0024 | IReconciler Interface | 🟢 NEW | ⏳ Planned | S2 | 4-6 |
+| 0025 | MessageProducer Refactoring | 🔴 BREAKING | ⏳ Planned | S3 | 10-14 |
+| 0026 | Service Layer Pattern | 🟡 OPTIONAL | ⏳ Planned | S4 | 6-8 |
+| 0027 | Thread/Null Safety | 🔵 QUALITY | ⏳ Planned | S5 | 6-8 |
+| 0028 | Pre-Publication Sync | 🟠 PROCESS | ⏳ Planned | S6 | 6-8 |
+| 0029 | Post-Implementation Review | 📊 REVIEW | ⏳ Planned | S7 | 2-4 |
+| 0030 | Feature Parity Verification | ✅ VERIFY | ⏳ Planned | S7 | 2-4 |
 
-**Total Stage 6 Effort**: 44-62 hours (~6-8 working days, 1-2 calendar weeks across 3-4 sessions)
+**Total Stage 6 Effort**: 40-58 hours (~6-8 working days, 1-2 calendar weeks across 3-4 sessions)
 
 ---
 
@@ -512,14 +498,14 @@ Write ADRs **0020-0023** after Phase 4 implementation:
 
 Write ADRs **0024-0031** during Java 4.1.0 synchronization:
 
-**S1 (6-8 hours)**: ADR-0024 - IDomainEvent.Metadata
-**S2 (4-6 hours)**: ADR-0025 - IReconciler Interface
-**S3 (10-14 hours)**: ADR-0026 - MessageProducer Refactoring
-**S4 (6-8 hours)**: ADR-0027 - Service Layer Pattern
-**S5 (6-8 hours)**: ADR-0028 - Thread/Null Safety
-**S6 (6-8 hours)**: ADR-0029 - Pre-Publication Sync Strategy
-**S7 (2-4 hours)**: ADR-0030 - Post-Implementation Review
-**S7 (2-4 hours)**: ADR-0031 - Feature Parity Verification
+**S1 (6-8 hours)**: No ADR required
+**S2 (4-6 hours)**: ADR-0024 - IReconciler Interface
+**S3 (10-14 hours)**: ADR-0025 - MessageProducer Refactoring
+**S4 (6-8 hours)**: ADR-0026 - Service Layer Pattern
+**S5 (6-8 hours)**: ADR-0027 - Thread/Null Safety
+**S6 (6-8 hours)**: ADR-0028 - Pre-Publication Sync Strategy
+**S7 (2-4 hours)**: ADR-0029 - Post-Implementation Review
+**S7 (2-4 hours)**: ADR-0030 - Feature Parity Verification
 
 **Total**: 44-62 hours
 
@@ -549,7 +535,7 @@ Before marking any ADR as "Accepted", verify it meets quality standards:
 **2025-11-06**: Added 5 ADRs for Stage 3 (Phase 3 review), completed ADR-0012 through ADR-0016
 **2025-11-10**: Added 3 ADRs for Stage 4 (Phase 4 planning), completed ADR-0017 through ADR-0019
 **2025-11-18**: Added 4 ADRs for Stage 5 (Phase 4 post-implementation), completed ADR-0020 through ADR-0023
-**2026-01-06**: Added 8 ADRs for Stage 6 (Phase 6 - Java 4.1.0 synchronization), total now 31 ADRs
+**2026-01-06**: Added 7 ADRs for Stage 6 (Phase 6 - Java 4.1.0 synchronization, ADR-0024 to ADR-0030), total now 30 ADRs.
 
 ---
 

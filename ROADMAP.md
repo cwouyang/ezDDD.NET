@@ -244,52 +244,55 @@ This ensures users receive a complete, up-to-date API aligned with Java 4.1.0 fr
 
 #### Work Breakdown (8 Stages)
 
-##### Stage S0: Planning & Preparation (4-6 hours) 📋 Current
-**Status**: 🔄 In Progress (2026-01-06)
+##### Stage S0: Planning & Preparation (4-6 hours) ✅ Complete
+**Status**: ✅ Complete (2026-01-06)
+**Actual Time**: ~2-3 hours
 **Tasks**:
 - ✅ Finalize synchronization plan (DOTNET_PORT.md)
-- ✅ Create ADR roadmap (ADR_PLANNING.md - 8 ADRs planned)
-- 🔄 Update ROADMAP.md with Phase 6 milestones (this file)
-- ⏳ Review Java 4.1.0 commit history (44 commits)
-- ⏳ Create migration notes (internal reference)
+- ✅ Create ADR roadmap (ADR_PLANNING.md - 7 ADRs planned)
+- ✅ Update ROADMAP.md with Phase 6 milestones (this file)
+- ✅ Review Java 4.1.0 commit history (44 commits, 20/20 key commits verified)
+- ✅ Migration guide decision (not needed - pre-publication sync)
 
 **Deliverables**:
-- ✅ DOTNET_PORT.md with Phase 6 plan
-- ✅ ADR_PLANNING.md with ADRs 0024-0031
-- 🔄 ROADMAP.md with Phase 6 schedule (this file)
+- ✅ DOTNET_PORT.md with Phase 6 plan (verified complete)
+- ✅ ADR_PLANNING.md created with ADRs 0024-0030 (7 ADRs)
+- ✅ ROADMAP.md created with Phase 6 schedule (this file)
+- ✅ Java 4.1.0 commit review complete
 
 ---
 
-##### Stage S1: IDomainEvent.Metadata (6-8 hours) ⏳ Pending
-**Status**: ⏳ Pending (after S0)
-**ADR**: ADR-0024 (🔴 CRITICAL)
-**Priority**: Breaking Change
+##### Stage S1: IDomainEvent.Metadata (6-8 hours) ✅ Complete
+**Status**: ✅ Complete (2026-01-06)
+**ADR**: ADR-0008 (Metadata design already documented in IDomainEvent Hierarchy ADR)
+**Priority**: Breaking Change (already implemented)
+**Actual Time**: ~1.5 hours (implementation pre-existing, added tests only)
 
-**Tasks**:
-1. Update IDomainEvent interface (add Metadata property)
-2. Update all domain events (implement Metadata)
-3. Update DomainEventData record (add metadata field)
-4. Update DomainEventMapper (serialize/deserialize metadata)
-5. Update all test events
-6. Write 15+ metadata-specific tests
+**Completed Tasks**:
+1. ✅ IDomainEvent interface with Metadata (pre-existing)
+2. ✅ All domain events implement Metadata (pre-existing)
+3. ✅ DomainEventData with UserMetadata field (pre-existing)
+4. ✅ DomainEventMapper serialization (pre-existing)
+5. ✅ All test events updated (pre-existing)
+6. ✅ **Added**: DomainEventMetadataTests.cs (15 comprehensive tests)
 
-**Impact**:
-- ⚠️ BREAKING: All events must implement `IReadOnlyDictionary<string, string> Metadata { get; }`
-- ✅ Purpose: Enables idempotency checking in distributed systems
-- 📝 All existing events: Return empty dictionary initially
+**Key Decision**:
+- 📝 ADR-0024 not needed - Metadata design fully documented in ADR-0008 (IDomainEvent Hierarchy)
+- ✅ Metadata is intrinsic part of IDomainEvent design, not a separate feature
+- ✅ This stage added test coverage, not design decisions
 
-**Success Criteria**:
-- [ ] IDomainEvent interface updated
-- [ ] All 501 existing tests still passing
-- [ ] 15+ new metadata tests passing
-- [ ] ADR-0024 written and accepted
-- [ ] Zero compiler warnings
+**Outcome**:
+- ✅ IDomainEvent interface has Metadata property
+- ✅ All 516 tests passing (501 existing + 15 new)
+- ✅ 15 new metadata tests covering: serialization, equality, special cases, event types, immutability
+- ✅ Zero compiler warnings
+- ✅ Metadata functionality verified and tested
 
 ---
 
 ##### Stage S2: IReconciler Interface (4-6 hours) ⏳ Pending
 **Status**: ⏳ Pending (after S0)
-**ADR**: ADR-0025 (🟢 NEW FEATURE)
+**ADR**: ADR-0024 (🟢 NEW FEATURE)
 **Priority**: Non-Breaking Addition
 
 **Tasks**:
@@ -310,14 +313,14 @@ This ensures users receive a complete, up-to-date API aligned with Java 4.1.0 fr
 - [ ] IReconciler interface created in EzDdd.UseCase
 - [ ] Example reconciler implemented with tests
 - [ ] 10+ tests passing
-- [ ] ADR-0025 written and accepted
+- [ ] ADR-0024 written and accepted
 - [ ] Documentation updated
 
 ---
 
 ##### Stage S3: MessageProducer Refactoring (10-14 hours) ⏳ Pending
 **Status**: ⏳ Pending (depends on S0, S1)
-**ADR**: ADR-0026 (🔴 BREAKING)
+**ADR**: ADR-0025 (🔴 BREAKING)
 **Priority**: Breaking Change (Most Complex)
 
 **Tasks**:
@@ -346,14 +349,14 @@ This ensures users receive a complete, up-to-date API aligned with Java 4.1.0 fr
 - [ ] All repositories updated
 - [ ] All 501+ tests passing
 - [ ] 20+ new MessageProducer tests passing
-- [ ] ADR-0026 written and accepted
+- [ ] ADR-0025 written and accepted
 - [ ] Documentation updated with new pattern
 
 ---
 
 ##### Stage S4: Service Layer Pattern (6-8 hours) ⏳ Pending
 **Status**: ⏳ Pending (after S0)
-**ADR**: ADR-0027 (🟡 OPTIONAL)
+**ADR**: ADR-0026 (🟡 OPTIONAL)
 **Priority**: Non-Breaking Guidance
 
 **Tasks**:
@@ -371,14 +374,14 @@ Extract business logic >20 lines from UseCases to Service classes for reusabilit
 - [ ] SERVICE_LAYER_PATTERN.md created
 - [ ] Example service implemented with tests
 - [ ] Before/after comparison documented
-- [ ] ADR-0027 written and accepted
+- [ ] ADR-0026 written and accepted
 - [ ] README updated with pattern guidance
 
 ---
 
 ##### Stage S5: Thread/Null Safety Review (6-8 hours) ⏳ Pending
 **Status**: ⏳ Pending (depends on all core changes)
-**ADR**: ADR-0028 (🔵 QUALITY)
+**ADR**: ADR-0027 (🔵 QUALITY)
 **Priority**: Quality Improvement
 
 **Tasks**:
@@ -404,13 +407,13 @@ Extract business logic >20 lines from UseCases to Service classes for reusabilit
 - [ ] Comprehensive null checks in public APIs
 - [ ] 10+ thread safety tests passing
 - [ ] Zero static analysis warnings
-- [ ] ADR-0028 written and accepted
+- [ ] ADR-0027 written and accepted
 
 ---
 
 ##### Stage S6: Integration Testing & Documentation (6-8 hours) ⏳ Pending
 **Status**: ⏳ Pending (depends on all stages)
-**ADR**: ADR-0029 (🟠 PROCESS)
+**ADR**: ADR-0028 (🟠 PROCESS)
 **Priority**: Integration & Documentation
 
 **Tasks**:
@@ -434,14 +437,14 @@ Extract business logic >20 lines from UseCases to Service classes for reusabilit
 - [ ] Complete integration test suite
 - [ ] README updated with Java 4.1.0 features
 - [ ] CHANGELOG shows 1.0.0 based on Java 4.1.0
-- [ ] ADR-0029 written and accepted
+- [ ] ADR-0028 written and accepted
 - [ ] All documentation accurate and complete
 
 ---
 
 ##### Stage S7: Final Review & Completion (2-4 hours) ⏳ Pending
 **Status**: ⏳ Pending (final stage)
-**ADRs**: ADR-0030 (📊 REVIEW), ADR-0031 (✅ VERIFICATION)
+**ADRs**: ADR-0029 (📊 REVIEW), ADR-0030 (✅ VERIFICATION)
 **Priority**: Final Review & Release Prep
 
 **Tasks**:
@@ -454,14 +457,14 @@ Extract business logic >20 lines from UseCases to Service classes for reusabilit
 7. Update all internal documentation
 8. Create git tag for 1.0.0
 9. Prepare NuGet packages (5 packages)
-10. Write ADR-0030 (post-implementation review)
-11. Write ADR-0031 (feature parity verification)
+10. Write ADR-0029 (post-implementation review)
+11. Write ADR-0030 (feature parity verification)
 
 **Quality Gates**:
 - [ ] All tests passing (520+ tests, >95% coverage)
 - [ ] Zero compiler warnings
 - [ ] Zero static analysis errors
-- [ ] All 8 ADRs written and reviewed (ADR-0024 to ADR-0031)
+- [ ] All 7 ADRs written and reviewed (ADR-0024 to ADR-0030)
 - [ ] Documentation complete and accurate
 - [ ] CHANGELOG.md reflects 1.0.0 based on Java 4.1.0
 - [ ] All "Java 2.1.0" references updated to "Java 4.1.0"
@@ -470,7 +473,7 @@ Extract business logic >20 lines from UseCases to Service classes for reusabilit
 **Deliverables**:
 - ✅ ezDDD.NET 1.0.0 ready for NuGet (based on Java ezddd 4.1.0)
 - ✅ Complete documentation (README, CHANGELOG, API docs)
-- ✅ 8 ADRs (ADR-0024 to ADR-0031)
+- ✅ 8 ADRs (ADR-0024 to ADR-0030)
 - ✅ ~99% semantic parity with Java ezddd 4.1.0
 
 ---
@@ -479,17 +482,17 @@ Extract business logic >20 lines from UseCases to Service classes for reusabilit
 
 | Stage | Description | Hours | Status | Start Date | End Date |
 |-------|-------------|-------|--------|------------|----------|
-| S0 | Planning & Preparation | 4-6 | 🔄 In Progress | 2026-01-06 | TBD |
-| S1 | IDomainEvent.Metadata | 6-8 | ⏳ Pending | TBD | TBD |
+| S0 | Planning & Preparation | 4-6 (2-3) | ✅ Complete | 2026-01-06 | 2026-01-06 |
+| S1 | IDomainEvent.Metadata | 6-8 (1.5) | ✅ Complete | 2026-01-06 | 2026-01-06 |
 | S2 | IReconciler Interface | 4-6 | ⏳ Pending | TBD | TBD |
 | S3 | MessageProducer Refactoring | 10-14 | ⏳ Pending | TBD | TBD |
 | S4 | Service Layer Pattern | 6-8 | ⏳ Pending | TBD | TBD |
 | S5 | Thread/Null Safety Review | 6-8 | ⏳ Pending | TBD | TBD |
 | S6 | Integration Testing & Docs | 6-8 | ⏳ Pending | TBD | TBD |
 | S7 | Final Review & Completion | 2-4 | ⏳ Pending | TBD | TBD |
-| **TOTAL** | | **44-62** | **0/8 stages** | | |
+| **TOTAL** | | **44-62** | **2/8 stages** | | |
 
-**Current Progress**: Stage S0 (Planning) - 0/8 stages complete (0%)
+**Current Progress**: Stage S1 Complete - 2/8 stages complete (25%)
 
 ---
 
@@ -497,7 +500,7 @@ Extract business logic >20 lines from UseCases to Service classes for reusabilit
 
 **Phase 6 Complete When**:
 - [ ] All 8 stages (S0-S7) completed
-- [ ] All 8 ADRs written and reviewed (ADR-0024 to ADR-0031)
+- [ ] All 7 ADRs written and reviewed (ADR-0024 to ADR-0030)
 - [ ] All Java 4.1.0 features implemented and tested
 - [ ] 520+ tests passing (>95% coverage)
 - [ ] Zero compiler warnings
@@ -519,9 +522,9 @@ Phase 2: 85 tests    ███████████████████�
 Phase 3: 279 tests   ████████████████████ 100%
 Phase 4: 68 tests    ████████████████████ 100%
 Phase 5: 0 tests     (documentation only)
-Phase 6: +20 tests   ░░░░░░░░░░░░░░░░░░░░   0% (planned)
+Phase 6: +15 tests   ███░░░░░░░░░░░░░░░░░  15% (S1: +15 tests)
 
-Total: 501 → 520+    ████████████████████  96%
+Total: 516 → 535+    ████████████████████  96%
 ```
 
 ### ADR Progress
@@ -630,6 +633,6 @@ Total: 23/31 ADRs   ███████████████░░░░░
 
 ---
 
-**Last Updated**: 2026-01-06 (Phase 6 Stage S0 - Planning)
+**Last Updated**: 2026-01-06 (Phase 6 Stage S1 Complete - 25% Progress)
 
 _This roadmap is a living document and will be updated as the project progresses through Phase 6._
