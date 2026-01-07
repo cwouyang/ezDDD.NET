@@ -28,15 +28,12 @@ public sealed class CompleteCqrsFlowTests
         DomainEventTypeMapper.Register<MoneyWithdrawn>("MoneyWithdrawn");
         DomainEventTypeMapper.Register<AccountClosed>("AccountClosed");
 
-        BlockingMessageBus<DomainEventData> eventBus = new();
+        InMemoryMessageProducer<DomainEventData> eventProducer = new();
         InMemoryEventStorePeer eventStorePeer = new();
-        EsRepository<BankAccount, AccountId> repository = new(eventStorePeer);
+        EsRepository<BankAccount, AccountId> repository = new(eventStorePeer, eventProducer);
         InMemoryArchive<AccountSummaryReadModel, AccountId> archive = new(m => m.AccountId);
         AccountProjector projector = new(archive);
         GetAccountSummaryQuery query = new(archive);
-        EventBusProducer eventProducer = new(eventBus);
-
-        eventBus.Register(projector);
 
         return new CqrsTestInfrastructure
         {
@@ -44,33 +41,38 @@ public sealed class CompleteCqrsFlowTests
             Archive = archive,
             Projector = projector,
             Query = query,
-            EventBus = eventBus,
             EventProducer = eventProducer
         };
     }
 
-    private sealed class CqrsTestInfrastructure
+    private sealed class CqrsTestInfrastructure : IDisposable
     {
         public required EsRepository<BankAccount, AccountId> Repository { get; init; }
         public required InMemoryArchive<AccountSummaryReadModel, AccountId> Archive { get; init; }
         public required AccountProjector Projector { get; init; }
         public required GetAccountSummaryQuery Query { get; init; }
-        public required BlockingMessageBus<DomainEventData> EventBus { get; init; }
-        public required EventBusProducer EventProducer { get; init; }
+        public required InMemoryMessageProducer<DomainEventData> EventProducer { get; init; }
+
+        public void Dispose()
+        {
+            EventProducer.Dispose();
+        }
 
         /// <summary>
-        ///     Helper method to save aggregate and publish its events.
+        ///     Helper method to save aggregate (events automatically published by repository).
         /// </summary>
         public async Task SaveAndPublishAsync(BankAccount aggregate)
         {
-            List<IInternalDomainEvent> events = aggregate.GetDomainEvents().ToList();
+            int eventCountBefore = EventProducer.PostedMessages.Count;
 
+            // Repository now automatically publishes events via eventProducer
             await Repository.SaveAsync(aggregate);
 
-            foreach (IInternalDomainEvent domainEvent in events)
+            // Process newly published events through projector
+            List<DomainEventData> newEvents = EventProducer.PostedMessages.Skip(eventCountBefore).ToList();
+            foreach (DomainEventData eventData in newEvents)
             {
-                DomainEventData eventData = DomainEventMapper.ToData(domainEvent);
-                await EventProducer.PostAsync(eventData);
+                await Projector.ExecuteAsync(eventData);
             }
         }
     }

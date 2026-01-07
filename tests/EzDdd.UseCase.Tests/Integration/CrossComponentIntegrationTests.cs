@@ -6,10 +6,9 @@ using EzDdd.UseCase.Tests.Integration.TestDomain;
 
 namespace EzDdd.UseCase.Tests.Integration;
 
-public sealed class CrossComponentIntegrationTests
+public sealed class CrossComponentIntegrationTests : IDisposable
 {
-    private readonly EventBusProducer _eventBusProducer;
-    private readonly BlockingMessageBus<DomainEventData> _messageBus;
+    private readonly InMemoryMessageProducer<DomainEventData> _eventProducer;
     private readonly EsRepository<BankAccount, AccountId> _repository;
 
     public CrossComponentIntegrationTests()
@@ -20,88 +19,46 @@ public sealed class CrossComponentIntegrationTests
         DomainEventTypeMapper.Register<MoneyWithdrawn>("MoneyWithdrawn");
         DomainEventTypeMapper.Register<AccountClosed>("AccountClosed");
 
-        _repository = new EsRepository<BankAccount, AccountId>(new InMemoryEventStorePeer());
-        _messageBus = new BlockingMessageBus<DomainEventData>();
-        _eventBusProducer = new EventBusProducer(_messageBus);
+        _eventProducer = new InMemoryMessageProducer<DomainEventData>();
+        _repository = new EsRepository<BankAccount, AccountId>(new InMemoryEventStorePeer(), _eventProducer);
+    }
+
+    public void Dispose()
+    {
+        _eventProducer.Dispose();
     }
 
     [Fact]
-    public async Task CompleteWorkflow_UseCaseToRepositoryToMessageBus_AllComponentsWork()
+    public async Task CompleteWorkflow_RepositoryToMessageProducer_AllComponentsWork()
     {
-        List<DomainEventData> receivedEvents = [];
-        GenericReactor<DomainEventData> reactor = new
-        (async eventData =>
-            {
-                receivedEvents.Add(eventData);
-                await Task.CompletedTask;
-            }
-        );
-        _messageBus.Register(reactor);
-
-        // Create aggregate directly (not using use case to have access to events)
+        // Create aggregate
         AccountId accountId = new("acc-001");
         BankAccount account = new(accountId, "John Doe", new Money(1000m));
 
-        // Capture events BEFORE saving
-        List<IInternalDomainEvent> events = account.GetDomainEvents().ToList();
-
+        // Save (repository will automatically publish events)
         await _repository.SaveAsync(account);
-
-        // Post events to message bus
-        foreach (IInternalDomainEvent domainEvent in events)
-        {
-            DomainEventData data = DomainEventMapper.ToData(domainEvent);
-            await _eventBusProducer.PostAsync(data);
-        }
 
         Assert.Equal(0L, account.Version);
 
-        // Verify events received by reactor
-        Assert.Single(receivedEvents);
-        DomainEventData receivedEventData = receivedEvents[0];
-        Assert.Equal("AccountCreated", receivedEventData.EventType);
+        // Verify event was published to message producer
+        Assert.Single(_eventProducer.PostedMessages);
+        DomainEventData publishedEvent = _eventProducer.PostedMessages.First();
+        Assert.Equal("AccountCreated", publishedEvent.EventType);
     }
 
     [Fact]
-    public async Task EventSourcingWithMessageBus_SaveAndPublish_EventsFlowCorrectly()
+    public async Task EventSourcingWithMessageProducer_SaveAndPublish_EventsFlowCorrectly()
     {
         AccountId accountId = new("acc-002");
         BankAccount account = new(accountId, "Jane Doe", new Money(500m));
 
-        // Setup multiple reactors
-        List<string> audit = [];
-        GenericReactor<DomainEventData> reactor1 = new
-        (async eventData =>
-            {
-                audit.Add($"Reactor1: {eventData.EventType}");
-                await Task.CompletedTask;
-            }
-        );
-        GenericReactor<DomainEventData> reactor2 = new
-        (async eventData =>
-            {
-                audit.Add($"Reactor2: {eventData.EventType}");
-                await Task.CompletedTask;
-            }
-        );
-        _messageBus.Register(reactor1);
-        _messageBus.Register(reactor2);
-
-        // Capture events BEFORE saving
-        List<IInternalDomainEvent> events = account.GetDomainEvents().ToList();
-
+        // Save (repository automatically publishes events)
         await _repository.SaveAsync(account);
 
-        // Post each event
-        foreach (IInternalDomainEvent domainEvent in events)
-        {
-            DomainEventData eventData = DomainEventMapper.ToData(domainEvent);
-            await _eventBusProducer.PostAsync(eventData);
-        }
-
-        Assert.Equal(2, audit.Count);
-        Assert.Equal("Reactor1: AccountCreated", audit[0]);
-        Assert.Equal("Reactor2: AccountCreated", audit[1]);
+        // Verify event was published
+        Assert.Single(_eventProducer.PostedMessages);
+        DomainEventData publishedEvent = _eventProducer.PostedMessages.First();
+        Assert.Equal("AccountCreated", publishedEvent.EventType);
 
         // Verify aggregate is persisted
         BankAccount? loaded = await _repository.FindByIdAsync(accountId);
@@ -184,57 +141,33 @@ public sealed class CrossComponentIntegrationTests
     }
 
     [Fact]
-    public async Task CompleteEventSourcingLifecycle_WithMessageBusIntegration_AllEventsProcessed()
+    public async Task CompleteEventSourcingLifecycle_WithMessageProducer_AllEventsPublished()
     {
-        List<string> processedEvents = [];
-        GenericReactor<DomainEventData> reactor = new
-        (async eventData =>
-            {
-                processedEvents.Add(eventData.EventType);
-                await Task.CompletedTask;
-            }
-        );
-        _messageBus.Register(reactor);
-
         AccountId accountId = new("acc-lifecycle");
 
+        // Create and save
         BankAccount account = new(accountId, "David", new Money(1000m));
-        List<IInternalDomainEvent> events1 = account.GetDomainEvents().ToList();
         await _repository.SaveAsync(account);
-        foreach (IInternalDomainEvent domainEvent in events1)
-        {
-            await _eventBusProducer.PostAsync(DomainEventMapper.ToData(domainEvent));
-        }
 
+        // Deposit
         account.Deposit(new Money(500m));
-        List<IInternalDomainEvent> events2 = account.GetDomainEvents().ToList();
         await _repository.SaveAsync(account);
-        foreach (IInternalDomainEvent domainEvent in events2)
-        {
-            await _eventBusProducer.PostAsync(DomainEventMapper.ToData(domainEvent));
-        }
 
+        // Withdraw
         account.Withdraw(new Money(200m));
-        List<IInternalDomainEvent> events3 = account.GetDomainEvents().ToList();
         await _repository.SaveAsync(account);
-        foreach (IInternalDomainEvent domainEvent in events3)
-        {
-            await _eventBusProducer.PostAsync(DomainEventMapper.ToData(domainEvent));
-        }
 
+        // Close
         account.Close("Account no longer needed");
-        List<IInternalDomainEvent> events4 = account.GetDomainEvents().ToList();
         await _repository.SaveAsync(account);
-        foreach (IInternalDomainEvent domainEvent in events4)
-        {
-            await _eventBusProducer.PostAsync(DomainEventMapper.ToData(domainEvent));
-        }
 
-        Assert.Equal(4, processedEvents.Count);
-        Assert.Equal("AccountCreated", processedEvents[0]);
-        Assert.Equal("MoneyDeposited", processedEvents[1]);
-        Assert.Equal("MoneyWithdrawn", processedEvents[2]);
-        Assert.Equal("AccountClosed", processedEvents[3]);
+        // Verify all 4 events were published
+        Assert.Equal(4, _eventProducer.PostedMessages.Count);
+        List<DomainEventData> publishedEvents = _eventProducer.PostedMessages.ToList();
+        Assert.Equal("AccountCreated", publishedEvents[0].EventType);
+        Assert.Equal("MoneyDeposited", publishedEvents[1].EventType);
+        Assert.Equal("MoneyWithdrawn", publishedEvents[2].EventType);
+        Assert.Equal("AccountClosed", publishedEvents[3].EventType);
 
         // Verify final state
         BankAccount? finalAccount = await _repository.FindByIdAsync(accountId);
@@ -244,49 +177,23 @@ public sealed class CrossComponentIntegrationTests
     }
 
     [Fact]
-    public async Task ReactorExceptionHandling_DoesNotAffectOtherReactors()
+    public async Task MessageProducer_PublishesEventsAfterSuccessfulSave()
     {
-        bool successfulReactorExecuted = false;
-
-        GenericReactor<DomainEventData> failingReactor = new
-        (async _ =>
-            {
-                await Task.CompletedTask;
-                throw new InvalidOperationException("Reactor failure simulation");
-            }
-        );
-
-        GenericReactor<DomainEventData> successfulReactor = new
-        (async _ =>
-            {
-                successfulReactorExecuted = true;
-                await Task.CompletedTask;
-            }
-        );
-
-        _messageBus.Register(failingReactor);
-        _messageBus.Register(successfulReactor);
-
         AccountId accountId = new("acc-004");
         BankAccount account = new(accountId, "Eve", new Money(1000m));
+
+        // Initially no events published
+        Assert.Empty(_eventProducer.PostedMessages);
+
+        // Save (repository automatically publishes events)
         await _repository.SaveAsync(account);
 
-        // Post events (failing reactor will throw, but shouldn't stop successful reactor)
-        try
-        {
-            foreach (IInternalDomainEvent? domainEvent in account.GetDomainEvents())
-            {
-                await _eventBusProducer.PostAsync(DomainEventMapper.ToData(domainEvent));
-            }
-        }
-        catch (InvalidOperationException)
-        {
-            // BlockingMessageBus doesn't catch reactor exceptions by design
-            // In production, you'd use try-catch in PostAsync or reactor wrapper
-        }
+        // Verify event was published
+        Assert.Single(_eventProducer.PostedMessages);
+        DomainEventData publishedEvent = _eventProducer.PostedMessages.First();
+        Assert.Equal("AccountCreated", publishedEvent.EventType);
 
-        // This test documents the behavior
-        // In production, reactors should handle their own exceptions
-        Assert.False(successfulReactorExecuted); // Exception stops sequential execution
+        // Verify events were cleared from aggregate
+        Assert.Empty(account.GetDomainEvents());
     }
 }

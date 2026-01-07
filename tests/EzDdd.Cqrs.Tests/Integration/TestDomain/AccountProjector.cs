@@ -1,6 +1,5 @@
 using EzDdd.Cqrs.Query;
 using EzDdd.Entity;
-using EzDdd.UseCase.Port.In;
 using EzDdd.UseCase.Port.InOut;
 using EzDdd.UseCase.Tests.Integration.TestDomain;
 
@@ -11,11 +10,17 @@ namespace EzDdd.Cqrs.Tests.Integration.TestDomain;
 ///     to domain events from the write side (BankAccount aggregate).
 /// </summary>
 /// <remarks>
-///     This projector implements the Observer pattern, subscribing to domain events
-///     and updating the read model in the Archive to keep the query side eventually
-///     consistent with the write side.
+///     <para>
+///         This projector processes domain events and updates the read model in the Archive
+///         to keep the query side eventually consistent with the write side.
+///     </para>
+///     <para>
+///         In production scenarios, this projector would typically also implement
+///         <c>BackgroundService</c> or <c>IHostedService</c> for lifecycle management,
+///         subscribing to events from a message broker (e.g., Kafka, RabbitMQ).
+///     </para>
 /// </remarks>
-public sealed class AccountProjector : IProjector, IReactor<DomainEventData>
+public sealed class AccountProjector : IProjector
 {
     private readonly IArchive<AccountSummaryReadModel, AccountId> _archive;
 

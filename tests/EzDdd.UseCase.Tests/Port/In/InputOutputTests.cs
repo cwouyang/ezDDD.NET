@@ -161,35 +161,6 @@ public class InputOutputTests
 
 #endregion
 
-#region IReactor Tests
-
-    [Fact]
-    public async Task Reactor_CanExecuteWithInput()
-    {
-        var reactor = new TestReactor();
-        var input = new TestInput();
-
-        await reactor.ExecuteAsync(input);
-
-        Assert.True(reactor.WasExecuted);
-        Assert.Same(input, reactor.ReceivedInput);
-    }
-
-    [Fact]
-    public async Task Reactor_CanBeGeneric_WithDifferentInputTypes()
-    {
-        var stringReactor = new TestReactor<string>();
-        var intReactor = new TestReactor<int>();
-
-        await stringReactor.ExecuteAsync("test");
-        await intReactor.ExecuteAsync(42);
-
-        Assert.Equal("test", stringReactor.ReceivedInput);
-        Assert.Equal(42, intReactor.ReceivedInput);
-    }
-
-#endregion
-
 #region Test Helper Classes
 
     private class TestInput : IInput
@@ -236,30 +207,6 @@ public class InputOutputTests
     private class TestVersionedInput : IVersionedInput
     {
         public long Version { get; set; }
-    }
-
-    private class TestReactor : IReactor<TestInput>
-    {
-        public bool WasExecuted { get; private set; }
-        public TestInput? ReceivedInput { get; private set; }
-
-        public Task ExecuteAsync(TestInput input)
-        {
-            WasExecuted = true;
-            ReceivedInput = input;
-            return Task.CompletedTask;
-        }
-    }
-
-    private class TestReactor<T> : IReactor<T>
-    {
-        public T? ReceivedInput { get; private set; }
-
-        public Task ExecuteAsync(T input)
-        {
-            ReceivedInput = input;
-            return Task.CompletedTask;
-        }
     }
 
 #endregion
