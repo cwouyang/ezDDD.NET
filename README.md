@@ -307,12 +307,10 @@ public class AccountBalanceProjection : IProjection<GetAccountBalanceInput, Acco
 - ✅ **Ports & Adapters** - Hexagonal architecture support with clear layer boundaries
 - ✅ **Dependency Direction** - Unidirectional: Common → Entity → UseCase → Cqrs → Core
 
-### Message Bus & Event Distribution
-- ✅ **BlockingMessageBus** - In-process event bus with Observer pattern
-- ✅ **IReactor** - Event reactor interface for async event processing
-- ✅ **GenericReactor** - Type-safe event handling with pattern matching
-- ✅ **EventBusProducer** - Adapter for external event bus integration
-- ✅ **IMessageProducer** - External event bus interface with IDisposable for resource management
+### Message Producer & Event Publishing
+- ✅ **IMessageProducer** - Primary interface for posting messages to message infrastructure
+- ✅ **InMemoryMessageProducer** - In-memory implementation for testing with PostedMessages verification
+- ✅ **Event Publishing** - Repositories automatically publish events after successful persistence (optional)
 
 ### Design Philosophy
 - 🚀 **Async/await throughout** - All I/O operations are async (`Task<T>`, never blocking)
@@ -439,12 +437,10 @@ Use cases layer with persistence abstractions:
   - Atomic persistence: aggregate state + events in single transaction
   - Transaction boundary at IRepositoryPeer implementation level
 
-**Message Bus - Observer Pattern**:
-- **`IMessageBus`** - In-process event bus interface
-- **`IMessageProducer`** - External event bus interface (IDisposable)
-- **`BlockingMessageBus`** - Synchronous message bus implementation
-- **`EventBusProducer`** - Adapter bridging internal and external buses
-- **`GenericReactor<TEvent>`** - Generic reactor for specific event types
+**Message Producer - Event Publishing**:
+- **`IMessageProducer<TMessage>`** - Primary interface for posting messages (IDisposable)
+- **`InMemoryMessageProducer<TMessage>`** - In-memory implementation for testing
+- **`PostEventFailureException`** - Exception for event publishing failures
 
 **Dependencies**: EzDdd.Entity → EzDdd.Common
 **Tests**: 279 passing (>95% coverage, including 49 integration tests)
@@ -507,7 +503,7 @@ Aggregator package for convenient installation:
 |--------|------|-----------|
 | **Common** (3) | `Converter<TSource, TTarget>`, `JsonUtil`, `BiMap<TKey, TValue>` |
 | **Entity** (7) | `IEntity<TId>`, `IValueObject`, `IDomainEvent`, `IInternalDomainEvent`, `AggregateRoot<TId, TEvent>`, `EsAggregateRoot<TId, TEvent>`, `DomainEventTypeMapper` |
-| **UseCase** (25) | `IUseCase<TInput, TOutput>`, `IRepository<TAggregate, TId>`, `IRepositoryPeer<TData, TId>`, `EsRepository<TAggregate, TId, TEvent>`, `OutboxRepository<TAggregate, TId, TEvent>`, `IMessageBus`, `IReactor`, `BlockingMessageBus`, `DomainEventMapper`, etc. |
+| **UseCase** (25) | `IUseCase<TInput, TOutput>`, `IRepository<TAggregate, TId>`, `IRepositoryPeer<TData, TId>`, `EsRepository<TAggregate, TId, TEvent>`, `OutboxRepository<TAggregate, TId, TEvent>`, `IMessageProducer<TMessage>`, `InMemoryMessageProducer<TMessage>`, `DomainEventMapper`, etc. |
 | **Cqrs** (9) | `ICommand<TInput, TOutput>`, `IQuery<TInput, TOutput>`, `IInquiry<TInput, TOutput>`, `IProjection<TInput, TOutput>`, `IProjector`, `IArchive<TData, TId>`, `CqrsOutput<T>` |
 
 ### Common Module APIs
@@ -565,13 +561,13 @@ Aggregator package for convenient installation:
 - Implements IRepository interface
 - Transactional Outbox pattern for reliable event publishing
 
-**`IMessageBus`** - In-process event bus
-- `Task RegisterAsync(IReactor reactor)` - Register event handler
-- `Task SendAsync(IEnumerable<IDomainEvent> events)` - Publish events
+**`IMessageProducer<TMessage>`** - Message producer interface
+- `Task PostAsync(TMessage message)` - Post message to infrastructure
+- `void Dispose()` - Release resources (e.g., network connections)
 
-**`BlockingMessageBus`** - Message bus implementation
-- Thread-safe observer registration with snapshot pattern
-- Sequential event processing
+**`InMemoryMessageProducer<TMessage>`** - In-memory implementation
+- `IReadOnlyCollection<TMessage> PostedMessages` - Verification property for testing
+- Thread-safe message storage with ConcurrentQueue
 
 ### Cqrs Module APIs
 
@@ -912,13 +908,17 @@ public class AccountEventReactor : IReactor
     }
 }
 
-// Register and use
-var messageBus = new BlockingMessageBus();
-await messageBus.RegisterAsync(new AccountEventReactor());
+// Setup repository with event producer
+var eventProducer = new InMemoryMessageProducer<DomainEventData>();
+var repository = new EsRepository<BankAccount, AccountId>(peer, eventProducer);
 
-// Events will be automatically published to all reactors
+// Events will be automatically published after save
 var account = new BankAccount(accountId, "John Doe", new Money(100));
-await repository.SaveAsync(account); // Triggers reactor
+await repository.SaveAsync(account); // Automatically publishes events
+
+// Verify events were published (in tests)
+Assert.Single(eventProducer.PostedMessages);
+Assert.Equal("AccountCreated", eventProducer.PostedMessages.First().EventType);
 ```
 
 ### System Reconciliation Example

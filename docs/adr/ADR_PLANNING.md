@@ -317,7 +317,8 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
   - Subscription management moves to application layer
   - Cleaner separation of concerns
   - Java 4.1.0 architectural change
-- **Status**: ⏳ Planned (S3)
+- **Status**: ✅ Completed (S3, 2026-01-07, 3 hours)
+- **ADR Document**: [ADR-0025](0025-messageproducer-refactoring-java-4-1-0-alignment.md)
 - **Priority**: 🔴 BREAKING (Critical)
 - **Planning Docs Section**: DOTNET_PORT.md - "Java 4.1.0 Synchronization Plan, Stage 4"
 - **Dependencies**: ADR-0012 (extends resource management), ADR-0024 (metadata in messages)

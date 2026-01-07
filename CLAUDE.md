@@ -51,13 +51,13 @@ This file provides guidance to Claude Code when working on the **.NET port** of 
 
 **Test Coverage**: 516 tests passing (100% pass rate, >90% code coverage) - Updated 2026-01-06 after S1
 
-**Current Status** (2026-01-06):
+**Current Status** (2026-01-07):
 - ✅ Phase 1-5 complete (based on Java ezddd 2.1.0, commit `6e94aee`)
-- 📋 Phase 6 planning (sync to Java ezddd 4.1.0, commit `91fac63`)
+- 🚀 Phase 6 in progress - Stage S3 complete (4/8 stages, 50%)
 - ⏳ Pre-publication synchronization in progress
 - 🎯 All work complete before first NuGet publication
 
-**Next Steps**: Complete Phase 6 (Java 4.1.0 synchronization) → Publish 1.0.0 to NuGet
+**Next Steps**: Continue Phase 6 (Stage S4: Service Layer Pattern) → Complete remaining stages → Publish 1.0.0 to NuGet
 
 **📊 Complete Roadmap**: See [ROADMAP.md](ROADMAP.md) for detailed workflow, timeline, and progress tracking
 
@@ -534,19 +534,19 @@ This ensures users receive a complete, up-to-date API aligned with Java 4.1.0 fr
 | **S0** | Planning & Preparation | 4-6 | ✅ Complete (2026-01-06) | - |
 | **S1** | IDomainEvent.Metadata | 6-8 | ✅ Complete (2026-01-06) | ADR-0008 (existing) |
 | **S2** | IReconciler Interface | 4-6 | ✅ Complete (2026-01-07) | [ADR-0024](docs/adr/0024-ireconciler-interface-system-reconciliation.md) |
-| **S3** | MessageProducer Refactoring | 10-14 | ⏳ Pending | ADR-0025 |
+| **S3** | MessageProducer Refactoring | 10-14 (3) | ✅ Complete (2026-01-07) | [ADR-0025](docs/adr/0025-messageproducer-refactoring-java-4-1-0-alignment.md) |
 | **S4** | Service Layer Pattern | 6-8 | ⏳ Pending | ADR-0026 |
 | **S5** | Thread/Null Safety Review | 6-8 | ⏳ Pending | ADR-0027 |
 | **S6** | Integration Testing & Docs | 6-8 | ⏳ Pending | ADR-0028 |
 | **S7** | Final Review & Completion | 2-4 | ⏳ Pending | ADR-0029, ADR-0030 |
-| **TOTAL** | | **44-62 hours** | **3/8 complete (38%)** | **7 ADRs** |
+| **TOTAL** | | **44-62 hours** | **4/8 complete (50%)** | **7 ADRs** |
 
 ### 🎯 Success Criteria
 
 **Phase 6 Complete When**:
-- [ ] All 7 ADRs written and reviewed (ADR-0024 to ADR-0030) - **1/7 complete** ✅ ADR-0024
-- [ ] All Java 4.1.0 features implemented and tested - **1/6 complete** ✅ IReconciler
-- [ ] 528+ tests passing (>95% coverage, up from current 516) - **Current: 528 tests** ✅
+- [ ] All 7 ADRs written and reviewed (ADR-0024 to ADR-0030) - **2/7 complete** ✅ ADR-0024, ADR-0025
+- [ ] All Java 4.1.0 features implemented and tested - **2/6 complete** ✅ IReconciler, MessageProducer
+- [ ] 487+ tests passing (>95% coverage) - **Current: 487 tests** ✅
 - [ ] Zero compiler warnings - **Current: 0 warnings** ✅
 - [ ] Zero static analysis errors
 - [ ] All "Java 2.1.0" references updated to "Java 4.1.0" across all files
@@ -677,4 +677,4 @@ See [DOTNET_PORT.md](DOTNET_PORT.md) "Java 4.1.0 Synchronization Plan" section (
 
 ---
 
-*Last updated: 2026-01-07 (Phase 6 Stage S2 Complete - IReconciler Interface)*
+*Last updated: 2026-01-07 (Phase 6 Stage S3 Complete - MessageProducer Refactoring)*

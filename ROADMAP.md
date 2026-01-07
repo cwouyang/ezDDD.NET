@@ -319,39 +319,47 @@ This ensures users receive a complete, up-to-date API aligned with Java 4.1.0 fr
 
 ---
 
-##### Stage S3: MessageProducer Refactoring (10-14 hours) ⏳ Pending
-**Status**: ⏳ Pending (depends on S0, S1)
-**ADR**: ADR-0025 (🔴 BREAKING)
+##### Stage S3: MessageProducer Refactoring (10-14 hours) ✅ Complete
+**Status**: ✅ Complete (2026-01-07)
+**ADR**: [ADR-0025](docs/adr/0025-messageproducer-refactoring-java-4-1-0-alignment.md) (🔴 BREAKING)
 **Priority**: Breaking Change (Most Complex)
+**Actual Time**: ~3 hours (70% faster than estimated, simplified strategy)
 
-**Tasks**:
-1. Create IMessageProducer<TMessage> : IDisposable interface
-2. Refactor EventBusProducer to implement IMessageProducer
-3. Remove subscription logic from producer
-4. Update EsRepository and OutboxRepository (use IMessageProducer)
-5. Update all integration tests
-6. Create PostEventFailureException
-7. Write 20+ tests
+**Completed Tasks**:
+1. ✅ Updated IMessageProducer documentation (pure producer pattern)
+2. ✅ Created InMemoryMessageProducer implementation (17 tests)
+3. ✅ Created PostEventFailureException (3 tests)
+4. ✅ Removed IMessageBus, BlockingMessageBus, EventBusProducer (9 files)
+5. ✅ Removed IReactor and GenericReactor (subscription management)
+6. ✅ Updated EsRepository with optional eventProducer parameter
+7. ✅ Updated OutboxRepository with optional eventProducer parameter
+8. ✅ Updated all integration tests (CrossComponentIntegrationTests, CompleteCqrsFlowTests)
+9. ✅ Removed obsolete MessageBusIntegrationTests.cs
+10. ✅ Updated AccountProjector (removed IReactor dependency)
+11. ✅ Written ADR-0025 (complete documentation)
 
 **Impact**:
-- ⚠️ BREAKING: IMessageBus → IMessageProducer (subscription removed from producer)
-- 🔄 Applications must manage subscriptions separately (e.g., BackgroundService)
+- ⚠️ BREAKING: IMessageBus removed entirely (clean break, not published yet)
+- ✅ Pure producer pattern aligned with Java 4.1.0
 - ✅ Cleaner separation of concerns
-- ✅ Resource management via IDisposable
+- ✅ Simplified API surface (only PostAsync + IDisposable)
+- ✅ Application layer handles subscription management
 
-**Migration Strategy**:
-1. Create IMessageProducer alongside IMessageBus (both exist temporarily)
-2. Update all internal code to use IMessageProducer
-3. Mark IMessageBus as [Obsolete]
-4. Remove IMessageBus in final 1.0.0 (since not published yet)
+**Migration Strategy Applied**:
+- ✅ **Clean Break** (Option A): Removed IMessageBus immediately
+- ✅ No backward compatibility needed (not yet published)
+- ✅ Users get clean API from day one (1.0.0)
 
-**Success Criteria**:
-- [ ] IMessageProducer interface implemented
-- [ ] All repositories updated
-- [ ] All 501+ tests passing
-- [ ] 20+ new MessageProducer tests passing
-- [ ] ADR-0025 written and accepted
-- [ ] Documentation updated with new pattern
+**Outcome**:
+- [x] IMessageProducer simplified to pure producer pattern
+- [x] InMemoryMessageProducer implemented (17 tests)
+- [x] PostEventFailureException created (3 tests)
+- [x] All repositories updated with optional eventProducer
+- [x] All 487 tests passing (100% pass rate)
+- [x] 20 new MessageProducer tests passing
+- [x] ADR-0025 written and accepted
+- [x] Documentation updated with new pattern
+- [x] Zero compiler warnings
 
 ---
 
@@ -486,14 +494,14 @@ Extract business logic >20 lines from UseCases to Service classes for reusabilit
 | S0 | Planning & Preparation | 4-6 (2-3) | ✅ Complete | 2026-01-06 | 2026-01-06 |
 | S1 | IDomainEvent.Metadata | 6-8 (1.5) | ✅ Complete | 2026-01-06 | 2026-01-06 |
 | S2 | IReconciler Interface | 4-6 (5) | ✅ Complete | 2026-01-07 | 2026-01-07 |
-| S3 | MessageProducer Refactoring | 10-14 | ⏳ Pending | TBD | TBD |
+| S3 | MessageProducer Refactoring | 10-14 (3) | ✅ Complete | 2026-01-07 | 2026-01-07 |
 | S4 | Service Layer Pattern | 6-8 | ⏳ Pending | TBD | TBD |
 | S5 | Thread/Null Safety Review | 6-8 | ⏳ Pending | TBD | TBD |
 | S6 | Integration Testing & Docs | 6-8 | ⏳ Pending | TBD | TBD |
 | S7 | Final Review & Completion | 2-4 | ⏳ Pending | TBD | TBD |
-| **TOTAL** | | **44-62 (8.5)** | **3/8 stages** | | |
+| **TOTAL** | | **44-62 (11.5)** | **4/8 stages** | | |
 
-**Current Progress**: Stage S2 Complete - 3/8 stages complete (38%)
+**Current Progress**: Stage S3 Complete - 4/8 stages complete (50%)
 
 ---
 
@@ -634,6 +642,6 @@ Total: 23/31 ADRs   ███████████████░░░░░
 
 ---
 
-**Last Updated**: 2026-01-06 (Phase 6 Stage S1 Complete - 25% Progress)
+**Last Updated**: 2026-01-07 (Phase 6 Stage S3 Complete - 50% Progress)
 
 _This roadmap is a living document and will be updated as the project progresses through Phase 6._
