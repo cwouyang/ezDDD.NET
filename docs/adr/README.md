@@ -262,6 +262,7 @@ CLAUDE.md
 | [ADR-0022](0022-read-model-design-patterns.md) | Read Model Design Patterns | 2025-11-18 | Accepted |
 | [ADR-0023](0023-archive-idempotency-requirements.md) | Archive Idempotency Requirements | 2025-11-18 | Accepted |
 | [ADR-0024](0024-ireconciler-interface-system-reconciliation.md) | IReconciler Interface for System State Reconciliation | 2026-01-07 | Accepted |
+| [ADR-0025](0025-messageproducer-refactoring-java-4-1-0-alignment.md) | MessageProducer Refactoring - Java 4.1.0 Alignment | 2026-01-07 | Accepted |
 
 ### Proposed
 
