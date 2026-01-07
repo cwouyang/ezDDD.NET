@@ -1,5 +1,7 @@
 using EzDdd.Entity;
 using EzDdd.UseCase.Exceptions;
+using EzDdd.UseCase.Port.InOut;
+using EzDdd.UseCase.Port.InOut.Messaging;
 
 namespace EzDdd.UseCase.Port.Out;
 
@@ -77,6 +79,7 @@ public class OutboxRepository<TAggregate, TData, TId> : IRepository<TAggregate, 
     where TAggregate : AggregateRoot<TId, IInternalDomainEvent>
     where TData : IOutboxData<TId>
 {
+    private readonly IMessageProducer<DomainEventData>? _eventProducer;
     private readonly OutboxMapper<TAggregate, TData, TId> _mapper;
     private readonly IRepositoryPeer<TData, TId> _peer;
 
@@ -85,14 +88,31 @@ public class OutboxRepository<TAggregate, TData, TId> : IRepository<TAggregate, 
     /// </summary>
     /// <param name="peer">The repository peer for actual persistence operations</param>
     /// <param name="mapper">The mapper for converting between aggregates and outbox data</param>
+    /// <param name="eventProducer">
+    ///     Optional message producer for publishing domain events after successful persistence.
+    ///     If null, events will not be published to any message infrastructure.
+    /// </param>
     /// <remarks>
-    ///     The peer and mapper are injected via constructor to support dependency injection
-    ///     and enable easy testing with mock implementations.
+    ///     <para>
+    ///         The peer and mapper are injected via constructor to support dependency injection
+    ///         and enable easy testing with mock implementations.
+    ///     </para>
+    ///     <para>
+    ///         <strong>Event Publishing:</strong> If an <paramref name="eventProducer" /> is provided,
+    ///         domain events will be published after successful persistence. This enables integration
+    ///         with message brokers, event buses, or other messaging infrastructure.
+    ///     </para>
     /// </remarks>
-    public OutboxRepository(IRepositoryPeer<TData, TId> peer, OutboxMapper<TAggregate, TData, TId> mapper)
+    public OutboxRepository
+    (
+        IRepositoryPeer<TData, TId> peer,
+        OutboxMapper<TAggregate, TData, TId> mapper,
+        IMessageProducer<DomainEventData>? eventProducer = null
+    )
     {
         _peer = peer;
         _mapper = mapper;
+        _eventProducer = eventProducer;
     }
 
     /// <summary>
@@ -141,6 +161,10 @@ public class OutboxRepository<TAggregate, TData, TId> : IRepository<TAggregate, 
     ///     Thrown when the save operation fails. The inner exception contains
     ///     the original <see cref="RepositoryPeerSaveException" />.
     /// </exception>
+    /// <exception cref="PostEventFailureException">
+    ///     Thrown when domain events fail to publish after successful persistence.
+    ///     Note: The aggregate has been persisted successfully when this exception is thrown.
+    /// </exception>
     /// <remarks>
     ///     <para>
     ///         <strong>Save Process:</strong>
@@ -150,6 +174,12 @@ public class OutboxRepository<TAggregate, TData, TId> : IRepository<TAggregate, 
     ///             </item>
     ///             <item>
     ///                 <description>Persist data via peer (includes transaction management)</description>
+    ///             </item>
+    ///             <item>
+    ///                 <description>
+    ///                     If successful and event producer is configured, publish domain events
+    ///                     to message infrastructure
+    ///                 </description>
     ///             </item>
     ///             <item>
     ///                 <description>Clear domain events from aggregate on success</description>
@@ -168,6 +198,12 @@ public class OutboxRepository<TAggregate, TData, TId> : IRepository<TAggregate, 
     ///         wrapped in <see cref="RepositorySaveException" /> to maintain layer boundaries.
     ///         Domain events are NOT cleared if the save fails.
     ///     </para>
+    ///     <para>
+    ///         <strong>Event Publishing:</strong> If an event producer is configured, domain events
+    ///         are published AFTER successful persistence but BEFORE clearing from the aggregate.
+    ///         If publishing fails, a <see cref="PostEventFailureException" /> is thrown,
+    ///         but the aggregate has already been persisted successfully.
+    ///     </para>
     /// </remarks>
     public async Task SaveAsync(TAggregate aggregate)
     {
@@ -182,7 +218,30 @@ public class OutboxRepository<TAggregate, TData, TId> : IRepository<TAggregate, 
             throw new RepositorySaveException("Failed to save aggregate", e);
         }
 
-        // Clear domain events only after successful save
+        // Publish domain events if event producer is configured
+        if (_eventProducer != null)
+        {
+            foreach (IInternalDomainEvent domainEvent in aggregate.GetDomainEvents())
+            {
+                DomainEventData eventData = DomainEventMapper.ToData(domainEvent);
+
+                try
+                {
+                    await _eventProducer.PostAsync(eventData);
+                }
+                catch (Exception ex)
+                {
+                    throw new PostEventFailureException
+                    (
+                        $"Failed to publish event {eventData.EventType} for aggregate {typeof(TAggregate).Name} with ID {aggregate.Id}. " +
+                        $"The aggregate has been persisted successfully, but event publishing failed.",
+                        ex
+                    );
+                }
+            }
+        }
+
+        // Clear domain events only after successful save and publishing
         aggregate.ClearDomainEvents();
     }
 

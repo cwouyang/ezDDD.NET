@@ -3,6 +3,8 @@ using System.Reflection;
 
 using EzDdd.Entity;
 using EzDdd.UseCase.Exceptions;
+using EzDdd.UseCase.Port.InOut;
+using EzDdd.UseCase.Port.InOut.Messaging;
 
 namespace EzDdd.UseCase.Port.Out;
 
@@ -76,21 +78,39 @@ public class EsRepository<TAggregate, TId> : IRepository<TAggregate, TId, IInter
     // ReSharper disable once StaticMemberInGenericType
     private static readonly ConcurrentDictionary<Type, ConstructorInfo> ConstructorCache = new();
 
+    private readonly IMessageProducer<DomainEventData>? _eventProducer;
+
     private readonly IRepositoryPeer<EventStoreData<TId>, TId> _peer;
 
     /// <summary>
     ///     Initializes a new instance of the EsRepository class.
     /// </summary>
     /// <param name="peer">The repository peer that handles actual event store persistence</param>
+    /// <param name="eventProducer">
+    ///     Optional message producer for publishing domain events after successful persistence.
+    ///     If null, events will not be published to any message infrastructure.
+    /// </param>
     /// <exception cref="ArgumentNullException">Thrown when peer is null</exception>
     /// <remarks>
-    ///     The peer is responsible for the actual persistence operations. EsRepository
-    ///     delegates to the peer while handling the event sourcing-specific logic of
-    ///     aggregate reconstruction and event extraction.
+    ///     <para>
+    ///         The peer is responsible for the actual persistence operations. EsRepository
+    ///         delegates to the peer while handling the event sourcing-specific logic of
+    ///         aggregate reconstruction and event extraction.
+    ///     </para>
+    ///     <para>
+    ///         <strong>Event Publishing:</strong> If an <paramref name="eventProducer" /> is provided,
+    ///         domain events will be published after successful persistence. This enables integration
+    ///         with message brokers, event buses, or other messaging infrastructure.
+    ///     </para>
     /// </remarks>
-    public EsRepository(IRepositoryPeer<EventStoreData<TId>, TId> peer)
+    public EsRepository
+    (
+        IRepositoryPeer<EventStoreData<TId>, TId> peer,
+        IMessageProducer<DomainEventData>? eventProducer = null
+    )
     {
         _peer = peer ?? throw new ArgumentNullException(nameof(peer));
+        _eventProducer = eventProducer;
     }
 
     /// <summary>
@@ -169,6 +189,10 @@ public class EsRepository<TAggregate, TId> : IRepository<TAggregate, TId, IInter
     /// <exception cref="RepositorySaveException">
     ///     Thrown when the peer fails to save (wraps <see cref="RepositoryPeerSaveException" />)
     /// </exception>
+    /// <exception cref="PostEventFailureException">
+    ///     Thrown when domain events fail to publish after successful persistence.
+    ///     Note: The aggregate has been persisted successfully when this exception is thrown.
+    /// </exception>
     /// <remarks>
     ///     <para>
     ///         Save operation workflow:
@@ -181,16 +205,28 @@ public class EsRepository<TAggregate, TId> : IRepository<TAggregate, TId, IInter
     ///             <description>Delegates to peer for actual persistence</description>
     ///         </item>
     ///         <item>
-    ///             <description>If successful, clears aggregate's domain events (prevents re-publication)</description>
+    ///             <description>
+    ///                 If successful and event producer is configured, publishes domain events
+    ///                 to message infrastructure
+    ///             </description>
     ///         </item>
     ///         <item>
-    ///             <description>If failed, wraps exception and leaves events intact (for retry)</description>
+    ///             <description>Clears aggregate's domain events (prevents re-publication)</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>If persistence fails, wraps exception and leaves events intact (for retry)</description>
     ///         </item>
     ///     </list>
     ///     <para>
     ///         <strong>Exception Handling:</strong> Peer-level exceptions (<see cref="RepositoryPeerSaveException" />)
     ///         are caught and wrapped in <see cref="RepositorySaveException" /> to maintain proper layering.
-    ///         Domain events are only cleared on successful save.
+    ///         Domain events are only cleared after successful persistence and publishing.
+    ///     </para>
+    ///     <para>
+    ///         <strong>Event Publishing:</strong> If an event producer is configured, domain events
+    ///         are published AFTER successful persistence but BEFORE clearing from the aggregate.
+    ///         If publishing fails, a <see cref="PostEventFailureException" /> is thrown,
+    ///         but the aggregate has already been persisted successfully.
     ///     </para>
     /// </remarks>
     /// <example>
@@ -226,7 +262,30 @@ public class EsRepository<TAggregate, TId> : IRepository<TAggregate, TId, IInter
             throw new RepositorySaveException($"Failed to save aggregate of type {typeof(TAggregate).Name}", ex);
         }
 
-        // Only clear events after successful save
+        // Publish domain events if event producer is configured
+        if (_eventProducer != null)
+        {
+            foreach (IInternalDomainEvent domainEvent in aggregate.GetDomainEvents())
+            {
+                DomainEventData eventData = DomainEventMapper.ToData(domainEvent);
+
+                try
+                {
+                    await _eventProducer.PostAsync(eventData);
+                }
+                catch (Exception ex)
+                {
+                    throw new PostEventFailureException
+                    (
+                        $"Failed to publish event {eventData.EventType} for aggregate {typeof(TAggregate).Name} with ID {aggregate.Id}. " +
+                        $"The aggregate has been persisted successfully, but event publishing failed.",
+                        ex
+                    );
+                }
+            }
+        }
+
+        // Only clear events after successful save and publishing
         aggregate.ClearDomainEvents();
     }
 
