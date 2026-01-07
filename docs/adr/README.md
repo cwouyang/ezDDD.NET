@@ -261,6 +261,7 @@ CLAUDE.md
 | [ADR-0021](0021-generic-variance-annotations.md) | Generic Variance Annotations for CQRS Interfaces | 2025-11-18 | Accepted |
 | [ADR-0022](0022-read-model-design-patterns.md) | Read Model Design Patterns | 2025-11-18 | Accepted |
 | [ADR-0023](0023-archive-idempotency-requirements.md) | Archive Idempotency Requirements | 2025-11-18 | Accepted |
+| [ADR-0024](0024-ireconciler-interface-system-reconciliation.md) | IReconciler Interface for System State Reconciliation | 2026-01-07 | Accepted |
 
 ### Proposed
 
@@ -354,4 +355,4 @@ done
 ---
 
 *This README follows the ADR maintenance workflow defined above.*
-*Last Updated: 2025-11-17*
+*Last Updated: 2026-01-07*
