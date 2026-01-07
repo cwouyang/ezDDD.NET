@@ -21,8 +21,7 @@ namespace EzDdd.Cqrs.Query;
 ///             <b>Background Service</b>: Runs continuously, listening for events.
 ///         </item>
 ///         <item>
-///             <b>Event Handler</b>: Typically also implements <see cref="IReactor{TInput}" /> to
-///             receive domain events from message bus.
+///             <b>Event Handler</b>: Receives domain events and processes them to update read models.
 ///         </item>
 ///         <item>
 ///             <b>Read Model Updater</b>: Updates <see cref="IArchive{TData, TId}" /> when
@@ -58,7 +57,7 @@ namespace EzDdd.Cqrs.Query;
 ///         <b>Extensibility</b>:
 ///     </para>
 ///     <list type="bullet">
-///         <item>Combine this marker with <see cref="IReactor{TInput}" /> to handle domain events</item>
+///         <item>Implement event handling logic to process domain events and update read models</item>
 ///         <item>Combine with .NET <c>BackgroundService</c> or <c>IHostedService</c> for lifecycle management (Start/Stop)</item>
 ///         <item>Multiple projectors can run concurrently, each maintaining different read models</item>
 ///         <item>Supports custom event filtering logic in implementations (process only relevant events)</item>

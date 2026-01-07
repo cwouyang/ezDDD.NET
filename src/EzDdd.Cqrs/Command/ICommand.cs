@@ -103,7 +103,7 @@ namespace EzDdd.Cqrs.Command;
 ///         <item>Implement this interface to create custom command use cases for write operations</item>
 ///         <item>Can be used with dependency injection frameworks (e.g., Microsoft.Extensions.DependencyInjection)</item>
 ///         <item>Compatible with middleware patterns for cross-cutting concerns (logging, validation, authorization)</item>
-///         <item>Works with <see cref="IMessageBus{TMessage}" /> for domain event publishing</item>
+///         <item>Works with <see cref="IMessageProducer{TMessage}" /> for domain event publishing</item>
 ///         <item>Can compose multiple commands using decorator or chain-of-responsibility patterns</item>
 ///     </list>
 /// </remarks>
