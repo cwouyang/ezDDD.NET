@@ -921,12 +921,45 @@ var account = new BankAccount(accountId, "John Doe", new Money(100));
 await repository.SaveAsync(account); // Triggers reactor
 ```
 
+### System Reconciliation Example
+
+```csharp
+// Simple reconciler for cleaning up expired orders
+public class CleanUpOrdersReconciler : IReconciler<CleanupContext, CleanupReport>
+{
+    public async Task<CleanupReport> ReconcileAsync(CleanupContext context)
+    {
+        // Find and clean up expired orders
+        var expiredOrders = await FindExpiredOrdersAsync(context.ExpirationDays);
+        int deletedCount = await DeleteOrdersAsync(expiredOrders);
+
+        return new CleanupReport(Processed: expiredOrders.Count, Deleted: deletedCount);
+    }
+}
+
+// For reconcilers without context, use NullContext
+public class GlobalCleanupReconciler : IReconciler<NullContext, CleanupReport>
+{
+    public async Task<CleanupReport> ReconcileAsync(NullContext context)
+    {
+        // Perform global system cleanup
+        int cleaned = await PerformGlobalCleanupAsync();
+        return new CleanupReport(Processed: 0, Deleted: cleaned);
+    }
+}
+
+// Usage
+var reconciler = new CleanUpOrdersReconciler();
+var report = await reconciler.ReconcileAsync(new CleanupContext(ExpirationDays: 7));
+```
+
 ### More Examples
 
 See [USAGE_EXAMPLES.md](docs/examples/USAGE_EXAMPLES.md) for:
 - **Event Sourcing Workflows** (10+ examples)
 - **State Sourcing with Outbox** (8+ examples)
 - **CQRS Patterns** (12+ examples)
+- **System Reconciliation** (4+ examples with scheduling patterns)
 - **Message Bus Integration** (5+ examples)
 - **Real-World Scenarios**: Banking, E-commerce, Inventory, Order Management
 

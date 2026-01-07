@@ -34,6 +34,11 @@ Practical examples demonstrating how to use ezDDD.NET in real-world scenarios.
   - [Banking System (Event Sourcing)](#banking-system-event-sourcing)
   - [E-Commerce Order Processing (State Sourcing)](#e-commerce-order-processing-state-sourcing)
   - [Workflow Engine with State Transitions](#workflow-engine-with-state-transitions)
+- [System Reconciliation Examples](#system-reconciliation-examples)
+  - [Cleanup Reconciler with Context](#cleanup-reconciler-with-context)
+  - [Global Reconciler with NullContext](#global-reconciler-with-nullcontext)
+  - [Scheduling with BackgroundService](#scheduling-with-backgroundservice)
+  - [Scheduling with Hangfire](#scheduling-with-hangfire)
 - [Advanced Patterns](#advanced-patterns)
   - [Message Bus Integration](#message-bus-integration)
   - [Event Bus Producer](#event-bus-producer)
@@ -3400,7 +3405,383 @@ Bob's transaction history: reconstructable from events
 
 ---
 
-*Document continues with remaining sections (E-Commerce, Workflow, Advanced Patterns, Testing) - let me know if you'd like me to generate those sections as well!*
+## System Reconciliation Examples
+
+System reconciliation is used for periodic maintenance tasks, data consistency checks, and cleanup operations. Unlike use cases which are triggered by user actions, reconcilers are typically invoked by scheduled jobs or administrative tools.
+
+### Cleanup Reconciler with Context
+
+**Scenario**: Clean up expired draft orders that have been inactive for a specified number of days.
+
+**Key Concepts**:
+- IReconciler<TContext, TReport> interface
+- Context provides input parameters
+- Report describes reconciliation results
+- Error handling with partial success
+
+**Complete Code**:
+
+```csharp
+using EzDdd.UseCase.Port.In;
+
+// Define reconciliation context
+public record OrderCleanupContext(int ExpirationDays);
+
+// Define reconciliation report
+public record OrderCleanupReport(
+    int TotalChecked,
+    int DeletedCount,
+    int ErrorCount,
+    IReadOnlyList<string> Errors
+);
+
+// Repository interface for orders
+public interface IOrderRepository
+{
+    Task<List<OrderId>> FindExpiredDraftOrdersAsync(DateTimeOffset cutoffDate);
+    Task DeleteAsync(OrderId id);
+}
+
+// Implement reconciler
+public class CleanUpExpiredOrdersReconciler : IReconciler<OrderCleanupContext, OrderCleanupReport>
+{
+    private readonly IOrderRepository _orderRepository;
+
+    public CleanUpExpiredOrdersReconciler(IOrderRepository orderRepository)
+    {
+        _orderRepository = orderRepository;
+    }
+
+    public async Task<OrderCleanupReport> ReconcileAsync(OrderCleanupContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        if (context.ExpirationDays <= 0)
+        {
+            throw new InvalidOperationException("Expiration days must be positive");
+        }
+
+        // 1. Find expired draft orders
+        DateTimeOffset cutoffDate = DateTimeOffset.UtcNow.AddDays(-context.ExpirationDays);
+        List<OrderId> expiredOrderIds = await _orderRepository.FindExpiredDraftOrdersAsync(cutoffDate);
+
+        // 2. Delete expired orders (with error handling)
+        int deletedCount = 0;
+        int errorCount = 0;
+        List<string> errors = [];
+
+        foreach (OrderId orderId in expiredOrderIds)
+        {
+            try
+            {
+                await _orderRepository.DeleteAsync(orderId);
+                deletedCount++;
+            }
+            catch (Exception ex)
+            {
+                errorCount++;
+                errors.Add($"Failed to delete order {orderId}: {ex.Message}");
+            }
+        }
+
+        // 3. Return detailed report
+        return new OrderCleanupReport(
+            TotalChecked: expiredOrderIds.Count,
+            DeletedCount: deletedCount,
+            ErrorCount: errorCount,
+            Errors: errors
+        );
+    }
+}
+
+// Usage
+var reconciler = new CleanUpExpiredOrdersReconciler(orderRepository);
+var context = new OrderCleanupContext(ExpirationDays: 7);
+var report = await reconciler.ReconcileAsync(context);
+
+Console.WriteLine($"Checked: {report.TotalChecked}, Deleted: {report.DeletedCount}, Errors: {report.ErrorCount}");
+```
+
+**When to Use**:
+- ✅ Periodic cleanup of old data
+- ✅ Removing orphaned records
+- ✅ Data hygiene maintenance
+- ✅ Business rule enforcement across aggregates
+
+---
+
+### Global Reconciler with NullContext
+
+**Scenario**: Perform system-wide cleanup that doesn't require specific input parameters.
+
+**Key Concepts**:
+- NullContext for reconcilers without input
+- Singleton pattern (NullContext.Instance)
+- Type safety instead of null or object
+
+**Complete Code**:
+
+```csharp
+using EzDdd.UseCase.Port.In;
+
+// Simple report for global cleanup
+public record GlobalCleanupReport(
+    int TempFilesCleaned,
+    int ExpiredSessionsRemoved,
+    int CachesCleared
+);
+
+// Global system cleanup reconciler
+public class GlobalSystemCleanupReconciler : IReconciler<NullContext, GlobalCleanupReport>
+{
+    private readonly IFileCleanupService _fileService;
+    private readonly ISessionManager _sessionManager;
+    private readonly ICacheManager _cacheManager;
+
+    public GlobalSystemCleanupReconciler(
+        IFileCleanupService fileService,
+        ISessionManager sessionManager,
+        ICacheManager cacheManager)
+    {
+        _fileService = fileService;
+        _sessionManager = sessionManager;
+        _cacheManager = cacheManager;
+    }
+
+    public async Task<GlobalCleanupReport> ReconcileAsync(NullContext context)
+    {
+        // No context needed - perform global cleanup
+
+        // 1. Clean up temporary files
+        int tempFilesCleanedCount = await _fileService.CleanupTempFilesAsync();
+
+        // 2. Remove expired sessions
+        int expiredSessionsCount = await _sessionManager.RemoveExpiredSessionsAsync();
+
+        // 3. Clear stale caches
+        int cachesClearedCount = await _cacheManager.ClearStaleCachesAsync();
+
+        return new GlobalCleanupReport(
+            TempFilesCleaned: tempFilesCleanedCount,
+            ExpiredSessionsRemoved: expiredSessionsCount,
+            CachesCleared: cachesClearedCount
+        );
+    }
+}
+
+// Usage - note the use of NullContext.Instance
+var reconciler = new GlobalSystemCleanupReconciler(fileService, sessionManager, cacheManager);
+var report = await reconciler.ReconcileAsync(NullContext.Instance);
+
+Console.WriteLine($"Global cleanup: {report.TempFilesCleaned} files, {report.ExpiredSessionsRemoved} sessions");
+```
+
+**When to Use**:
+- ✅ System-wide maintenance tasks
+- ✅ No specific input parameters needed
+- ✅ Scheduled periodic cleanup
+- ✅ Administrative operations
+
+---
+
+### Scheduling with BackgroundService
+
+**Scenario**: Run reconciler periodically using ASP.NET Core BackgroundService.
+
+**Key Concepts**:
+- BackgroundService integration
+- Periodic execution with Timer or Delay
+- Graceful shutdown support
+- Dependency injection
+
+**Complete Code**:
+
+```csharp
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+
+// Background service that runs reconciler periodically
+public class ReconcilerHostedService : BackgroundService
+{
+    private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger<ReconcilerHostedService> _logger;
+    private readonly TimeSpan _interval;
+
+    public ReconcilerHostedService(
+        IServiceProvider serviceProvider,
+        ILogger<ReconcilerHostedService> logger)
+    {
+        _serviceProvider = serviceProvider;
+        _logger = logger;
+        _interval = TimeSpan.FromHours(24); // Run daily
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        _logger.LogInformation("Reconciler background service starting");
+
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            try
+            {
+                await RunReconciliationAsync(stoppingToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error running reconciliation");
+            }
+
+            // Wait for next execution
+            await Task.Delay(_interval, stoppingToken);
+        }
+
+        _logger.LogInformation("Reconciler background service stopping");
+    }
+
+    private async Task RunReconciliationAsync(CancellationToken cancellationToken)
+    {
+        using var scope = _serviceProvider.CreateScope();
+
+        var reconciler = scope.ServiceProvider
+            .GetRequiredService<IReconciler<OrderCleanupContext, OrderCleanupReport>>();
+
+        _logger.LogInformation("Starting order cleanup reconciliation");
+
+        var context = new OrderCleanupContext(ExpirationDays: 7);
+        var report = await reconciler.ReconcileAsync(context);
+
+        _logger.LogInformation(
+            "Reconciliation complete: Checked={Checked}, Deleted={Deleted}, Errors={Errors}",
+            report.TotalChecked,
+            report.DeletedCount,
+            report.ErrorCount);
+
+        if (report.ErrorCount > 0)
+        {
+            _logger.LogWarning("Reconciliation had {ErrorCount} errors", report.ErrorCount);
+            foreach (var error in report.Errors)
+            {
+                _logger.LogWarning("  - {Error}", error);
+            }
+        }
+    }
+}
+
+// Registration in Program.cs or Startup.cs
+builder.Services.AddSingleton<IOrderRepository, OrderRepository>();
+builder.Services.AddTransient<IReconciler<OrderCleanupContext, OrderCleanupReport>,
+    CleanUpExpiredOrdersReconciler>();
+builder.Services.AddHostedService<ReconcilerHostedService>();
+```
+
+**When to Use**:
+- ✅ Simple periodic scheduling in ASP.NET Core
+- ✅ No external scheduler dependency
+- ✅ Graceful shutdown required
+- ✅ Integrated with application lifecycle
+
+---
+
+### Scheduling with Hangfire
+
+**Scenario**: Use Hangfire for advanced scheduling features (cron expressions, dashboard, retries).
+
+**Key Concepts**:
+- Hangfire recurring jobs
+- Cron expressions for flexible scheduling
+- Web dashboard for monitoring
+- Automatic retry on failure
+
+**Complete Code**:
+
+```csharp
+using Hangfire;
+using Microsoft.Extensions.DependencyInjection;
+
+// Configure Hangfire in Program.cs
+builder.Services.AddHangfire(config => config
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSqlServerStorage("your_connection_string"));
+
+builder.Services.AddHangfireServer();
+
+// Register reconcilers
+builder.Services.AddScoped<IReconciler<OrderCleanupContext, OrderCleanupReport>,
+    CleanUpExpiredOrdersReconciler>();
+builder.Services.AddScoped<IReconciler<NullContext, GlobalCleanupReport>,
+    GlobalSystemCleanupReconciler>();
+
+// Configure recurring jobs after app build
+var app = builder.Build();
+
+// Daily order cleanup at 2 AM
+RecurringJob.AddOrUpdate<IReconciler<OrderCleanupContext, OrderCleanupReport>>(
+    "cleanup-expired-orders",
+    reconciler => reconciler.ReconcileAsync(new OrderCleanupContext(ExpirationDays: 7)),
+    Cron.Daily(2)); // Run at 2:00 AM every day
+
+// Weekly global cleanup on Sunday at 3 AM
+RecurringJob.AddOrUpdate<IReconciler<NullContext, GlobalCleanupReport>>(
+    "global-system-cleanup",
+    reconciler => reconciler.ReconcileAsync(NullContext.Instance),
+    Cron.Weekly(DayOfWeek.Sunday, 3)); // Run at 3:00 AM every Sunday
+
+// Hourly session cleanup
+RecurringJob.AddOrUpdate<SessionCleanupReconciler>(
+    "cleanup-expired-sessions",
+    reconciler => reconciler.ReconcileAsync(new SessionCleanupContext(MaxIdleMinutes: 30)),
+    Cron.Hourly); // Run every hour
+
+app.UseHangfireDashboard("/hangfire"); // Access dashboard at /hangfire
+app.Run();
+```
+
+**Advanced Cron Examples**:
+
+```csharp
+// Every 15 minutes
+Cron.MinuteInterval(15)
+
+// Every day at 2:30 AM
+Cron.Daily(2, 30)
+
+// Every Monday at 9:00 AM
+Cron.Weekly(DayOfWeek.Monday, 9)
+
+// First day of every month at midnight
+Cron.Monthly(1, 0)
+
+// Custom cron expression (every 6 hours)
+"0 */6 * * *"
+```
+
+**When to Use**:
+- ✅ Complex scheduling requirements (cron expressions)
+- ✅ Need monitoring dashboard
+- ✅ Automatic retry on failures
+- ✅ Job history and statistics
+- ✅ Multiple reconcilers with different schedules
+
+**Alternative: Quartz.NET**:
+
+```csharp
+// Similar pattern with Quartz.NET
+builder.Services.AddQuartz(q =>
+{
+    var jobKey = new JobKey("order-cleanup");
+    q.AddJob<OrderCleanupJob>(opts => opts.WithIdentity(jobKey));
+
+    q.AddTrigger(opts => opts
+        .ForJob(jobKey)
+        .WithIdentity("order-cleanup-trigger")
+        .WithCronSchedule("0 0 2 * * ?") // 2:00 AM daily
+    );
+});
+
+builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
+```
 
 ---
 
@@ -3413,4 +3794,4 @@ Bob's transaction history: reconstructable from events
 
 ---
 
-*Last updated: 2025-11-22*
+*Last updated: 2026-01-07*
