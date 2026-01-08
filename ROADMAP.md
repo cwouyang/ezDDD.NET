@@ -363,28 +363,36 @@ This ensures users receive a complete, up-to-date API aligned with Java 4.1.0 fr
 
 ---
 
-##### Stage S4: Service Layer Pattern (6-8 hours) ⏳ Pending
-**Status**: ⏳ Pending (after S0)
-**ADR**: ADR-0026 (🟡 OPTIONAL)
+##### Stage S4: Service Layer Pattern (6-8 hours) ✅ Complete
+**Status**: ✅ Complete (2026-01-08)
+**ADR**: [ADR-0026](docs/adr/0026-service-layer-pattern.md) (🟡 OPTIONAL)
 **Priority**: Non-Breaking Guidance
+**Actual Time**: ~6 hours (3 iterations)
 
-**Tasks**:
-1. Document Service Layer pattern
-2. Create pattern documentation (docs/patterns/SERVICE_LAYER_PATTERN.md)
-3. Create example service (TransferMoneyService)
-4. Refactor 1-2 complex use cases as examples
-5. Write guidelines for when to use services
-6. Update architecture documentation
+**Completed Tasks**:
+1. ✅ Document Service Layer pattern
+2. ✅ Create pattern documentation (docs/patterns/SERVICE_LAYER_PATTERN.md, 564 lines)
+3. ✅ Create example service (TransferMoneyService + 6 support classes, 585 lines)
+4. ✅ Refactor complex Use Case example (Before/After comparison, 672 lines)
+5. ✅ Write 13 unit tests (all passing)
+6. ✅ Write ADR-0026 (complete documentation)
+7. ✅ Update architecture documentation (ROADMAP, DOTNET_PORT, CLAUDE, ADR index)
 
 **Pattern**:
 Extract business logic >20 lines from UseCases to Service classes for reusability and testability.
 
 **Success Criteria**:
-- [ ] SERVICE_LAYER_PATTERN.md created
-- [ ] Example service implemented with tests
-- [ ] Before/after comparison documented
-- [ ] ADR-0026 written and accepted
-- [ ] README updated with pattern guidance
+- [x] SERVICE_LAYER_PATTERN.md created (564 lines)
+- [x] Example service implemented with 13 tests (all passing)
+- [x] Before/after comparison documented (672 lines)
+- [x] ADR-0026 written and accepted
+- [x] Documentation updated (README, DOTNET_PORT, CLAUDE, ADR index)
+
+**Outcome**:
+- ✅ Complete pattern documentation (SERVICE_LAYER_PATTERN.md)
+- ✅ Complete Before/After comparison (SERVICE_LAYER_BEFORE_AFTER.md)
+- ✅ TransferMoneyService example (interface + impl + 6 support types + 13 tests)
+- ✅ ADR-0026 accepted (Service Layer Pattern)
 
 ---
 
@@ -495,13 +503,13 @@ Extract business logic >20 lines from UseCases to Service classes for reusabilit
 | S1 | IDomainEvent.Metadata | 6-8 (1.5) | ✅ Complete | 2026-01-06 | 2026-01-06 |
 | S2 | IReconciler Interface | 4-6 (5) | ✅ Complete | 2026-01-07 | 2026-01-07 |
 | S3 | MessageProducer Refactoring | 10-14 (3) | ✅ Complete | 2026-01-07 | 2026-01-07 |
-| S4 | Service Layer Pattern | 6-8 | ⏳ Pending | TBD | TBD |
+| S4 | Service Layer Pattern | 6-8 (6) | ✅ Complete | 2026-01-08 | 2026-01-08 |
 | S5 | Thread/Null Safety Review | 6-8 | ⏳ Pending | TBD | TBD |
 | S6 | Integration Testing & Docs | 6-8 | ⏳ Pending | TBD | TBD |
 | S7 | Final Review & Completion | 2-4 | ⏳ Pending | TBD | TBD |
-| **TOTAL** | | **44-62 (11.5)** | **4/8 stages** | | |
+| **TOTAL** | | **44-62 (17.5)** | **5/8 stages** | | |
 
-**Current Progress**: Stage S3 Complete - 4/8 stages complete (50%)
+**Current Progress**: Stage S4 Complete - 5/8 stages complete (62.5%)
 
 ---
 
@@ -642,6 +650,6 @@ Total: 23/31 ADRs   ███████████████░░░░░
 
 ---
 
-**Last Updated**: 2026-01-07 (Phase 6 Stage S3 Complete - 50% Progress)
+**Last Updated**: 2026-01-08 (Phase 6 Stage S4 Complete - 62.5% Progress)
 
 _This roadmap is a living document and will be updated as the project progresses through Phase 6._
