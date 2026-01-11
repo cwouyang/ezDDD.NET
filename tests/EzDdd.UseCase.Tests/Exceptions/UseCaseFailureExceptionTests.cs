@@ -38,7 +38,7 @@ public class UseCaseFailureExceptionTests
     [Fact]
     public void UseCaseFailureException_CanBeThrown()
     {
-        void ThrowException()
+        static void ThrowException()
         {
             throw new UseCaseFailureException("Test exception");
         }
