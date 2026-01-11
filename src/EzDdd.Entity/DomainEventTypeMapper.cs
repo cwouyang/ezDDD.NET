@@ -15,8 +15,10 @@ namespace EzDdd.Entity;
 ///         event type.
 ///     </para>
 ///     <para>
-///         <strong>Thread Safety:</strong> This class is thread-safe. All operations use the
-///         underlying <see cref="BiMap{TKey,TValue}" /> which provides lock-based synchronization.
+///         <strong>Thread Safety:</strong> This class is thread-safe. It uses <see cref="Lazy{T}" />
+///         for thread-safe lazy initialization of the underlying <see cref="BiMap{TKey,TValue}" />,
+///         which itself provides lock-based synchronization for all operations. This ensures safe
+///         concurrent access during initialization and subsequent use.
 ///     </para>
 ///     <para>
 ///         <strong>Usage Pattern:</strong>
@@ -51,7 +53,9 @@ namespace EzDdd.Entity;
 /// </example>
 public static class DomainEventTypeMapper
 {
-    private static readonly BiMap<string, Type> Mapper = new();
+    // Use Lazy<T> for thread-safe lazy initialization (Java 4.1.0 alignment)
+    // Ensures no race conditions during static initialization in multi-threaded scenarios
+    private static readonly Lazy<BiMap<string, Type>> Mapper = new(() => new BiMap<string, Type>());
 
     /// <summary>
     ///     Registers a domain event type with its string identifier.
@@ -97,7 +101,7 @@ public static class DomainEventTypeMapper
         Type eventType = typeof(TEvent);
 
         // Check if type name is already registered to a different type
-        if (Mapper.TryGetValue(typeName, out Type? existingType))
+        if (Mapper.Value.TryGetValue(typeName, out Type? existingType))
         {
             if (existingType != eventType)
             {
@@ -113,7 +117,7 @@ public static class DomainEventTypeMapper
         }
 
         // Check if type is already registered with a different name
-        string? existingName = Mapper.GetKey(eventType);
+        string? existingName = Mapper.Value.GetKey(eventType);
         if (existingName != null)
         {
             if (existingName != typeName)
@@ -130,7 +134,7 @@ public static class DomainEventTypeMapper
         }
 
         // Both type name and type are new - safe to add
-        Mapper.Add(typeName, eventType);
+        Mapper.Value.Add(typeName, eventType);
     }
 
     /// <summary>
@@ -154,7 +158,7 @@ public static class DomainEventTypeMapper
     {
         Contract.Require("Event type cannot be null", () => eventType != null);
 
-        string? typeName = Mapper.GetKey(eventType);
+        string? typeName = Mapper.Value.GetKey(eventType);
         if (typeName == null)
         {
             throw new InvalidOperationException
@@ -216,12 +220,12 @@ public static class DomainEventTypeMapper
     {
         Contract.Require("Type name cannot be null or empty", () => !string.IsNullOrWhiteSpace(typeName));
 
-        if (!Mapper.TryGetValue(typeName, out Type? type))
+        if (!Mapper.Value.TryGetValue(typeName, out Type? type))
         {
             throw new InvalidOperationException
             (
                 $"Event type name '{typeName}' is not registered. " +
-                $"Available types: {string.Join(", ", Mapper.Keys)}"
+                $"Available types: {string.Join(", ", Mapper.Value.Keys)}"
             );
         }
 
@@ -248,7 +252,7 @@ public static class DomainEventTypeMapper
     /// </example>
     public static bool Contains(string typeName)
     {
-        return !string.IsNullOrWhiteSpace(typeName) && Mapper.ContainsKey(typeName);
+        return !string.IsNullOrWhiteSpace(typeName) && Mapper.Value.ContainsKey(typeName);
     }
 
     /// <summary>
@@ -290,7 +294,7 @@ public static class DomainEventTypeMapper
     {
         // BiMap implements IDictionary, so we can enumerate it
         // Create a defensive copy as a read-only dictionary
-        return new Dictionary<string, Type>(Mapper);
+        return new Dictionary<string, Type>(Mapper.Value);
     }
 
     /// <summary>
@@ -320,6 +324,6 @@ public static class DomainEventTypeMapper
     /// </example>
     public static void Clear()
     {
-        Mapper.Clear();
+        Mapper.Value.Clear();
     }
 }
