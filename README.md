@@ -2,9 +2,9 @@
 
 > **Tactical Domain-Driven Design patterns library for .NET 8+**
 >
-> Based on [Java ezddd 2.1.0](https://gitlab.com/TeddyChen/ezddd)
+> Based on [Java ezddd 4.1.0](https://gitlab.com/TeddyChen/ezddd)
 
-A modern tactical DDD library for .NET, specifically designed for Domain-Driven Design with event sourcing, state sourcing, and CQRS patterns. This is a faithful .NET port of the **Java ezddd 2.1.0** library (GitLab commit: `6e94aee`) with **~98% semantic parity** and .NET-specific improvements.
+A modern tactical DDD library for .NET, specifically designed for Domain-Driven Design with event sourcing, state sourcing, and CQRS patterns. This is a faithful .NET port of the **Java ezddd 4.1.0** library (GitLab commit: `91fac63`) with **~99% semantic parity** and .NET-specific improvements.
 
 [![.NET](https://img.shields.io/badge/.NET-8.0+-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
@@ -14,19 +14,23 @@ A modern tactical DDD library for .NET, specifically designed for Domain-Driven 
 
 ## Status
 
-✅ **Version 1.0.0-alpha.1** (2025-11-18)
+✅ **Version 1.0.0** (2026-01-XX) - **Based on Java ezddd 4.1.0**
 
-- ✅ **Phase 1**: EzDdd.Common (69 tests)
-- ✅ **Phase 2**: EzDdd.Entity (85 tests)
-- ✅ **Phase 3**: EzDdd.UseCase (279 tests)
-- ✅ **Phase 4**: EzDdd.Cqrs (68 tests)
-- ✅ **Phase 5**: EzDdd.Core (aggregator)
-- ✅ **501 tests passing (100%)**
-- ✅ **23 ADRs documented**
+- ✅ **Phase 1-5**: Core Implementation (500 tests)
+- ✅ **Phase 6**: Java 4.1.0 Synchronization (38 integration tests)
+- ✅ **545 tests passing (100%)**
+- ✅ **27 ADRs documented** (including 4 new for Java 4.1.0 features)
 - ✅ **Zero external dependencies** (only .NET BCL + uContract.NET)
-- ✅ **~98% semantic parity** with Java ezddd
+- ✅ **~99% semantic parity** with Java ezddd 4.1.0
 
-**Current Version**: `1.0.0-alpha.1` (ready for NuGet)
+**New in 1.0.0 (Java 4.1.0 features)**:
+- ✅ **IDomainEvent.Metadata** - Idempotency and distributed tracing support
+- ✅ **IReconciler** - System state reconciliation interface
+- ✅ **MessageProducer** - Resource-managed event publishing (IDisposable)
+- ✅ **Thread Safety** - Enhanced concurrent operation support
+- ✅ **Null Safety** - Comprehensive parameter validation
+
+**Current Version**: `1.0.0` (ready for NuGet)
 
 ---
 
@@ -67,7 +71,7 @@ dotnet add package ezDDD.Cqrs        # CQRS patterns
 using EzDdd.Entity;
 using EzDdd.UseCase;
 
-// Define domain events as records
+// Define domain events as records with Metadata support
 public record AccountCreated(
     Guid Id,
     DateTimeOffset OccurredOn,
@@ -76,8 +80,11 @@ public record AccountCreated(
     Money InitialBalance
 ) : IInternalDomainEvent, IInternalDomainEvent.IConstructionEvent
 {
-    public string Source => "BankAccount";
-    public Dictionary<string, object> Metadata => new();
+    public string Source => AccountId.Value;
+
+    // Metadata for idempotency and distributed tracing
+    public IReadOnlyDictionary<string, string> Metadata { get; init; } =
+        new Dictionary<string, string>();
 }
 
 public record MoneyDeposited(
@@ -87,8 +94,11 @@ public record MoneyDeposited(
     Money Amount
 ) : IInternalDomainEvent
 {
-    public string Source => "BankAccount";
-    public Dictionary<string, object> Metadata => new();
+    public string Source => AccountId.Value;
+
+    // Metadata for correlation and causation tracking
+    public IReadOnlyDictionary<string, string> Metadata { get; init; } =
+        new Dictionary<string, string>();
 }
 
 // Define event-sourced aggregate with R1/R2/R3 rules
@@ -268,12 +278,15 @@ public class AccountBalanceProjection : IProjection<GetAccountBalanceInput, Acco
 - ✅ **Entities** - `IEntity<TId>` with unique identity and covariant type parameter
 - ✅ **Value Objects** - `IValueObject` marker for immutable types
 - ✅ **Aggregate Roots** - `AggregateRoot<TId, TEvent>` for state sourcing with event collection
-- ✅ **Domain Events** - `IDomainEvent` with Id, OccurredOn, Source, Metadata
+- ✅ **Domain Events** - `IDomainEvent` with Id, OccurredOn, Source, **Metadata** (Java 4.1.0)
   - `IInternalDomainEvent` - Events within bounded context
   - `IConstructionEvent` - Marker for aggregate creation (R1 rule)
   - `IDestructionEvent` - Marker for aggregate deletion (R3 rule)
+  - **Metadata Property** - `IReadOnlyDictionary<string, string>` for idempotency and distributed tracing
+    - Supports CorrelationId, CausationId, UserId, TraceId
+    - Preserved through entire event lifecycle (serialization, replay, publishing)
 - ✅ **Event Sourcing** - `EsAggregateRoot<TId, TEvent>` with R1/R2/R3 correctness rules
-- ✅ **Event Type Mapping** - `DomainEventTypeMapper` for serialization
+- ✅ **Event Type Mapping** - `DomainEventTypeMapper` for serialization with thread-safe Lazy<BiMap>
 
 ### Event Sourcing Support
 - ✅ **R1/R2/R3 Correctness Rules** - Template method pattern enforces invariants
@@ -301,24 +314,40 @@ public class AccountBalanceProjection : IProjection<GetAccountBalanceInput, Acco
 - ✅ **Archive** - `IArchive<TData, TId>` for query database (read-side counterpart to IRepository)
 - ✅ **CqrsOutput** - Fluent API for unified output with `Success()` and `Failure()` factory methods
 
+### System Reconciliation (Java 4.1.0)
+- ✅ **IReconciler<TContext, TReport>** - Interface for system state reconciliation
+  - Maintenance tasks (cleanup, consistency checks, periodic jobs)
+  - Context → Reconciler → Report workflow
+  - **NullContext** - Singleton pattern for reconcilers without context
+- ✅ **Use Cases**:
+  - Expired data cleanup (draft orders, abandoned carts)
+  - Referential integrity enforcement
+  - Data archival and aggregation
+  - System health checks and reporting
+
 ### Clean Architecture
 - ✅ **Use Cases Layer** - `IUseCase<TInput, TOutput>` command pattern with async/await
 - ✅ **Bridge Pattern** - `IRepository` (abstraction) ↔ `IRepositoryPeer` (implementor) separation
 - ✅ **Ports & Adapters** - Hexagonal architecture support with clear layer boundaries
 - ✅ **Dependency Direction** - Unidirectional: Common → Entity → UseCase → Cqrs → Core
 
-### Message Producer & Event Publishing
-- ✅ **IMessageProducer** - Primary interface for posting messages to message infrastructure
-- ✅ **InMemoryMessageProducer** - In-memory implementation for testing with PostedMessages verification
+### Message Producer & Event Publishing (Java 4.1.0)
+- ✅ **IMessageProducer<TMessage>** - Primary interface for posting messages (replaces MessageBus pattern)
+  - `Task PostAsync(TMessage)` - Asynchronous message posting
+  - `IDisposable` - Resource management for network connections, buffers
+- ✅ **InMemoryMessageProducer<TMessage>** - In-memory implementation for testing
+  - `PostedMessages` property for verification in tests
+  - Thread-safe with `ConcurrentQueue<TMessage>`
 - ✅ **Event Publishing** - Repositories automatically publish events after successful persistence (optional)
+- ✅ **Resource Management** - Proper disposal pattern prevents resource leaks
 
 ### Design Philosophy
 - 🚀 **Async/await throughout** - All I/O operations are async (`Task<T>`, never blocking)
 - 🎯 **Nullable reference types** - Compile-time null safety (`#nullable enable`)
 - 📦 **Zero external dependencies** - Only .NET BCL + uContract.NET (ecosystem dependency)
-- 🔒 **Thread-safe** - Concurrent collections, locks, and snapshot patterns where needed
+- 🔒 **Thread-safe** - Concurrent collections, Lazy<T>, and snapshot patterns for safe concurrent access
 - 💎 **Strongly typed** - Generic constraints and covariance (`in TInput`, `out TOutput`)
-- 🧪 **Highly tested** - 501 tests, >90% coverage across all modules
+- 🧪 **Highly tested** - 545 tests (including 38 integration tests), >90% coverage across all modules
 
 ### .NET Platform Improvements
 - ✅ **Async/await** - Non-blocking I/O throughout (vs Java's blocking `execute()` methods)
@@ -367,8 +396,12 @@ Foundation utilities for the entire framework:
 Core DDD building blocks (entities layer):
 - **`IEntity<out TId>`** - Covariant interface for entities with unique identity
 - **`IValueObject`** - Marker interface for immutable value objects
-- **`IDomainEvent`** - Base domain event interface
-  - Properties: `Id` (Guid), `OccurredOn` (DateTimeOffset), `Source` (string), `Metadata` (Dictionary)
+- **`IDomainEvent`** - Base domain event interface (Java 4.1.0 with Metadata)
+  - Properties: `Id` (Guid), `OccurredOn` (DateTimeOffset), `Source` (string)
+  - **`Metadata`** (IReadOnlyDictionary<string, string>) - **New in Java 4.1.0**
+    - Idempotency support (CorrelationId for duplicate detection)
+    - Distributed tracing (CausationId, TraceId for event chains)
+    - User context (UserId, TenantId for multi-tenancy)
 - **`IInternalDomainEvent`** - Internal events within bounded context
   - `IConstructionEvent` - Marker for aggregate creation (R1 rule)
   - `IDestructionEvent` - Marker for aggregate deletion (R3 rule)
@@ -403,6 +436,12 @@ Use cases layer with persistence abstractions:
 - **`IUseCase<in TInput, out TOutput>`** - Contravariant/covariant interface
   - `ExecuteAsync(TInput)` - Main use case execution method (async)
 - **`UseCaseFailureException`** - Use case failure exception
+
+**System Reconciliation (Java 4.1.0)**:
+- **`IReconciler<in TContext, TReport>`** - Interface for system state reconciliation
+  - `Task<TReport> ReconcileAsync(TContext context)` - Execute reconciliation logic
+  - Typically invoked by scheduled background jobs or admin tools
+- **`NullContext`** - Singleton for reconcilers without context (`NullContext.Instance`)
 
 **Repository Pattern - Bridge Pattern**:
 - **`IStoreData`** - Base interface for persistence DTOs
@@ -497,13 +536,13 @@ Aggregator package for convenient installation:
 
 > 📖 **Complete Documentation**: [API_REFERENCE.md](docs/examples/API_REFERENCE.md) (3,674 lines with detailed signatures, parameters, exceptions, and examples)
 
-**Quick Overview** - 44 Public APIs across 4 modules:
+**Quick Overview** - 46 Public APIs across 4 modules:
 
 | Module | APIs | Key Types |
 |--------|------|-----------|
 | **Common** (3) | `Converter<TSource, TTarget>`, `JsonUtil`, `BiMap<TKey, TValue>` |
 | **Entity** (7) | `IEntity<TId>`, `IValueObject`, `IDomainEvent`, `IInternalDomainEvent`, `AggregateRoot<TId, TEvent>`, `EsAggregateRoot<TId, TEvent>`, `DomainEventTypeMapper` |
-| **UseCase** (25) | `IUseCase<TInput, TOutput>`, `IRepository<TAggregate, TId>`, `IRepositoryPeer<TData, TId>`, `EsRepository<TAggregate, TId, TEvent>`, `OutboxRepository<TAggregate, TId, TEvent>`, `IMessageProducer<TMessage>`, `InMemoryMessageProducer<TMessage>`, `DomainEventMapper`, etc. |
+| **UseCase** (27) | `IUseCase<TInput, TOutput>`, **`IReconciler<TContext, TReport>`**, **`NullContext`**, `IRepository<TAggregate, TId>`, `IRepositoryPeer<TData, TId>`, `EsRepository<TAggregate, TId, TEvent>`, `OutboxRepository<TAggregate, TId, TEvent>`, `IMessageProducer<TMessage>`, `InMemoryMessageProducer<TMessage>`, `DomainEventMapper`, etc. |
 | **Cqrs** (9) | `ICommand<TInput, TOutput>`, `IQuery<TInput, TOutput>`, `IInquiry<TInput, TOutput>`, `IProjection<TInput, TOutput>`, `IProjector`, `IArchive<TData, TId>`, `CqrsOutput<T>` |
 
 ### Common Module APIs
@@ -523,6 +562,12 @@ Aggregator package for convenient installation:
 
 **`IEntity<out TId>`** - Covariant entity interface
 - `TId Id { get; }` - Unique identity
+
+**`IDomainEvent`** - Base domain event interface (Java 4.1.0)
+- `Guid Id { get; }` - Event unique identifier
+- `DateTimeOffset OccurredOn { get; }` - Event timestamp
+- `string Source { get; }` - Aggregate identifier
+- **`IReadOnlyDictionary<string, string> Metadata { get; }`** - Event metadata (Java 4.1.0)
 
 **`AggregateRoot<TId, TEvent>`** - State sourcing aggregate root
 - `RaiseDomainEvent(TEvent @event)` - Add event to collection
@@ -545,6 +590,10 @@ Aggregator package for convenient installation:
 
 **`IUseCase<in TInput, out TOutput>`** - Use case pattern
 - `Task<TOutput> ExecuteAsync(TInput input)` - Execute use case
+
+**`IReconciler<in TContext, TReport>`** - System reconciliation interface (Java 4.1.0)
+- `Task<TReport> ReconcileAsync(TContext context)` - Execute reconciliation
+- `NullContext.Instance` - Use for reconcilers without context
 
 **`IRepository<TAggregate, TId>`** - Domain repository abstraction
 - `Task<TAggregate?> FindByIdAsync(TId id)` - Load aggregate
@@ -773,7 +822,7 @@ public record Money(decimal Amount) : IValueObject
     public Money Subtract(Money other) => new(Amount - other.Amount);
 }
 
-// Define domain events as records
+// Define domain events as records with Metadata
 public record AccountCreated(
     Guid Id,
     DateTimeOffset OccurredOn,
@@ -782,8 +831,11 @@ public record AccountCreated(
     Money InitialBalance
 ) : IInternalDomainEvent, IInternalDomainEvent.IConstructionEvent
 {
-    public string Source => "BankAccount";
-    public Dictionary<string, object> Metadata => new();
+    public string Source => AccountId.Value;
+
+    // Java 4.1.0: Metadata for idempotency and distributed tracing
+    public IReadOnlyDictionary<string, string> Metadata { get; init; } =
+        new Dictionary<string, string>();
 }
 
 // Event-sourced aggregate
@@ -1007,13 +1059,16 @@ See [USAGE_EXAMPLES.md](docs/examples/USAGE_EXAMPLES.md) for:
 
 ### Semantic Parity
 
-- ✅ **~98% semantic parity** achieved with Java ezddd 2.x
+- ✅ **~99% semantic parity** achieved with Java ezddd 4.1.0
 - ✅ **Core patterns preserved**: Entity, AggregateRoot, Repository, CQRS identical
 - ✅ **R1/R2/R3 event sourcing rules**: Identical enforcement via template method
 - ✅ **Bridge pattern**: IRepository ↔ IRepositoryPeer separation identical
 - ✅ **Transactional Outbox**: Same dual-write pattern for reliability
 - ✅ **Stream naming**: `{category}-{id}` convention identical
 - ✅ **CQRS separation**: Command/Query/Inquiry/Projection identical
+- ✅ **Metadata support**: IDomainEvent.Metadata for idempotency (Java 4.1.0)
+- ✅ **Reconciler pattern**: IReconciler for system maintenance (Java 4.1.0)
+- ✅ **MessageProducer**: IDisposable resource management (Java 4.1.0)
 
 ### Example Comparison
 
@@ -1110,12 +1165,13 @@ public sealed class BankAccount : EsAggregateRoot<AccountId, IInternalDomainEven
   - Phase breakdown and timeline
   - Progress tracking and milestones
 
-- 📋 **[Architecture Decision Records](docs/adr/)** - 23 ADRs documenting design decisions
+- 📋 **[Architecture Decision Records](docs/adr/)** - 27 ADRs documenting design decisions
   - **Stage 1**: Core Architecture (ADR-0001 to ADR-0006)
   - **Stage 2**: Core DDD Patterns (ADR-0007 to ADR-0011)
   - **Stage 3**: Phase 3 Post-Review (ADR-0012 to ADR-0016)
   - **Stage 4**: Phase 4 Critical (ADR-0017 to ADR-0019)
   - **Stage 5**: Phase 4 Post-Implementation (ADR-0020 to ADR-0023)
+  - **Stage 6**: Phase 6 Java 4.1.0 Sync (ADR-0024 to ADR-0027)
 
 ### Phase Documentation
 - **[PHASE3_IMPLEMENTATION_PLAN.md](docs/PHASE3_IMPLEMENTATION_PLAN.md)** - Phase 3 iteration plan (8 iterations)
@@ -1203,9 +1259,10 @@ See [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 
-- **Original Java ezddd 2.1.0**: [Teddy Chen](https://gitlab.com/TeddyChen) (TeddySoft)
+- **Original Java ezddd 4.1.0**: [Teddy Chen](https://gitlab.com/TeddyChen) (TeddySoft)
   - Repository: https://gitlab.com/TeddyChen/ezddd
-  - Commit: `6e94aee` (Release 2.1.0)
+  - Commit: `91fac63` (Release 4.1.0)
+  - Previous base: `6e94aee` (Release 2.1.0) → Synchronized to 4.1.0 in Phase 6
 - **Inspiration**: Domain-Driven Design by Eric Evans - Tactical DDD patterns
 - **Architecture**: Clean Architecture by Robert C. Martin - Layered architecture design
 - **Event Sourcing**: Martin Fowler's Event Sourcing pattern - Event sourcing concepts
@@ -1226,7 +1283,7 @@ See [LICENSE](LICENSE) file for details.
 
 ## Links
 
-- **Java ezddd (original) 2.1.0**: https://gitlab.com/TeddyChen/ezddd (commit: `6e94aee`)
+- **Java ezddd (original) 4.1.0**: https://gitlab.com/TeddyChen/ezddd (commit: `91fac63`)
 - **uContract.NET**: https://github.com/cwouyang/uContract.NET
 - **NuGet Packages**: (will be published soon)
 - **API Documentation**: [docs/examples/API_REFERENCE.md](docs/examples/API_REFERENCE.md)
@@ -1237,4 +1294,4 @@ See [LICENSE](LICENSE) file for details.
 
 **ezDDD.NET** - Tactical Domain-Driven Design for .NET 8+
 
-*Last updated: 2025-11-22*
+*Last updated: 2026-01-11 (Java 4.1.0 synchronization complete)*
