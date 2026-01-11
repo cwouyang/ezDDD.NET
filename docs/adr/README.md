@@ -264,6 +264,7 @@ CLAUDE.md
 | [ADR-0024](0024-ireconciler-interface-system-reconciliation.md) | IReconciler Interface for System State Reconciliation | 2026-01-07 | Accepted |
 | [ADR-0025](0025-messageproducer-refactoring-java-4-1-0-alignment.md) | MessageProducer Refactoring - Java 4.1.0 Alignment | 2026-01-07 | Accepted |
 | [ADR-0026](0026-service-layer-pattern.md) | Service Layer Pattern for Complex Business Logic | 2026-01-08 | Accepted |
+| [ADR-0027](0027-thread-null-safety-review.md) | Thread Safety and Null Safety Review (Java 4.1.0 Sync - Stage S5) | 2026-01-08 | Accepted |
 
 ### Proposed
 
