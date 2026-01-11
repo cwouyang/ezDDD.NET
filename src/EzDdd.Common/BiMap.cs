@@ -240,6 +240,8 @@ public class BiMap<TKey, TValue> : IDictionary<TKey, TValue>
 
     public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
     {
+        ArgumentNullException.ThrowIfNull(array);
+
         lock (_lock)
         {
             // Create snapshot to ensure thread-safe enumeration
@@ -324,6 +326,8 @@ public class BiMap<TKey, TValue> : IDictionary<TKey, TValue>
     /// </remarks>
     public void PutAll(IDictionary<TKey, TValue> dictionary)
     {
+        ArgumentNullException.ThrowIfNull(dictionary);
+
         lock (_lock)
         {
             // Use Add method to ensure bidirectional mapping consistency

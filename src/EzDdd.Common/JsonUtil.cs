@@ -120,6 +120,8 @@ public static class JsonUtil
     /// </example>
     public static string AsString(object value)
     {
+        ArgumentNullException.ThrowIfNull(value);
+
         try
         {
             return JsonSerializer.Serialize(value, Options);
@@ -148,6 +150,8 @@ public static class JsonUtil
     /// </example>
     public static T? ReadValue<T>(string json)
     {
+        ArgumentNullException.ThrowIfNull(json);
+
         try
         {
             return JsonSerializer.Deserialize<T>(json, Options);
@@ -177,6 +181,8 @@ public static class JsonUtil
     /// </example>
     public static T? ReadAs<T>(byte[] bytes)
     {
+        ArgumentNullException.ThrowIfNull(bytes);
+
         try
         {
             return JsonSerializer.Deserialize<T>(bytes, Options);
@@ -211,6 +217,8 @@ public static class JsonUtil
     /// </example>
     public static JsonDocument ReadTree(string json)
     {
+        ArgumentNullException.ThrowIfNull(json);
+
         try
         {
             return JsonDocument.Parse(json);
@@ -246,6 +254,8 @@ public static class JsonUtil
     /// </example>
     public static JsonDocument ReadTree(byte[] bytes)
     {
+        ArgumentNullException.ThrowIfNull(bytes);
+
         try
         {
             return JsonDocument.Parse(bytes);

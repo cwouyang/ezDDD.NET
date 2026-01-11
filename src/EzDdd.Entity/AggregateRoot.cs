@@ -214,6 +214,8 @@ public abstract class AggregateRoot<TId, TEvent> : IEntity<TId>
     /// </example>
     public virtual void Apply(TEvent @event)
     {
+        ArgumentNullException.ThrowIfNull(@event);
+
         _AddDomainEvent(@event);
     }
 
