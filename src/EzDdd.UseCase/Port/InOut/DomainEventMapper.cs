@@ -61,6 +61,8 @@ public static class DomainEventMapper
     /// <exception cref="InvalidOperationException">Thrown when serialization fails or event type not registered</exception>
     public static DomainEventData ToData(IInternalDomainEvent @event)
     {
+        ArgumentNullException.ThrowIfNull(@event);
+
         string eventType = DomainEventTypeMapper.GetTypeName(@event);
         byte[] eventBody = _SerializeToJson(@event);
         byte[] metadata = _SerializeToJson(@event.Metadata);
@@ -84,6 +86,8 @@ public static class DomainEventMapper
     /// <exception cref="InvalidOperationException">Thrown when deserialization fails or event type is not registered</exception>
     public static T ToDomain<T>(DomainEventData data) where T : IInternalDomainEvent
     {
+        ArgumentNullException.ThrowIfNull(data);
+
         Type eventClass = DomainEventTypeMapper.GetType(data.EventType);
         object @event = _DeserializeFromJson(data.EventBody, eventClass);
 
@@ -105,6 +109,8 @@ public static class DomainEventMapper
     /// <returns>List of DomainEventData</returns>
     public static IReadOnlyList<DomainEventData> ToData(IEnumerable<IInternalDomainEvent> events)
     {
+        ArgumentNullException.ThrowIfNull(events);
+
         return events.Select(ToData).ToList();
     }
 
@@ -117,6 +123,8 @@ public static class DomainEventMapper
     public static IReadOnlyList<T> ToDomain<T>(IEnumerable<DomainEventData> datas)
         where T : IInternalDomainEvent
     {
+        ArgumentNullException.ThrowIfNull(datas);
+
         return datas.Select(ToDomain<T>).ToList();
     }
 

@@ -98,6 +98,8 @@ public static class EventStoreMapper
     /// </example>
     public static EventStoreData<TId> ToData<TId>(EsAggregateRoot<TId, IInternalDomainEvent> aggregate)
     {
+        ArgumentNullException.ThrowIfNull(aggregate);
+
         return new EventStoreData<TId>
         {
             Id = aggregate.Id,

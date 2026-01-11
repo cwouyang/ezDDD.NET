@@ -110,6 +110,9 @@ public class OutboxRepository<TAggregate, TData, TId> : IRepository<TAggregate, 
         IMessageProducer<DomainEventData>? eventProducer = null
     )
     {
+        ArgumentNullException.ThrowIfNull(peer);
+        ArgumentNullException.ThrowIfNull(mapper);
+
         _peer = peer;
         _mapper = mapper;
         _eventProducer = eventProducer;
@@ -207,6 +210,8 @@ public class OutboxRepository<TAggregate, TData, TId> : IRepository<TAggregate, 
     /// </remarks>
     public async Task SaveAsync(TAggregate aggregate)
     {
+        ArgumentNullException.ThrowIfNull(aggregate);
+
         TData data = _mapper.ToData(aggregate);
 
         try
@@ -263,6 +268,8 @@ public class OutboxRepository<TAggregate, TData, TId> : IRepository<TAggregate, 
     /// </remarks>
     public async Task DeleteAsync(TAggregate aggregate)
     {
+        ArgumentNullException.ThrowIfNull(aggregate);
+
         TData data = _mapper.ToData(aggregate);
         await _peer.DeleteAsync(data);
     }
