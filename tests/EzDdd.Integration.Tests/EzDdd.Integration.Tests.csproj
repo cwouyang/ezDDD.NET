@@ -25,6 +25,8 @@
     <ProjectReference Include="..\..\src\EzDdd.Entity\EzDdd.Entity.csproj" />
     <ProjectReference Include="..\..\src\EzDdd.UseCase\EzDdd.UseCase.csproj" />
     <ProjectReference Include="..\..\src\EzDdd.Cqrs\EzDdd.Cqrs.csproj" />
+    <ProjectReference Include="..\EzDdd.UseCase.Tests\EzDdd.UseCase.Tests.csproj" />
+    <ProjectReference Include="..\EzDdd.Cqrs.Tests\EzDdd.Cqrs.Tests.csproj" />
   </ItemGroup>
 
 </Project>
