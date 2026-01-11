@@ -141,8 +141,12 @@ public class CqrsOutput<T> : IOutput
     /// </summary>
     /// <param name="id">The identifier to set.</param>
     /// <returns>This output instance as type T for fluent API.</returns>
+    /// <exception cref="ArgumentNullException">
+    ///     Thrown when <paramref name="id" /> is null.
+    /// </exception>
     public T SetId(string id)
     {
+        ArgumentNullException.ThrowIfNull(id);
         Id = id;
         return _Self();
     }
@@ -152,8 +156,12 @@ public class CqrsOutput<T> : IOutput
     /// </summary>
     /// <param name="message">The message to set.</param>
     /// <returns>This output instance as type T for fluent API.</returns>
+    /// <exception cref="ArgumentNullException">
+    ///     Thrown when <paramref name="message" /> is null.
+    /// </exception>
     public T SetMessage(string message)
     {
+        ArgumentNullException.ThrowIfNull(message);
         Message = message;
         return _Self();
     }
