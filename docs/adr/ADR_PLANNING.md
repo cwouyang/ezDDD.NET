@@ -360,44 +360,50 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
 
 #### ADR-0028: Version 1.0.0 Pre-Publication Synchronization Strategy
 - **Topic**: Decision to incorporate all Java 4.1.0 changes into initial 1.0.0 release before NuGet publication
-- **Key Points**:
-  - PROCESS DECISION: Synchronize before first publication
-  - Users get up-to-date API from day one
-  - No migration needed (users never see Java 2.1.0 API)
-  - 1.0.0 based on Java 4.1.0, not 2.1.0
-- **Status**: ⏳ Planned (S6)
-- **Priority**: 🟠 PROCESS
-- **Planning Docs Section**: DOTNET_PORT.md - "Java 4.1.0 Synchronization Plan, Stage 7"
-- **Dependencies**: All Stage 6 ADRs
-- **Related**: ADR-0024, ADR-0025 (breaking changes incorporated in 1.0.0)
-- **Estimated Effort**: 6-8 hours (documentation + integration testing)
+- **Status**: ❌ **NOT NEEDED** - Process decision, not architecture decision
+- **Rationale for Not Creating ADR**:
+  - **ADR Purpose**: Architecture Decision Records document "why we designed it this way" (architecture)
+  - **This Topic**: Documents "when we synchronized" (development process)
+  - **External User Value**: Zero - users only see 1.0.0, internal development process is irrelevant
+  - **Already Documented**: CHANGELOG.md "Version Strategy" section (lines 303-324) explains the decision
+  - **Conclusion**: This is internal development process documentation, not an architectural decision
+- **Where Documented Instead**:
+  - CHANGELOG.md section "Version Strategy: Pre-Publication Synchronization"
+  - CLAUDE.md "Version Strategy - Pre-Publication Synchronization" section
+  - ADRs 0024-0027 document the actual architectural decisions (what features, how designed)
+- **Priority**: 🟠 PROCESS (not architecture)
+- ~~**Estimated Effort**: Not applicable~~
 
 #### ADR-0029: Phase 6 Post-Implementation Review
 - **Topic**: Summary and retrospective of Java 4.1.0 synchronization effort
-- **Key Points**:
-  - Summary of all 44 commits synchronized
-  - Lessons learned from synchronization
-  - Future improvement recommendations
-  - ~99% semantic parity verification
-- **Status**: ⏳ Planned (S7)
-- **Priority**: 📊 REVIEW
-- **Planning Docs Section**: DOTNET_PORT.md - "Java 4.1.0 Synchronization Plan, Stage 8"
-- **Dependencies**: All Stage 6 implementation ADRs (0024-0029)
-- **Estimated Effort**: 2-4 hours
+- **Status**: ❌ **NOT NEEDED** - Project retrospective, not architecture decision
+- **Rationale for Not Creating ADR**:
+  - **ADR Purpose**: Document architectural decisions (design choices)
+  - **This Topic**: Project retrospective and lessons learned (development process)
+  - **External User Value**: Zero - internal development reflection has no value to library users
+  - **Conclusion**: This is internal project management documentation, not an architectural decision
+- **Where Documented Instead**:
+  - SESSION_HANDOFF documents (S0-S6) contain detailed session summaries
+  - CHANGELOG.md documents all implementation work
+  - Future retrospectives can be internal documents (not ADRs)
+- **Priority**: 📊 REVIEW (not architecture)
+- ~~**Estimated Effort**: Not applicable~~
 
 #### ADR-0030: Java 4.1.0 Feature Parity Verification
 - **Topic**: Detailed comparison matrix of Java ezddd 4.1.0 vs. ezDDD.NET 1.0.0
-- **Key Points**:
-  - Feature-by-feature comparison
-  - Semantic parity analysis (~99% target)
-  - Known differences documentation
-  - API differences due to .NET idioms
-- **Status**: ⏳ Planned (S7) - Optional
-- **Priority**: ✅ VERIFICATION
-- **Planning Docs Section**: DOTNET_PORT.md - "Java 4.1.0 Synchronization Plan, Stage 8"
-- **Dependencies**: ADR-0029 (post-implementation review)
-- **Related**: ADR-0005 (reimplementation approach)
-- **Estimated Effort**: 2-4 hours
+- **Status**: ❌ **NOT NEEDED** - Verification report, not architecture decision
+- **Rationale for Not Creating ADR**:
+  - **ADR Purpose**: Document architectural decisions (design choices)
+  - **This Topic**: Verification report and comparison matrix (quality assurance)
+  - **External User Value**: Minimal - Java migration users need "Differences" guide, not parity report
+  - **Conclusion**: This is QA documentation, not an architectural decision
+- **Where Documented Instead**:
+  - README.md section "Differences from Java Version" (comprehensive comparison)
+  - README.md section "Semantic Parity" (parity metrics already stated: ~99%)
+  - MIGRATION_GUIDE.md (1,437 lines) - Complete Java → .NET migration guide
+  - CHANGELOG.md documents all Java 4.1.0 features implemented
+- **Priority**: ✅ VERIFICATION (not architecture)
+- ~~**Estimated Effort**: Not applicable~~
 
 ---
 

@@ -321,7 +321,7 @@ public class TransferMoneyService : ITransferMoneyService
 
 This approach was **only possible because we hadn't published yet**. Once published, breaking changes would require a major version bump (2.0.0).
 
-**Related**: ADR-0028 (Pre-Publication Synchronization Strategy) - to be written
+**Note on ADR-0028 (Pre-Publication Sync Strategy)**: Originally planned as an ADR but determined to be unnecessary. This is a **process decision** (when to synchronize) rather than an **architecture decision** (how to design). Since external users never saw the Java 2.1.0-based development version, this internal development process is irrelevant to them. The strategy is documented here in CHANGELOG.md (sufficient for historical record), while ADRs 0024-0027 document the actual architectural decisions for each synchronized feature.
 
 ### Dependencies
 
