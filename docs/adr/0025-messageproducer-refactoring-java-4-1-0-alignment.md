@@ -93,40 +93,65 @@ public interface IMessageProducer<in TMessage> : IDisposable
 4. **Remove EventBusProducer wrapper**
 5. **Remove IReactor and GenericReactor** (application layer handles subscriptions)
 
-#### Repository Integration
+#### Independent Relay Pattern (Matches Java 4.1.0)
 
-Repositories can optionally accept an `IMessageProducer` to publish events after successful persistence:
+**Repositories do NOT publish events directly**. Event publishing is handled by an independent Relay component (Transactional Outbox pattern):
 
 ```csharp
+// Repository - Only saves to event store
 public class EsRepository<TAggregate, TId> : IRepository<TAggregate, TId, IInternalDomainEvent>
 {
-    private readonly IMessageProducer<DomainEventData>? _eventProducer;
+    private readonly IRepositoryPeer<EventStoreData<TId>, TId> _peer;
 
-    public EsRepository(
-        IRepositoryPeer<EventStoreData<TId>, TId> peer,
-        IMessageProducer<DomainEventData>? eventProducer = null)
+    public EsRepository(IRepositoryPeer<EventStoreData<TId>, TId> peer)
     {
         _peer = peer;
-        _eventProducer = eventProducer;  // Optional
+        // NO MessageProducer dependency
     }
 
     public async Task SaveAsync(TAggregate aggregate)
     {
         await _peer.SaveAsync(data);
-
-        // Publish events if producer configured
-        if (_eventProducer != null)
-        {
-            foreach (var evt in aggregate.GetDomainEvents())
-            {
-                await _eventProducer.PostAsync(DomainEventMapper.ToData(evt));
-            }
-        }
-
         aggregate.ClearDomainEvents();
+        // NO event publishing here
+    }
+}
+
+// EventStoreRelay - Background service publishes events
+public class EventStoreRelay : BackgroundService
+{
+    private readonly IEventStore _eventStore;
+    private readonly IMessageProducer<DomainEventData> _messageProducer;
+    private int _currentIndex = -1;
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            var newEvents = await _eventStore.GetEventsAfterAsync(_currentIndex);
+
+            foreach (var evt in newEvents)
+            {
+                try
+                {
+                    await _messageProducer.PostAsync(DomainEventMapper.ToData(evt));
+                    _currentIndex++;  // Mark as published
+                }
+                catch (Exception ex)
+                {
+                    // Caught, will retry on next poll
+                    _logger.LogError(ex, "Failed to publish, will retry");
+                    break;
+                }
+            }
+
+            await Task.Delay(_pollingIntervalMs, stoppingToken);
+        }
     }
 }
 ```
+
+**See**: `examples/EventInfrastructure/EventStoreRelay.cs` for complete implementation
 
 #### Implementation Classes
 

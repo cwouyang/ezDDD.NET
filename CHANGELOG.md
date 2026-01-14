@@ -113,10 +113,12 @@ public class CleanUpExpiredOrdersReconciler : IReconciler<CleanupContext, Cleanu
 - New: `IMessageProducer<TMessage>` with `PostAsync(TMessage)`
 - Benefits: Type safety, resource management, simpler API
 
-**Repository Integration**:
-- `EsRepository` and `OutboxRepository` accept optional `IMessageProducer<DomainEventData>`
-- Events automatically published after successful persistence
-- Disposal managed by dependency injection container or explicit using statements
+**Repository Design** (Updated 2026-01-14):
+- `EsRepository` and `OutboxRepository` **do NOT** accept `IMessageProducer` parameter
+- Repositories only save to event store (no direct event publishing)
+- Event publishing handled by independent **EventStoreRelay** (Transactional Outbox pattern)
+- Guarantees eventual consistency with automatic retry on failures
+- See `examples/EventInfrastructure/EventStoreRelay.cs` for reference implementation
 
 **Test Coverage**: 8 integration tests for resource management, disposal, and concurrent posting
 

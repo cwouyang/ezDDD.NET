@@ -960,17 +960,15 @@ public class AccountEventReactor : IReactor
     }
 }
 
-// Setup repository with event producer
-var eventProducer = new InMemoryMessageProducer<DomainEventData>();
-var repository = new EsRepository<BankAccount, AccountId>(peer, eventProducer);
+// Setup repository (NO MessageProducer parameter)
+var repository = new EsRepository<BankAccount, AccountId>(peer);
 
-// Events will be automatically published after save
+// Save aggregate (Repository does NOT publish events)
 var account = new BankAccount(accountId, "John Doe", new Money(100));
-await repository.SaveAsync(account); // Automatically publishes events
+await repository.SaveAsync(account); // Only saves to event store
 
-// Verify events were published (in tests)
-Assert.Single(eventProducer.PostedMessages);
-Assert.Equal("AccountCreated", eventProducer.PostedMessages.First().EventType);
+// Event publishing handled by EventStoreRelay (background service)
+// See examples/EventInfrastructure/EventStoreRelay.cs for Relay pattern implementation
 ```
 
 ### System Reconciliation Example
