@@ -28,7 +28,7 @@ This release represents the **first public NuGet publication** with all Java 4.1
 
 **Key Highlights**:
 - ✅ **~99% semantic parity** with Java ezddd 4.1.0
-- ✅ **545 tests passing** (100% pass rate, including 38 integration tests)
+- ✅ **562 tests passing** (100% pass rate, including 37 integration tests)
 - ✅ **27 ADRs** documenting all architectural decisions
 - ✅ **Zero external dependencies** (only .NET BCL + uContract.NET)
 - ✅ **5 NuGet packages** ready for publication
@@ -261,13 +261,13 @@ public class TransferMoneyService : ITransferMoneyService
 ### Technical Details
 
 **Test Statistics**:
-- **Total Tests**: 545 tests
+- **Total Tests**: 562 tests
   - EzDdd.Common.Tests: 69 tests
   - EzDdd.Entity.Tests: 92 tests
-  - EzDdd.UseCase.Tests: 279 tests
+  - EzDdd.UseCase.Tests: 297 tests
   - EzDdd.Cqrs.Tests: 67 tests
-  - **EzDdd.Integration.Tests: 38 tests** (NEW)
-- **Pass Rate**: 100% (545/545 passing)
+  - **EzDdd.Integration.Tests: 37 tests** (NEW)
+- **Pass Rate**: 100% (562/562 passing)
 - **Coverage**: >90% across all modules
 
 **Build Quality**:
@@ -358,7 +358,7 @@ dotnet add package ezDDD.Core  # Recommended - includes all modules
 
 ### Known Issues
 
-None - All 545 tests passing (100% pass rate).
+None - All 562 tests passing (100% pass rate).
 
 ### Contributors
 

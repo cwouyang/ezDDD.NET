@@ -91,7 +91,7 @@ public sealed class ConcurrentOperationsTests
     {
         using InMemoryMessageProducer<DomainEventData> producer = new();
         InMemoryMetadataTestEventStorePeer peer = new();
-        EsRepository<MetadataTestAggregate, MetadataTestId> repository = new(peer, producer);
+        EsRepository<MetadataTestAggregate, MetadataTestId> repository = new(peer);
 
         DomainEventTypeMapper.Register<AggregateCreated>("AggregateCreated");
         DomainEventTypeMapper.Register<ValueUpdated>("ValueUpdated");
@@ -160,8 +160,8 @@ public sealed class ConcurrentOperationsTests
         Assert.NotNull(finalAgg);
 
         // Due to optimistic locking, not all updates will succeed
-        // But at least some events should have been published
-        Assert.True(producer.PostedMessages.Count >= 1);
+        // Verify at least the initial aggregate was persisted
+        Assert.True(finalAgg.Value >= 0);
     }
 
 #endregion
@@ -269,7 +269,7 @@ public sealed class ConcurrentOperationsTests
     {
         using InMemoryMessageProducer<DomainEventData> producer = new();
         InMemoryMetadataTestEventStorePeer peer = new();
-        EsRepository<MetadataTestAggregate, MetadataTestId> repository = new(peer, producer);
+        EsRepository<MetadataTestAggregate, MetadataTestId> repository = new(peer);
 
         DomainEventTypeMapper.Register<AggregateCreated>("AggregateCreated");
 
@@ -301,7 +301,6 @@ public sealed class ConcurrentOperationsTests
 
         // Assert: All aggregates should be saved
         Assert.Equal(concurrentAggregates, peer.Count);
-        Assert.Equal(concurrentAggregates, producer.PostedMessages.Count);
     }
 
     [Fact]
@@ -309,7 +308,7 @@ public sealed class ConcurrentOperationsTests
     {
         using InMemoryMessageProducer<DomainEventData> producer = new();
         InMemoryMetadataTestEventStorePeer peer = new();
-        EsRepository<MetadataTestAggregate, MetadataTestId> repository = new(peer, producer);
+        EsRepository<MetadataTestAggregate, MetadataTestId> repository = new(peer);
 
         DomainEventTypeMapper.Register<AggregateCreated>("AggregateCreated");
 

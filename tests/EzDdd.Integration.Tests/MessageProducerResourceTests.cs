@@ -223,30 +223,5 @@ public sealed class MessageProducerResourceTests
         Assert.Empty(producer.PostedMessages);
     }
 
-    [Fact]
-    public async Task MessageProducer_InRepository_ShouldManageLifecycleProperly()
-    {
-        using InMemoryMessageProducer<DomainEventData> producer = new();
-        InMemoryMetadataTestEventStorePeer peer = new();
-        EsRepository<MetadataTestAggregate, MetadataTestId> repository = new(peer, producer);
-
-        DomainEventTypeMapper.Register<AggregateCreated>("AggregateCreated");
-
-        // Act: Use repository to save aggregate
-        MetadataTestAggregate aggregate = new
-        (
-            new MetadataTestId("REPO-DISPOSE-001"),
-            "Test",
-            100
-        );
-        await repository.SaveAsync(aggregate);
-
-        // Assert: Message should be posted
-        Assert.Single(producer.PostedMessages);
-
-        // When producer is disposed, it should clear messages
-        // (Repository doesn't own the producer, so it doesn't dispose it)
-    }
-
 #endregion
 }

@@ -30,7 +30,7 @@ public sealed class CompleteCqrsFlowTests
 
         InMemoryMessageProducer<DomainEventData> eventProducer = new();
         InMemoryEventStorePeer eventStorePeer = new();
-        EsRepository<BankAccount, AccountId> repository = new(eventStorePeer, eventProducer);
+        EsRepository<BankAccount, AccountId> repository = new(eventStorePeer);
         InMemoryArchive<AccountSummaryReadModel, AccountId> archive = new(m => m.AccountId);
         AccountProjector projector = new(archive);
         GetAccountSummaryQuery query = new(archive);
@@ -59,19 +59,23 @@ public sealed class CompleteCqrsFlowTests
         }
 
         /// <summary>
-        ///     Helper method to save aggregate (events automatically published by repository).
+        ///     Helper method to save aggregate and manually publish events (simulating Relay pattern).
         /// </summary>
         public async Task SaveAndPublishAsync(BankAccount aggregate)
         {
-            int eventCountBefore = EventProducer.PostedMessages.Count;
+            // Capture events before save
+            List<IInternalDomainEvent> events = aggregate.GetDomainEvents().ToList();
 
-            // Repository now automatically publishes events via eventProducer
+            // Save aggregate (Repository does NOT publish events)
             await Repository.SaveAsync(aggregate);
 
-            // Process newly published events through projector
-            List<DomainEventData> newEvents = EventProducer.PostedMessages.Skip(eventCountBefore).ToList();
-            foreach (DomainEventData eventData in newEvents)
+            // Manually publish events (simulating EventStoreRelay)
+            foreach (IInternalDomainEvent domainEvent in events)
             {
+                DomainEventData eventData = DomainEventMapper.ToData(domainEvent);
+                await EventProducer.PostAsync(eventData);
+
+                // Process event through projector
                 await Projector.ExecuteAsync(eventData);
             }
         }

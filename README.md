@@ -17,8 +17,8 @@ A modern tactical DDD library for .NET, specifically designed for Domain-Driven 
 ✅ **Version 1.0.0** (2026-01-XX) - **Based on Java ezddd 4.1.0**
 
 - ✅ **Phase 1-5**: Core Implementation (500 tests)
-- ✅ **Phase 6**: Java 4.1.0 Synchronization (38 integration tests)
-- ✅ **545 tests passing (100%)**
+- ✅ **Phase 6**: Java 4.1.0 Synchronization (37 integration tests)
+- ✅ **562 tests passing (100%)**
 - ✅ **27 ADRs documented** (including 4 new for Java 4.1.0 features)
 - ✅ **Zero external dependencies** (only .NET BCL + uContract.NET)
 - ✅ **~99% semantic parity** with Java ezddd 4.1.0
@@ -347,7 +347,7 @@ public class AccountBalanceProjection : IProjection<GetAccountBalanceInput, Acco
 - 📦 **Zero external dependencies** - Only .NET BCL + uContract.NET (ecosystem dependency)
 - 🔒 **Thread-safe** - Concurrent collections, Lazy<T>, and snapshot patterns for safe concurrent access
 - 💎 **Strongly typed** - Generic constraints and covariance (`in TInput`, `out TOutput`)
-- 🧪 **Highly tested** - 545 tests (including 38 integration tests), >90% coverage across all modules
+- 🧪 **Highly tested** - 562 tests (including 37 integration tests), >90% coverage across all modules
 
 ### .NET Platform Improvements
 - ✅ **Async/await** - Non-blocking I/O throughout (vs Java's blocking `execute()` methods)

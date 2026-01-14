@@ -47,13 +47,13 @@ public sealed class EventSourcingMetadataTests
 
         // Act 1: Create aggregate
         MetadataTestAggregate agg1 = new(id, "Multi Update Test", 5, _CreateMetadata(correlationId, userId: "v1"));
-        await infra.Repository.SaveAsync(agg1);
+        await infra.SaveAndPublishAsync(agg1);
 
         // Act 2: Load and update
         MetadataTestAggregate? agg2 = await infra.Repository.FindByIdAsync(id);
         Assert.NotNull(agg2);
         agg2.UpdateValue(10, _CreateMetadata(correlationId, userId: "v2"));
-        await infra.Repository.SaveAsync(agg2);
+        await infra.SaveAndPublishAsync(agg2);
 
         // Assert: Both events should have correct metadata
         Assert.Equal(2, infra.EventProducer.PostedMessages.Count);
@@ -85,7 +85,7 @@ public sealed class EventSourcingMetadataTests
 
         InMemoryMessageProducer<DomainEventData> eventProducer = new();
         InMemoryMetadataTestEventStorePeer eventStorePeer = new();
-        EsRepository<MetadataTestAggregate, MetadataTestId> repository = new(eventStorePeer, eventProducer);
+        EsRepository<MetadataTestAggregate, MetadataTestId> repository = new(eventStorePeer);
 
         return new TestInfrastructure { Repository = repository, EventProducer = eventProducer, EventStorePeer = eventStorePeer };
     }
@@ -99,6 +99,25 @@ public sealed class EventSourcingMetadataTests
         public void Dispose()
         {
             EventProducer.Dispose();
+        }
+
+        /// <summary>
+        ///     Helper method to save aggregate and manually publish events (simulating Relay pattern).
+        /// </summary>
+        public async Task SaveAndPublishAsync(MetadataTestAggregate aggregate)
+        {
+            // Capture events before save
+            List<IInternalDomainEvent> events = aggregate.GetDomainEvents().ToList();
+
+            // Save aggregate (Repository does NOT publish events)
+            await Repository.SaveAsync(aggregate);
+
+            // Manually publish events (simulating EventStoreRelay)
+            foreach (IInternalDomainEvent domainEvent in events)
+            {
+                DomainEventData eventData = DomainEventMapper.ToData(domainEvent);
+                await EventProducer.PostAsync(eventData);
+            }
         }
     }
 
@@ -144,7 +163,7 @@ public sealed class EventSourcingMetadataTests
 
         // Act 1: Create and save aggregate
         MetadataTestAggregate original = new(id, "Test", 100, metadata);
-        await infra.Repository.SaveAsync(original);
+        await infra.SaveAndPublishAsync(original);
 
         // Act 2: Load aggregate (triggers event replay)
         MetadataTestAggregate? reloaded = await infra.Repository.FindByIdAsync(id);
@@ -173,19 +192,19 @@ public sealed class EventSourcingMetadataTests
 
         // Act 1: Create aggregate with metadata
         MetadataTestAggregate agg1 = new(id, "Cycle Test", 50, _CreateMetadata(correlationId, userId: "user1"));
-        await infra.Repository.SaveAsync(agg1);
+        await infra.SaveAndPublishAsync(agg1);
 
         // Act 2: Load and update (cycle 1)
         MetadataTestAggregate? agg2 = await infra.Repository.FindByIdAsync(id);
         Assert.NotNull(agg2);
         agg2.UpdateValue(100, _CreateMetadata(correlationId, userId: "user2"));
-        await infra.Repository.SaveAsync(agg2);
+        await infra.SaveAndPublishAsync(agg2);
 
         // Act 3: Load and update (cycle 2)
         MetadataTestAggregate? agg3 = await infra.Repository.FindByIdAsync(id);
         Assert.NotNull(agg3);
         agg3.UpdateValue(150, _CreateMetadata(correlationId, userId: "user3"));
-        await infra.Repository.SaveAsync(agg3);
+        await infra.SaveAndPublishAsync(agg3);
 
         // Act 4: Final load
         MetadataTestAggregate? final = await infra.Repository.FindByIdAsync(id);
@@ -239,7 +258,7 @@ public sealed class EventSourcingMetadataTests
             );
         }
 
-        await infra.Repository.SaveAsync(aggregate);
+        await infra.SaveAndPublishAsync(aggregate);
 
         // Act: Reload aggregate (replay all events)
         MetadataTestAggregate? reloaded = await infra.Repository.FindByIdAsync(id);
@@ -288,7 +307,7 @@ public sealed class EventSourcingMetadataTests
             200,
             _CreateMetadata(correlationId, userId: "alice", traceId: "trace-xyz")
         );
-        await infra.Repository.SaveAsync(aggregate);
+        await infra.SaveAndPublishAsync(aggregate);
 
         // Assert: Event store should contain EventStoreData with events
         EventStoreData<MetadataTestId>? storeData = await infra.EventStorePeer.FindByIdAsync(id);
@@ -317,19 +336,19 @@ public sealed class EventSourcingMetadataTests
 
         // Act 1: Create aggregate
         MetadataTestAggregate agg1 = new(id, "Append Test", 10, _CreateMetadata(correlationId, userId: "user1"));
-        await infra.Repository.SaveAsync(agg1);
+        await infra.SaveAndPublishAsync(agg1);
 
         // Act 2: Load, update, save
         MetadataTestAggregate? agg2 = await infra.Repository.FindByIdAsync(id);
         Assert.NotNull(agg2);
         agg2.UpdateValue(20, _CreateMetadata(correlationId, userId: "user2"));
-        await infra.Repository.SaveAsync(agg2);
+        await infra.SaveAndPublishAsync(agg2);
 
         // Act 3: Load, update, save
         MetadataTestAggregate? agg3 = await infra.Repository.FindByIdAsync(id);
         Assert.NotNull(agg3);
         agg3.UpdateValue(30, _CreateMetadata(correlationId, userId: "user3"));
-        await infra.Repository.SaveAsync(agg3);
+        await infra.SaveAndPublishAsync(agg3);
 
         // Assert: All 3 events should be published with correct metadata
         Assert.Equal(3, infra.EventProducer.PostedMessages.Count);
@@ -367,7 +386,7 @@ public sealed class EventSourcingMetadataTests
 
         // Act: Create, save, reload
         MetadataTestAggregate original = new(id, "Consistency", 1, _CreateMetadata("corr-1"));
-        await infra.Repository.SaveAsync(original);
+        await infra.SaveAndPublishAsync(original);
 
         MetadataTestAggregate? reloaded = await infra.Repository.FindByIdAsync(id);
 
@@ -398,7 +417,7 @@ public sealed class EventSourcingMetadataTests
             999,
             new ReadOnlyDictionary<string, string>(originalMetadata)
         );
-        await infra.Repository.SaveAsync(aggregate);
+        await infra.SaveAndPublishAsync(aggregate);
 
         // Assert: Deserialized event should have identical metadata
         Assert.Single(infra.EventProducer.PostedMessages);

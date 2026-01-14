@@ -54,7 +54,7 @@ public sealed class CqrsFlowWithMetadataTests
         // Act 1: Create and save aggregate
         MetadataTestAggregate aggregate = new(id, "Replay Test", 200, metadata);
         aggregate.UpdateValue(250, _CreateMetadata(correlationId, userId: "charlie"));
-        await infra.Repository.SaveAsync(aggregate);
+        await infra.SaveAndPublishAsync(aggregate);
 
         // Act 2: Load aggregate from repository (triggers event replay)
         MetadataTestAggregate? rehydrated = await infra.Repository.FindByIdAsync(id);
@@ -93,7 +93,7 @@ public sealed class CqrsFlowWithMetadataTests
         // Create infrastructure components
         InMemoryMessageProducer<DomainEventData> eventProducer = new();
         InMemoryMetadataTestEventStorePeer eventStorePeer = new();
-        EsRepository<MetadataTestAggregate, MetadataTestId> repository = new(eventStorePeer, eventProducer);
+        EsRepository<MetadataTestAggregate, MetadataTestId> repository = new(eventStorePeer);
 
         return new TestInfrastructure { Repository = repository, EventProducer = eventProducer, EventStorePeer = eventStorePeer };
     }
@@ -107,6 +107,25 @@ public sealed class CqrsFlowWithMetadataTests
         public void Dispose()
         {
             EventProducer.Dispose();
+        }
+
+        /// <summary>
+        ///     Helper method to save aggregate and manually publish events (simulating Relay pattern).
+        /// </summary>
+        public async Task SaveAndPublishAsync(MetadataTestAggregate aggregate)
+        {
+            // Capture events before save
+            List<IInternalDomainEvent> events = aggregate.GetDomainEvents().ToList();
+
+            // Save aggregate (Repository does NOT publish events)
+            await Repository.SaveAsync(aggregate);
+
+            // Manually publish events (simulating EventStoreRelay)
+            foreach (IInternalDomainEvent domainEvent in events)
+            {
+                DomainEventData eventData = DomainEventMapper.ToData(domainEvent);
+                await EventProducer.PostAsync(eventData);
+            }
         }
     }
 
@@ -149,7 +168,7 @@ public sealed class CqrsFlowWithMetadataTests
 
         // Act: Create aggregate with metadata
         MetadataTestAggregate aggregate = new(id, "Test Aggregate", 100, metadata);
-        await infra.Repository.SaveAsync(aggregate);
+        await infra.SaveAndPublishAsync(aggregate);
 
         // Assert: Metadata should be preserved in MessageProducer
         Assert.Single(infra.EventProducer.PostedMessages);
@@ -174,12 +193,12 @@ public sealed class CqrsFlowWithMetadataTests
         // Act 1: Create aggregate
         IReadOnlyDictionary<string, string> createMetadata = _CreateMetadata(correlationId, userId: "system");
         MetadataTestAggregate aggregate = new(id, "Test", 50, createMetadata);
-        await infra.Repository.SaveAsync(aggregate);
+        await infra.SaveAndPublishAsync(aggregate);
 
         // Act 2: Update value with causation ID linking to creation
         IReadOnlyDictionary<string, string> updateMetadata = _CreateMetadata(correlationId, creationEventId, "bob@example.com");
         aggregate.UpdateValue(75, updateMetadata);
-        await infra.Repository.SaveAsync(aggregate);
+        await infra.SaveAndPublishAsync(aggregate);
 
         // Assert: Both events should have correct metadata chain
         Assert.Equal(2, infra.EventProducer.PostedMessages.Count);
@@ -221,7 +240,7 @@ public sealed class CqrsFlowWithMetadataTests
             123,
             new ReadOnlyDictionary<string, string>(complexMetadata)
         );
-        await infra.Repository.SaveAsync(aggregate);
+        await infra.SaveAndPublishAsync(aggregate);
 
         // Assert: Special characters should survive serialization round-trip
         Assert.Single(infra.EventProducer.PostedMessages);
@@ -254,7 +273,7 @@ public sealed class CqrsFlowWithMetadataTests
             100,
             _CreateMetadata(sharedCorrelationId, userId: "user1")
         );
-        await infra.Repository.SaveAsync(agg1);
+        await infra.SaveAndPublishAsync(agg1);
 
         MetadataTestAggregate agg2 = new
         (
@@ -263,7 +282,7 @@ public sealed class CqrsFlowWithMetadataTests
             200,
             _CreateMetadata(sharedCorrelationId, userId: "user1")
         );
-        await infra.Repository.SaveAsync(agg2);
+        await infra.SaveAndPublishAsync(agg2);
 
         // Assert: Both events should be published (detection logic is application-specific)
         // But we can verify they share the same CorrelationId
@@ -319,15 +338,15 @@ public sealed class CqrsFlowWithMetadataTests
             1000,
             _CreateMetadata(correlationId, userId: userId)
         );
-        await infra.Repository.SaveAsync(aggregate);
+        await infra.SaveAndPublishAsync(aggregate);
 
         // Act 2: Update value
         aggregate.UpdateValue(1500, _CreateMetadata(correlationId, userId: userId));
-        await infra.Repository.SaveAsync(aggregate);
+        await infra.SaveAndPublishAsync(aggregate);
 
         // Act 3: Close aggregate
         aggregate.Close("Test complete", _CreateMetadata(correlationId, userId: userId));
-        await infra.Repository.SaveAsync(aggregate);
+        await infra.SaveAndPublishAsync(aggregate);
 
         // Assert: All three events should have metadata
         Assert.Equal(3, infra.EventProducer.PostedMessages.Count);
@@ -362,7 +381,7 @@ public sealed class CqrsFlowWithMetadataTests
 
         // Act: Create aggregate without metadata (empty dictionary)
         MetadataTestAggregate aggregate = new(id, "No Metadata", 42);
-        await infra.Repository.SaveAsync(aggregate);
+        await infra.SaveAndPublishAsync(aggregate);
 
         // Assert: Event should be published with empty metadata
         Assert.Single(infra.EventProducer.PostedMessages);

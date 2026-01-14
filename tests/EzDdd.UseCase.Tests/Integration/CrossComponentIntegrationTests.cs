@@ -1,14 +1,12 @@
 using EzDdd.Entity;
 using EzDdd.UseCase.Port.InOut;
-using EzDdd.UseCase.Port.InOut.Messaging;
 using EzDdd.UseCase.Port.Out;
 using EzDdd.UseCase.Tests.Integration.TestDomain;
 
 namespace EzDdd.UseCase.Tests.Integration;
 
-public sealed class CrossComponentIntegrationTests : IDisposable
+public sealed class CrossComponentIntegrationTests
 {
-    private readonly InMemoryMessageProducer<DomainEventData> _eventProducer;
     private readonly EsRepository<BankAccount, AccountId> _repository;
 
     public CrossComponentIntegrationTests()
@@ -19,46 +17,30 @@ public sealed class CrossComponentIntegrationTests : IDisposable
         DomainEventTypeMapper.Register<MoneyWithdrawn>("MoneyWithdrawn");
         DomainEventTypeMapper.Register<AccountClosed>("AccountClosed");
 
-        _eventProducer = new InMemoryMessageProducer<DomainEventData>();
-        _repository = new EsRepository<BankAccount, AccountId>(new InMemoryEventStorePeer(), _eventProducer);
-    }
-
-    public void Dispose()
-    {
-        _eventProducer.Dispose();
+        _repository = new EsRepository<BankAccount, AccountId>(new InMemoryEventStorePeer());
     }
 
     [Fact]
-    public async Task CompleteWorkflow_RepositoryToMessageProducer_AllComponentsWork()
+    public async Task CompleteWorkflow_RepositorySaveAndLoad_AllComponentsWork()
     {
         // Create aggregate
         AccountId accountId = new("acc-001");
         BankAccount account = new(accountId, "John Doe", new Money(1000m));
 
-        // Save (repository will automatically publish events)
+        // Save
         await _repository.SaveAsync(account);
 
         Assert.Equal(0L, account.Version);
-
-        // Verify event was published to message producer
-        Assert.Single(_eventProducer.PostedMessages);
-        DomainEventData publishedEvent = _eventProducer.PostedMessages.First();
-        Assert.Equal("AccountCreated", publishedEvent.EventType);
     }
 
     [Fact]
-    public async Task EventSourcingWithMessageProducer_SaveAndPublish_EventsFlowCorrectly()
+    public async Task EventSourcing_SaveAndLoad_WorksCorrectly()
     {
         AccountId accountId = new("acc-002");
         BankAccount account = new(accountId, "Jane Doe", new Money(500m));
 
-        // Save (repository automatically publishes events)
+        // Save
         await _repository.SaveAsync(account);
-
-        // Verify event was published
-        Assert.Single(_eventProducer.PostedMessages);
-        DomainEventData publishedEvent = _eventProducer.PostedMessages.First();
-        Assert.Equal("AccountCreated", publishedEvent.EventType);
 
         // Verify aggregate is persisted
         BankAccount? loaded = await _repository.FindByIdAsync(accountId);
@@ -141,7 +123,7 @@ public sealed class CrossComponentIntegrationTests : IDisposable
     }
 
     [Fact]
-    public async Task CompleteEventSourcingLifecycle_WithMessageProducer_AllEventsPublished()
+    public async Task CompleteEventSourcingLifecycle_MultipleOperations_WorksCorrectly()
     {
         AccountId accountId = new("acc-lifecycle");
 
@@ -161,39 +143,10 @@ public sealed class CrossComponentIntegrationTests : IDisposable
         account.Close("Account no longer needed");
         await _repository.SaveAsync(account);
 
-        // Verify all 4 events were published
-        Assert.Equal(4, _eventProducer.PostedMessages.Count);
-        List<DomainEventData> publishedEvents = _eventProducer.PostedMessages.ToList();
-        Assert.Equal("AccountCreated", publishedEvents[0].EventType);
-        Assert.Equal("MoneyDeposited", publishedEvents[1].EventType);
-        Assert.Equal("MoneyWithdrawn", publishedEvents[2].EventType);
-        Assert.Equal("AccountClosed", publishedEvents[3].EventType);
-
         // Verify final state
         BankAccount? finalAccount = await _repository.FindByIdAsync(accountId);
         Assert.NotNull(finalAccount);
         Assert.True(finalAccount.IsClosed);
         Assert.Equal(1300m, finalAccount.Balance.Amount); // 1000 + 500 - 200
-    }
-
-    [Fact]
-    public async Task MessageProducer_PublishesEventsAfterSuccessfulSave()
-    {
-        AccountId accountId = new("acc-004");
-        BankAccount account = new(accountId, "Eve", new Money(1000m));
-
-        // Initially no events published
-        Assert.Empty(_eventProducer.PostedMessages);
-
-        // Save (repository automatically publishes events)
-        await _repository.SaveAsync(account);
-
-        // Verify event was published
-        Assert.Single(_eventProducer.PostedMessages);
-        DomainEventData publishedEvent = _eventProducer.PostedMessages.First();
-        Assert.Equal("AccountCreated", publishedEvent.EventType);
-
-        // Verify events were cleared from aggregate
-        Assert.Empty(account.GetDomainEvents());
     }
 }
