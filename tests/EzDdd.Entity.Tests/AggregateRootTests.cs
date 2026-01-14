@@ -97,18 +97,18 @@ public class AggregateRootTests
     }
 
     [Fact]
-    public void AggregateRoot_GetDomainEventCount_ReturnsCorrectCount()
+    public void AggregateRoot_GetDomainEventSize_ReturnsCorrectCount()
     {
         TestAggregate aggregate = new(Guid.NewGuid(), "Test");
         // Constructor adds 1 event
 
-        Assert.Equal(1, aggregate.GetDomainEventCount());
+        Assert.Equal(1, aggregate.GetDomainEventSize());
 
         aggregate.UpdateValue(42);
-        Assert.Equal(2, aggregate.GetDomainEventCount());
+        Assert.Equal(2, aggregate.GetDomainEventSize());
 
         aggregate.ClearDomainEvents();
-        Assert.Equal(0, aggregate.GetDomainEventCount());
+        Assert.Equal(0, aggregate.GetDomainEventSize());
     }
 
 #endregion
@@ -137,7 +137,7 @@ public class AggregateRootTests
         aggregate.UpdateValue(3); // version = 3
 
         Assert.Equal(3L, aggregate.Version);
-        Assert.Equal(4, aggregate.GetDomainEventCount()); // 1 constructor + 3 updates
+        Assert.Equal(4, aggregate.GetDomainEventSize()); // 1 constructor + 3 updates
     }
 
 #endregion
@@ -149,12 +149,12 @@ public class AggregateRootTests
     {
         TestAggregate aggregate = new(Guid.NewGuid(), "Test");
         aggregate.UpdateValue(42);
-        Assert.True(aggregate.GetDomainEventCount() > 0);
+        Assert.True(aggregate.GetDomainEventSize() > 0);
 
         aggregate.ClearDomainEvents();
 
         Assert.Empty(aggregate.GetDomainEvents());
-        Assert.Equal(0, aggregate.GetDomainEventCount());
+        Assert.Equal(0, aggregate.GetDomainEventSize());
     }
 
     [Fact]
@@ -231,7 +231,7 @@ public class AggregateRootTests
 
         // All events should be collected
         // 1 constructor event + 100 update events = 101
-        Assert.Equal(taskCount + 1, aggregate.GetDomainEventCount());
+        Assert.Equal(taskCount + 1, aggregate.GetDomainEventSize());
         Assert.Equal(taskCount, aggregate.Version);
     }
 
@@ -255,7 +255,7 @@ public class AggregateRootTests
                 (() =>
                     {
                         IReadOnlyList<IInternalDomainEvent> _ = aggregate.GetDomainEvents();
-                        int __ = aggregate.GetDomainEventCount();
+                        int __ = aggregate.GetDomainEventSize();
                         IInternalDomainEvent? ___ = aggregate.GetLastDomainEvent();
                     }
                 )
@@ -265,7 +265,7 @@ public class AggregateRootTests
         await Task.WhenAll(tasks);
 
         // Should not throw
-        Assert.True(aggregate.GetDomainEventCount() > 0);
+        Assert.True(aggregate.GetDomainEventSize() > 0);
     }
 
 #endregion

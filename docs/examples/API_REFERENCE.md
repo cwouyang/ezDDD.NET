@@ -646,7 +646,7 @@ public abstract class AggregateRoot<TId, TEvent> : IEntity<TId>
     public virtual void Apply(TEvent @event);
     public IReadOnlyList<TEvent> GetDomainEvents();
     public TEvent? GetLastDomainEvent();
-    public int GetDomainEventCount();
+    public int GetDomainEventSize();
     public void ClearDomainEvents();
 }
 ```
@@ -719,7 +719,7 @@ Gets the most recent domain event.
 
 **Returns:** TEvent? - The last event, or null if no events
 
-#### GetDomainEventCount
+#### GetDomainEventSize
 Gets the number of domain events currently in the collection.
 
 **Returns:** int - Event count

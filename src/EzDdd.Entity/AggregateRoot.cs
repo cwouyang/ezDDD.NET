@@ -64,6 +64,23 @@ namespace EzDdd.Entity;
 ///         in <c>addDomainEvent()</c>.
 ///     </para>
 ///     <para>
+///         <strong>Interface Implementation:</strong>
+///         This class implements two interfaces:
+///         <list type="bullet">
+///             <item>
+///                 <description>
+///                     <see cref="IEntity{TId}" />: Provides identity capability via <see cref="Id" /> property
+///                 </description>
+///             </item>
+///             <item>
+///                 <description>
+///                     <see cref="IDomainEventSource{TEvent}" />: Provides event sourcing capability
+///                     for collecting and managing domain events
+///                 </description>
+///             </item>
+///         </list>
+///     </para>
+///     <para>
 ///         This class supports both state sourcing and event sourcing patterns.
 ///         For event sourcing with invariant checking, use <see cref="EsAggregateRoot{TId, TEvent}" />.
 ///     </para>
@@ -102,7 +119,7 @@ namespace EzDdd.Entity;
 /// }
 /// </code>
 /// </example>
-public abstract class AggregateRoot<TId, TEvent> : IEntity<TId>
+public abstract class AggregateRoot<TId, TEvent> : IEntity<TId>, IDomainEventSource<TEvent>
     where TEvent : class, IInternalDomainEvent
 {
     private readonly List<TEvent> _domainEvents = [];
@@ -164,25 +181,6 @@ public abstract class AggregateRoot<TId, TEvent> : IEntity<TId>
     public bool IsDeleted { get; protected set; }
 
     /// <summary>
-    ///     Gets or sets the unique identifier of this aggregate.
-    /// </summary>
-    /// <remarks>
-    ///     <para>
-    ///         Subclass constructors must set <see cref="Id" /> before returning.
-    ///         The <c>default!</c> pattern is used to satisfy nullable reference types
-    ///         while allowing deferred initialization in subclass constructors.
-    ///     </para>
-    ///     <para>
-    ///         The <c>protected set</c> accessor allows subclasses to initialize the ID,
-    ///         but prevents external modification (encapsulation).
-    ///     </para>
-    /// </remarks>
-    /// <value>
-    ///     The unique identifier of this aggregate.
-    /// </value>
-    public TId Id { get; protected set; } = default!;
-
-    /// <summary>
     ///     Applies a domain event to this aggregate.
     /// </summary>
     /// <param name="event">The domain event to apply</param>
@@ -217,35 +215,6 @@ public abstract class AggregateRoot<TId, TEvent> : IEntity<TId>
         ArgumentNullException.ThrowIfNull(@event);
 
         _AddDomainEvent(@event);
-    }
-
-    /// <summary>
-    ///     Adds a domain event to the event collection and increments version.
-    /// </summary>
-    /// <param name="event">The domain event to add</param>
-    /// <remarks>
-    ///     <para>
-    ///         This method is <c>protected</c> to allow subclass access while preventing
-    ///         external manipulation. It is non-virtual to ensure subclasses cannot bypass
-    ///         event collection or version management.
-    ///     </para>
-    ///     <para>
-    ///         <strong>Thread Safety:</strong> Uses lock-based synchronization to ensure
-    ///         thread-safe event addition and version increment.
-    ///     </para>
-    ///     <para>
-    ///         <strong>Version Semantics:</strong> Version is incremented on each event addition,
-    ///         making <c>Version</c> equal to the number of events applied to the aggregate
-    ///         (matching Java ezddd's behavior).
-    ///     </para>
-    /// </remarks>
-    protected void _AddDomainEvent(TEvent @event)
-    {
-        lock (_domainEventsLock)
-        {
-            _domainEvents.Add(@event);
-            Version++; // Increment version per event (matches Java ezddd)
-        }
     }
 
     /// <summary>
@@ -324,7 +293,7 @@ public abstract class AggregateRoot<TId, TEvent> : IEntity<TId>
     ///         </item>
     ///     </list>
     /// </remarks>
-    public int GetDomainEventCount()
+    public int GetDomainEventSize()
     {
         lock (_domainEventsLock)
         {
@@ -356,6 +325,54 @@ public abstract class AggregateRoot<TId, TEvent> : IEntity<TId>
         lock (_domainEventsLock)
         {
             _domainEvents.Clear();
+        }
+    }
+
+    /// <summary>
+    ///     Gets or sets the unique identifier of this aggregate.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         Subclass constructors must set <see cref="Id" /> before returning.
+    ///         The <c>default!</c> pattern is used to satisfy nullable reference types
+    ///         while allowing deferred initialization in subclass constructors.
+    ///     </para>
+    ///     <para>
+    ///         The <c>protected set</c> accessor allows subclasses to initialize the ID,
+    ///         but prevents external modification (encapsulation).
+    ///     </para>
+    /// </remarks>
+    /// <value>
+    ///     The unique identifier of this aggregate.
+    /// </value>
+    public TId Id { get; protected set; } = default!;
+
+    /// <summary>
+    ///     Adds a domain event to the event collection and increments version.
+    /// </summary>
+    /// <param name="event">The domain event to add</param>
+    /// <remarks>
+    ///     <para>
+    ///         This method is <c>protected</c> to allow subclass access while preventing
+    ///         external manipulation. It is non-virtual to ensure subclasses cannot bypass
+    ///         event collection or version management.
+    ///     </para>
+    ///     <para>
+    ///         <strong>Thread Safety:</strong> Uses lock-based synchronization to ensure
+    ///         thread-safe event addition and version increment.
+    ///     </para>
+    ///     <para>
+    ///         <strong>Version Semantics:</strong> Version is incremented on each event addition,
+    ///         making <c>Version</c> equal to the number of events applied to the aggregate
+    ///         (matching Java ezddd's behavior).
+    ///     </para>
+    /// </remarks>
+    protected void _AddDomainEvent(TEvent @event)
+    {
+        lock (_domainEventsLock)
+        {
+            _domainEvents.Add(@event);
+            Version++; // Increment version per event (matches Java ezddd)
         }
     }
 }

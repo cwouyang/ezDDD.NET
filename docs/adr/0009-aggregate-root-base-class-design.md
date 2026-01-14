@@ -181,7 +181,7 @@ public abstract class AggregateRoot<TId, TEvent> : IEntity<TId>
     /// Gets the number of domain events currently in the collection.
     /// </summary>
     /// <returns>The event count</returns>
-    public int GetDomainEventCount()
+    public int GetDomainEventSize()
     {
         lock (_domainEventsLock)
         {
@@ -553,7 +553,7 @@ public void AggregateRoot_ThreadSafe_ConcurrentEventAddition()
     Task.WaitAll(tasks.ToArray());
 
     // All 100 events should be collected
-    Assert.Equal(100, aggregate.GetDomainEventCount());
+    Assert.Equal(100, aggregate.GetDomainEventSize());
 }
 ```
 

@@ -770,7 +770,7 @@ public void Apply_CommandEvent_ChecksPreAndPostInvariants()
     // This will succeed (invariants maintained)
     order.AddItem("PROD-001", 2, 10.00m);
 
-    Assert.Equal(1, order.GetDomainEventCount());
+    Assert.Equal(1, order.GetDomainEventSize());
 }
 
 [Fact]
@@ -803,7 +803,7 @@ public void ReplayEvents_ReconstructsCorrectState()
     var order = new Order(events);
 
     Assert.Equal(orderId, order.Id);
-    Assert.Equal(0, order.GetDomainEventCount());  // Events cleared after replay
+    Assert.Equal(0, order.GetDomainEventSize());  // Events cleared after replay
     Assert.Equal("order-" + orderId, order.GetStreamName());
 }
 ```
