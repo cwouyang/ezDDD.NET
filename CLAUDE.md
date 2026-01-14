@@ -54,7 +54,7 @@ This file provides guidance to Claude Code when working on the **.NET port** of 
   - ADR-0030 (Feature Parity Verification) - QA report, covered in README/MIGRATION_GUIDE
   - **Reason**: ADRs document "why we designed it this way" (architecture), not "how we developed" (process)
 
-**Test Coverage**: 545 tests passing (100% pass rate, >90% code coverage) - Updated 2026-01-13 after test fixes
+**Test Coverage**: 562 tests passing (100% pass rate, >90% code coverage) - Updated 2026-01-15 after verification
 
 **Current Status** (2026-01-11):
 - ✅ Phase 1-5 complete (based on Java ezddd 2.1.0, commit `6e94aee`)
@@ -552,7 +552,7 @@ This ensures users receive a complete, up-to-date API aligned with Java 4.1.0 fr
 **Phase 6 Complete When**:
 - [x] All needed ADRs written and reviewed - **4/4 complete** ✅ ADR-0024, ADR-0025, ADR-0026, ADR-0027 (ADR-0028 to 0030 deferred)
 - [x] All Java 4.1.0 features implemented and tested - **6/6 complete** ✅ Metadata, IReconciler, MessageProducer, Service Layer, Thread Safety, Null Safety
-- [x] 520+ tests passing (>95% coverage) - **Current: 545 tests (100%)** ✅
+- [x] 520+ tests passing (>95% coverage) - **Current: 562 tests (100%)** ✅
 - [x] Zero compiler warnings - **Current: 0 warnings** ✅
 - [x] Zero static analysis errors - **✅ Verified**
 - [x] All "Java 2.1.0" references updated to "Java 4.1.0" - **✅ Complete**
@@ -671,19 +671,63 @@ See [DOTNET_PORT.md](DOTNET_PORT.md) "Java 4.1.0 Synchronization Plan" section (
 - ✅ **FIX**: Equals/HashCode contract compliance - Stage S5
 
 **Outcomes Achieved**:
-- ✅ **545 tests passing** (100% pass rate, exceeded 520+ target)
+- ✅ **562 tests passing** (100% pass rate, exceeded 520+ target)
 - ✅ **~99% semantic parity** with Java 4.1.0
 - ✅ **Feature-complete 1.0.0** ready for NuGet
 - ✅ **All breaking changes** in initial release (no migration needed)
-- ✅ **38 integration tests** for Java 4.1.0 features
+- ✅ **37 integration tests** for Java 4.1.0 features
 - ✅ **Complete documentation** (README, CHANGELOG, API docs)
 
 **Final Status**:
 - **Stage S6 Complete** (2026-01-11)
 - **7/8 stages complete (87.5%)** - S7 deferred to post-1.0.0
 - **4/4 architecture ADRs complete** (ADRs 0024-0027)
-- **545 tests passing** (500→545, +45 integration tests, 100% pass rate)
+- **562 tests passing** (500→562, +37 integration tests, +25 other tests, 100% pass rate)
 
 ---
 
-*Last updated: 2026-01-11 (Phase 6 Stage S6 Complete - Integration Testing & Documentation)*
+## ⚠️ Pending Tasks (Post-Phase 6)
+
+### 🔴 HIGH Priority: Remove Repository MessageProducer Integration
+
+**Date Identified**: 2026-01-13 (Feature Parity Verification)
+**Status**: ⏳ PENDING (handoff document ready)
+**Priority**: 🔴 HIGH - Blocks 100% semantic parity
+**Estimated Effort**: 1.5-2 hours
+
+**Issue**: C# Repository classes (EsRepository, OutboxRepository) have optional MessageProducer integration for direct event publishing, but Java 4.1.0 does NOT. Java uses independent Relay pattern to strictly follow Transactional Outbox Pattern.
+
+**Current Semantic Parity**: ~85-90% (serious architectural difference)
+**Target Semantic Parity**: **100%** (after removal)
+
+**Decision**: Remove MessageProducer integration from Repository, implement EventStoreRelay example matching Java 4.1.0.
+
+**Handoff Document**: [docs/SESSION_HANDOFF_REPOSITORY_MESSAGEPRODUCER_REMOVAL.md](docs/SESSION_HANDOFF_REPOSITORY_MESSAGEPRODUCER_REMOVAL.md)
+
+**Analysis Documents**:
+- [docs/OUTBOX_PATTERN_ANALYSIS.md](docs/OUTBOX_PATTERN_ANALYSIS.md) - Why Relay is required (9,000+ words)
+- [docs/REPOSITORY_MESSAGEPRODUCER_ANALYSIS.md](docs/REPOSITORY_MESSAGEPRODUCER_ANALYSIS.md) - Design comparison (8,000+ words)
+
+**Files to Modify**:
+- `src/EzDdd.UseCase/Port/Out/EsRepository.cs` (remove eventProducer)
+- `src/EzDdd.UseCase/Port/Out/OutboxRepository.cs` (remove eventProducer)
+- `tests/EzDdd.UseCase.Tests/Integration/CrossComponentIntegrationTests.cs` (update tests)
+- `docs/adr/0025-messageproducer-refactoring-java-4-1-0-alignment.md` (update example)
+
+**Files to Create**:
+- `examples/EventInfrastructure/EventStoreRelay.cs` (NEW - Relay implementation)
+- `examples/EventInfrastructure/IEventStore.cs` (NEW - Interface)
+- `examples/EventInfrastructure/InMemoryEventStore.cs` (NEW - Test implementation)
+- `examples/EventInfrastructure/README.md` (NEW - Usage guide)
+
+**Success Criteria**:
+- [ ] Repository classes have NO MessageProducer dependency
+- [ ] EventStoreRelay example implemented
+- [ ] All tests passing (562 tests)
+- [ ] Semantic parity: **100%** with Java 4.1.0
+
+**Next Developer**: Read handoff document completely, then execute steps sequentially.
+
+---
+
+*Last updated: 2026-01-13 (Added pending task: Remove Repository MessageProducer Integration)*

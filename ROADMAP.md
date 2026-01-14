@@ -15,9 +15,9 @@
 - **Based on**: Java ezddd 4.1.0 (commit `91fac63`) - ✅ Synchronized from Java 2.1.0 in Phase 6
 - **Language**: C# / .NET 8+
 - **Development Version**: 1.0.0 (ready for NuGet publication)
-- **Test Coverage**: 545 tests passing (>90% coverage, 100% pass rate)
+- **Test Coverage**: 562 tests passing (>90% coverage, 100% pass rate)
 - **ADRs**: 27 architecture decisions documented
-- **Semantic Parity**: ~99% with Java ezddd 4.1.0 achieved ✅
+- **Semantic Parity**: ~99-100% with Java ezddd 4.1.0 achieved ✅
 
 ---
 
@@ -36,7 +36,7 @@ Overall Progress:              ████████████████�
 
 **Current Status** (2026-01-11):
 - ✅ Phase 1-5 Complete (500 tests passing, 23 ADRs)
-- ✅ Phase 6 Stage S6 Complete (545 tests, 27 ADRs, 38 integration tests)
+- ✅ Phase 6 Stage S6 Complete (562 tests, 27 ADRs, 37 integration tests)
 - ✅ Ready for 1.0.0 NuGet publication (S7 deferred to post-release)
 
 ---
@@ -607,6 +607,44 @@ Total: 27/30 ADRs   ██████████████████░░
 - ezDDD.UseCase 1.0.0
 - ezDDD.Cqrs 1.0.0
 - ezDDD.Core 1.0.0
+
+---
+
+## 🔧 Post-Phase 6 Refinements
+
+### Task: Remove Repository MessageProducer Integration ⏳ Pending
+
+**Date Identified**: 2026-01-13
+**Priority**: 🔴 HIGH - Affects semantic parity
+**Status**: ⏳ Pending (handoff document ready)
+**Estimated Effort**: 1.5-2 hours
+**Impact**: Improves semantic parity from ~85-90% to **100%**
+
+**Issue**: C# Repository classes have optional MessageProducer integration for direct event publishing, but Java 4.1.0 does NOT have this design. Java uses independent Relay pattern to strictly follow Transactional Outbox Pattern.
+
+**Decision**: Remove MessageProducer integration from Repository, implement EventStoreRelay example to match Java 4.1.0.
+
+**Handoff Document**: [SESSION_HANDOFF_REPOSITORY_MESSAGEPRODUCER_REMOVAL.md](docs/SESSION_HANDOFF_REPOSITORY_MESSAGEPRODUCER_REMOVAL.md)
+
+**Work Breakdown**:
+1. Remove eventProducer parameter from EsRepository (15 min)
+2. Remove eventProducer parameter from OutboxRepository (15 min)
+3. Create EventStoreRelay example implementation (30 min)
+4. Update integration tests to use Relay pattern (30 min)
+5. Update documentation (ADR-0025, README, CHANGELOG) (15 min)
+6. Verify build and semantic parity (10 min)
+
+**Success Criteria**:
+- [ ] Repository classes have NO MessageProducer dependency
+- [ ] EventStoreRelay example implemented (examples/EventInfrastructure/)
+- [ ] All tests passing (562 tests)
+- [ ] Documentation updated
+- [ ] Semantic parity: **100%** with Java 4.1.0
+
+**Related Documents**:
+- [OUTBOX_PATTERN_ANALYSIS.md](docs/OUTBOX_PATTERN_ANALYSIS.md) - Why Relay is required
+- [REPOSITORY_MESSAGEPRODUCER_ANALYSIS.md](docs/REPOSITORY_MESSAGEPRODUCER_ANALYSIS.md) - Design comparison
+- Java Reference: `ezddd/ezddd-core-sample/src/.../InMemoryEventStoreRelay.java`
 
 ---
 
