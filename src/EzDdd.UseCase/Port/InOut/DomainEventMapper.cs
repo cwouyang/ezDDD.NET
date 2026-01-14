@@ -63,18 +63,11 @@ public static class DomainEventMapper
     {
         ArgumentNullException.ThrowIfNull(@event);
 
-        string eventType = DomainEventTypeMapper.GetTypeName(@event);
-        byte[] eventBody = _SerializeToJson(@event);
-        byte[] metadata = _SerializeToJson(@event.Metadata);
-
-        return new DomainEventData
-        (
-            @event.Id,
-            eventType,
-            "application/json",
-            eventBody,
-            metadata
-        );
+        return DomainEventDataBuilder
+            .Json(DomainEventTypeMapper.GetTypeName(@event), (object)@event)
+            .EventId(@event.Id)
+            .MetadataAsJson((object)@event.Metadata)
+            .Build();
     }
 
     /// <summary>
@@ -126,24 +119,6 @@ public static class DomainEventMapper
         ArgumentNullException.ThrowIfNull(datas);
 
         return datas.Select(ToDomain<T>).ToList();
-    }
-
-    /// <summary>
-    ///     Serializes an object to JSON byte array.
-    /// </summary>
-    /// <param name="obj">The object to serialize</param>
-    /// <returns>UTF-8 JSON byte array</returns>
-    /// <exception cref="InvalidOperationException">Thrown when serialization fails</exception>
-    private static byte[] _SerializeToJson(object obj)
-    {
-        try
-        {
-            return JsonSerializer.SerializeToUtf8Bytes(obj);
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"Serialization failed: {ex.Message}", ex);
-        }
     }
 
     /// <summary>
