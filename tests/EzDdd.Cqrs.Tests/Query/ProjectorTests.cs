@@ -1,4 +1,5 @@
 using EzDdd.Cqrs.Query;
+using EzDdd.UseCase.Port.In;
 
 namespace EzDdd.Cqrs.Tests.Query;
 
@@ -9,18 +10,42 @@ public class ProjectorTests
     {
         TestProjector projector = new();
 
-        Assert.IsAssignableFrom<IProjector>(projector);
+        Assert.IsAssignableFrom<IProjector<string>>(projector);
     }
 
     [Fact]
-    public void Projector_MarkerPattern_ProvidesSemanticClarity()
+    public void Interface_ExtendsIReactor()
     {
         TestProjector projector = new();
-        // ReSharper disable once ConvertTypeCheckToNullCheck
-        bool isProjector = projector is IProjector;
 
-        Assert.True(isProjector);
+        Assert.IsAssignableFrom<IReactor<string>>(projector);
     }
 
-    private class TestProjector : IProjector;
+    [Fact]
+    public void Interface_InputIsContravariant()
+    {
+        ObjectProjector projector = new();
+
+        // Compile-time verification: IProjector<in TInput> allows assigning
+        // a projector of a base input type to a more derived input type.
+        IProjector<string> stringProjector = projector;
+
+        Assert.Same(projector, stringProjector);
+    }
+
+    private class TestProjector : IProjector<string>
+    {
+        public Task ExecuteAsync(string input)
+        {
+            return Task.CompletedTask;
+        }
+    }
+
+    private class ObjectProjector : IProjector<object>
+    {
+        public Task ExecuteAsync(object input)
+        {
+            return Task.CompletedTask;
+        }
+    }
 }

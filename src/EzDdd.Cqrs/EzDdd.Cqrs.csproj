@@ -32,7 +32,8 @@ Features:
 • IQuery&lt;TInput, TOutput&gt; - Read operations marker
 • IInquiry&lt;TInput, TOutput&gt; - Validation queries usable within commands
 • IProjection&lt;TInput, TOutput&gt; - Read model builder
-• IProjector - Background service marker for maintaining projections
+• IProjector&lt;TInput&gt; - Reactor that maintains read models in the query database
+• INotifier&lt;TInput&gt; - Reactor that dispatches external domain events (integration events)
 • IArchive&lt;TData, TId&gt; - Query database interface (read-side repository)
 • CqrsOutput&lt;T&gt; - Unified output with fluent API
 • Generic variance (contravariant input, covariant output)

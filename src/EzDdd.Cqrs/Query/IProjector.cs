@@ -3,25 +3,25 @@ using EzDdd.UseCase.Port.In;
 namespace EzDdd.Cqrs.Query;
 
 /// <summary>
-///     <c>IProjector</c> is a marker interface for background services that maintain read models.
+///     <c>IProjector</c> is a kind of <see cref="IReactor{TInput}" /> that represents a service
+///     in the use cases layer that writes read models in a query database.
 ///     Projectors listen to domain events and update read models in <see cref="IArchive{TData, TId}" />
 ///     to keep the query side eventually consistent with the write side.
 /// </summary>
 /// <remarks>
 ///     <para>
-///         <b>Responsibility</b>: Projectors implement the Observer pattern, subscribing to
-///         domain events published by the write model and projecting them into denormalized
-///         read models optimized for queries.
+///         <b>Responsibility</b>: Projectors receive domain events published by the write model
+///         and project them into denormalized read models optimized for queries. The event
+///         handling contract is inherited from <see cref="IReactor{TInput}" />:
+///         <c>ExecuteAsync(TInput)</c>.
 ///     </para>
 ///     <para>
 ///         <b>Key Characteristics</b>:
 ///     </para>
 ///     <list type="bullet">
 ///         <item>
-///             <b>Background Service</b>: Runs continuously, listening for events.
-///         </item>
-///         <item>
-///             <b>Event Handler</b>: Receives domain events and processes them to update read models.
+///             <b>Reactor</b>: Handles each received event via
+///             <see cref="IReactor{TInput}.ExecuteAsync(TInput)" />.
 ///         </item>
 ///         <item>
 ///             <b>Read Model Updater</b>: Updates <see cref="IArchive{TData, TId}" /> when
@@ -37,7 +37,8 @@ namespace EzDdd.Cqrs.Query;
 ///     <list type="bullet">
 ///         <item>
 ///             In .NET, projectors typically also implement <c>IHostedService</c> or
-///             <c>BackgroundService</c> for lifecycle management (Start/Stop).
+///             <c>BackgroundService</c> for lifecycle management (Start/Stop). The lifecycle
+///             remains an infrastructure concern outside this interface.
 ///         </item>
 ///         <item>
 ///             Projectors should handle events idempotently (same event processed multiple
@@ -51,13 +52,13 @@ namespace EzDdd.Cqrs.Query;
 ///         <b>CQRS Flow</b>:
 ///     </para>
 ///     <code>
-///         Command → Aggregate → Events → Repository → MessageBus → Projector → Archive → Query
+///         Command → Aggregate → Events → Repository → Relay → Projector → Archive → Query
 ///     </code>
 ///     <para>
 ///         <b>Extensibility</b>:
 ///     </para>
 ///     <list type="bullet">
-///         <item>Implement event handling logic to process domain events and update read models</item>
+///         <item>Implement <c>ExecuteAsync</c> to process domain events and update read models</item>
 ///         <item>Combine with .NET <c>BackgroundService</c> or <c>IHostedService</c> for lifecycle management (Start/Stop)</item>
 ///         <item>Multiple projectors can run concurrently, each maintaining different read models</item>
 ///         <item>Supports custom event filtering logic in implementations (process only relevant events)</item>
@@ -68,9 +69,12 @@ namespace EzDdd.Cqrs.Query;
 ///         </item>
 ///     </list>
 ///     <para>
-///         See ADR-0020 (IProjector Lifecycle Management) for detailed lifecycle integration patterns.
+///         See ADR-0028 (Reactor Type Hierarchy) for the generic contract, and ADR-0020
+///         (IProjector Lifecycle Management, superseded by ADR-0028) for the original
+///         lifecycle integration patterns that remain applicable.
 ///     </para>
 /// </remarks>
+/// <typeparam name="TInput">The type of input message (typically domain event data) this projector processes.</typeparam>
 /// <example>
 ///     <code>
 ///         // Read model
@@ -80,35 +84,25 @@ namespace EzDdd.Cqrs.Query;
 ///             decimal Balance,
 ///             DateTimeOffset CreatedOn
 ///         );
-/// 
+///
 ///         // Projector implementation
-///         public class AccountProjector : IProjector, IReactor, BackgroundService
+///         public class AccountProjector : IProjector&lt;DomainEventData&gt;
 ///         {
 ///             private readonly IArchive&lt;AccountReadModel, AccountId&gt; _archive;
-///             private readonly IMessageBus&lt;DomainEventData&gt; _eventBus;
 ///             private readonly DomainEventMapper _eventMapper;
-/// 
+///
 ///             public AccountProjector(
 ///                 IArchive&lt;AccountReadModel, AccountId&gt; archive,
-///                 IMessageBus&lt;DomainEventData&gt; eventBus,
 ///                 DomainEventMapper eventMapper)
 ///             {
 ///                 _archive = archive;
-///                 _eventBus = eventBus;
 ///                 _eventMapper = eventMapper;
 ///             }
-/// 
-///             protected override Task ExecuteAsync(CancellationToken stoppingToken)
-///             {
-///                 // Subscribe to event bus
-///                 _eventBus.Subscribe(this);
-///                 return Task.CompletedTask;
-///             }
-/// 
-///             public async Task UpdateAsync(DomainEventData eventData)
+///
+///             public async Task ExecuteAsync(DomainEventData eventData)
 ///             {
 ///                 var domainEvent = _eventMapper.ToDomainEvent(eventData);
-/// 
+///
 ///                 switch (domainEvent)
 ///                 {
 ///                     case AccountCreated e:
@@ -120,7 +114,7 @@ namespace EzDdd.Cqrs.Query;
 ///                         );
 ///                         await _archive.SaveAsync(readModel);
 ///                         break;
-/// 
+///
 ///                     case MoneyDeposited e:
 ///                         var account = await _archive.FindByIdAsync(e.AccountId);
 ///                         if (account != null)
@@ -129,7 +123,7 @@ namespace EzDdd.Cqrs.Query;
 ///                             await _archive.SaveAsync(updated);
 ///                         }
 ///                         break;
-/// 
+///
 ///                     case AccountClosed e:
 ///                         var toDelete = await _archive.FindByIdAsync(e.AccountId);
 ///                         if (toDelete != null)
@@ -142,8 +136,7 @@ namespace EzDdd.Cqrs.Query;
 ///         }
 ///     </code>
 /// </example>
-public interface IProjector
+public interface IProjector<in TInput> : IReactor<TInput>
 {
-    // Pure marker interface - no methods
-    // Implementations typically also implement IReactor and IHostedService/BackgroundService
+    // Inherits Task ExecuteAsync(TInput input) from IReactor<TInput>
 }

@@ -257,7 +257,6 @@ CLAUDE.md
 | [ADR-0017](0017-cqrsoutput-implementation-strategy.md) | CqrsOutput Implementation Strategy | 2025-11-17 | Accepted |
 | [ADR-0018](0018-iarchive-async-method-design.md) | IArchive Async Method Design | 2025-11-17 | Accepted |
 | [ADR-0019](0019-iinquiry-iprojection-independence.md) | IInquiry and IProjection Independence from IUseCase | 2025-11-17 | Accepted |
-| [ADR-0020](0020-iprojector-lifecycle-management.md) | IProjector Lifecycle Management Integration | 2025-11-18 | Accepted |
 | [ADR-0021](0021-generic-variance-annotations.md) | Generic Variance Annotations for CQRS Interfaces | 2025-11-18 | Accepted |
 | [ADR-0022](0022-read-model-design-patterns.md) | Read Model Design Patterns | 2025-11-18 | Accepted |
 | [ADR-0023](0023-archive-idempotency-requirements.md) | Archive Idempotency Requirements | 2025-11-18 | Accepted |
@@ -265,6 +264,7 @@ CLAUDE.md
 | [ADR-0025](0025-messageproducer-refactoring-java-4-1-0-alignment.md) | MessageProducer Refactoring - Java 4.1.0 Alignment | 2026-01-07 | Accepted |
 | [ADR-0026](0026-service-layer-pattern.md) | Service Layer Pattern for Complex Business Logic | 2026-01-08 | Accepted |
 | [ADR-0027](0027-thread-null-safety-review.md) | Thread Safety and Null Safety Review (Java 4.1.0 Sync - Stage S5) | 2026-01-08 | Accepted |
+| [ADR-0028](0028-reactor-hierarchy-projector-notifier-genericization.md) | Reactor Type Hierarchy and Projector/Notifier Genericization | 2026-07-04 | Accepted |
 
 ### Proposed
 
@@ -276,7 +276,9 @@ CLAUDE.md
 
 ### Superseded
 
-*(None yet)*
+| ADR | Title | Date | Status |
+|-----|-------|------|--------|
+| [ADR-0020](0020-iprojector-lifecycle-management.md) | IProjector Lifecycle Management Integration | 2025-11-18 | Superseded by [ADR-0028](0028-reactor-hierarchy-projector-notifier-genericization.md) |
 
 ---
 
@@ -358,4 +360,4 @@ done
 ---
 
 *This README follows the ADR maintenance workflow defined above.*
-*Last Updated: 2026-01-07*
+*Last Updated: 2026-07-04*

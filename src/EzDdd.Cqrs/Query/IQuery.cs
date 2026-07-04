@@ -29,7 +29,7 @@ namespace EzDdd.Cqrs.Query;
 ///     </list>
 ///     <para>
 ///         Read models in the query database are kept eventually consistent with the write model
-///         via <see cref="IProjector" /> background services that listen to domain events.
+///         via <see cref="IProjector{TInput}" /> background services that listen to domain events.
 ///     </para>
 ///     <para>
 ///         <b>Generic Variance</b>: This interface uses contravariant input (<c>in TInput</c>)

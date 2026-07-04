@@ -2,11 +2,17 @@
 
 ## Status
 
-**Accepted**
+**Superseded by [ADR-0028](0028-reactor-hierarchy-projector-notifier-genericization.md)**
+
+> The "pure marker interface" decision is superseded: `IProjector` is now
+> `IProjector<in TInput> : IReactor<TInput>` (Java 5.0.0 alignment). The
+> lifecycle-separation guidance in this ADR (pair implementations with
+> `BackgroundService`/`IHostedService`; keep hosting concerns out of the
+> domain interface) remains applicable and is carried forward by ADR-0028.
 
 - **Date**: 2025-11-18
 - **Deciders**: Development Team
-- **Status Date**: 2025-11-18
+- **Status Date**: 2026-07-04
 
 ---
 
@@ -313,5 +319,6 @@ public async Task UpdateAsync_AccountCreated_SavesReadModel()
 | Date       | Status      | Notes                          |
 |------------|-------------|--------------------------------|
 | 2025-11-18 | Accepted    | Initial decision after Iteration 4 & 6 implementation |
+| 2026-07-04 | Superseded  | Superseded by ADR-0028 (Reactor hierarchy, Projector genericization) |
 
 ---

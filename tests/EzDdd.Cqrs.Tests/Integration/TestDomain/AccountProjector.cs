@@ -20,7 +20,7 @@ namespace EzDdd.Cqrs.Tests.Integration.TestDomain;
 ///         subscribing to events from a message broker (e.g., Kafka, RabbitMQ).
 ///     </para>
 /// </remarks>
-public sealed class AccountProjector : IProjector
+public sealed class AccountProjector : IProjector<DomainEventData>
 {
     private readonly IArchive<AccountSummaryReadModel, AccountId> _archive;
 
@@ -35,7 +35,7 @@ public sealed class AccountProjector : IProjector
 
     /// <summary>
     ///     Executes the projector logic to update the read model based on the received domain event.
-    ///     This method is called by the message bus when events are published.
+    ///     This method is called by the event relay infrastructure when events are published.
     /// </summary>
     /// <param name="eventData">The domain event data to process.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
