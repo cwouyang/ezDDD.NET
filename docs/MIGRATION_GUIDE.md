@@ -1407,7 +1407,7 @@ public class SqlRepositoryPeer<D, ID> : IRepositoryPeer<D, ID>
 
 **Questions or Issues?**
 
-- GitHub Issues: https://github.com/TeddyChen/ezddd.NET/issues
+- GitHub Issues: https://github.com/cwouyang/ezDDD.NET/issues
 - Java ezddd: https://gitlab.com/TeddyChen/ezddd
 - .NET Documentation: https://learn.microsoft.com/en-us/dotnet/
 

@@ -41,11 +41,11 @@ Features:
 Designed for Domain-Driven Design with event sourcing and state sourcing.</Description>
     <PackageTags>ddd;domain-driven-design;aggregate-root;entity;value-object;domain-events;event-sourcing;tactical-ddd;dotnet;csharp</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/TeddyChen/ezddd.NET</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/TeddyChen/ezddd.NET</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/cwouyang/ezDDD.NET</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/cwouyang/ezDDD.NET</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageReleaseNotes>See https://github.com/TeddyChen/ezddd.NET/blob/master/CHANGELOG.md for release notes.</PackageReleaseNotes>
+    <PackageReleaseNotes>See https://github.com/cwouyang/ezDDD.NET/blob/master/CHANGELOG.md for release notes.</PackageReleaseNotes>
 
     <!-- Documentation -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

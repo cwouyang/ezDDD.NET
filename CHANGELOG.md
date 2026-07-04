@@ -133,8 +133,8 @@ See the [Migration Guide](docs/MIGRATION_GUIDE.md) for complete migration instru
 ## How to Report Issues
 
 If you encounter any issues or have suggestions:
-- **Bug Reports**: [GitHub Issues](https://github.com/TeddyChen/ezddd.NET/issues)
-- **Feature Requests**: [GitHub Discussions](https://github.com/TeddyChen/ezddd.NET/discussions)
+- **Bug Reports**: [GitHub Issues](https://github.com/cwouyang/ezDDD.NET/issues)
+- **Feature Requests**: [GitHub Discussions](https://github.com/cwouyang/ezDDD.NET/discussions)
 
 ---
 
@@ -155,3 +155,7 @@ MIT License — see [LICENSE](LICENSE). Third-party attributions are listed in
 - **Clean Architecture**: Robert C. Martin
 - **Event Sourcing**: Martin Fowler
 - **CQRS**: Greg Young
+
+---
+
+[Unreleased]: https://github.com/cwouyang/ezDDD.NET/commits/master

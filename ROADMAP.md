@@ -684,7 +684,7 @@ Total: 27/30 ADRs   ██████████████████░░
 ## 📞 Project Contacts
 
 **Project Lead**: TeddyChen
-**Repository**: [GitLab - TeddyChen/ezddd.NET](https://gitlab.com/TeddyChen/ezddd.NET) _(if public)_
+**Repository**: [GitHub - cwouyang/ezDDD.NET](https://github.com/cwouyang/ezDDD.NET)
 **Java Version**: [GitLab - TeddyChen/ezddd](https://gitlab.com/TeddyChen/ezddd)
 
 ---

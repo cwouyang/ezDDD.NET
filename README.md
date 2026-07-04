@@ -1276,8 +1276,8 @@ See [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt) for the required attribut
 ## Support
 
 - 📖 **Documentation**: See [docs/](docs/) directory for comprehensive guides
-- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/TeddyChen/ezddd.NET/issues)
-- 💡 **Feature Requests**: [GitHub Discussions](https://github.com/TeddyChen/ezddd.NET/discussions)
+- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/cwouyang/ezDDD.NET/issues)
+- 💡 **Feature Requests**: [GitHub Discussions](https://github.com/cwouyang/ezDDD.NET/discussions)
 - 💬 **Questions**: [Stack Overflow](https://stackoverflow.com/questions/tagged/ezddd-dotnet) (tag: `ezddd-dotnet`)
 
 ---

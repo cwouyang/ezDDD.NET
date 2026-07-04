@@ -281,7 +281,7 @@ Add custom fields if helpful:
 - **[README.md](README.md)** - ADR workflow and index
 
 ### Real-World Example
-- **[ezDDD.NET ADR Planning](https://github.com/TeddyChen/ezddd.NET/blob/master/docs/adr/ADR_PLANNING.md)** _(if public)_
+- **[ezDDD.NET ADR Planning](https://github.com/cwouyang/ezDDD.NET/blob/master/docs/adr/ADR_PLANNING.md)** _(if public)_
   - Complete example with 28 planned ADRs across 7 priority groups
   - Shows how to organize a library port project with 6 implementation stages
   - Demonstrates dependency tracking and consolidation opportunities
