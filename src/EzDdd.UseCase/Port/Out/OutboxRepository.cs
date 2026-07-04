@@ -61,14 +61,14 @@ namespace EzDdd.UseCase.Port.Out;
 /// var peer = new SqlRepositoryPeer();
 /// var mapper = new BankAccountMapper();
 /// var repository = new OutboxRepository&lt;BankAccount, BankAccountData, AccountId&gt;(peer, mapper);
-/// 
+///
 /// // Load aggregate
 /// var account = await repository.FindByIdAsync(accountId);
 /// if (account != null)
 /// {
 ///     // Modify aggregate
 ///     account.Deposit(100.00m);
-/// 
+///
 ///     // Save (atomically persists state + events)
 ///     await repository.SaveAsync(account);
 /// }
@@ -92,11 +92,7 @@ public class OutboxRepository<TAggregate, TData, TId> : IRepository<TAggregate, 
     ///         and enable easy testing with mock implementations.
     ///     </para>
     /// </remarks>
-    public OutboxRepository
-    (
-        IRepositoryPeer<TData, TId> peer,
-        OutboxMapper<TAggregate, TData, TId> mapper
-    )
+    public OutboxRepository(IRepositoryPeer<TData, TId> peer, OutboxMapper<TAggregate, TData, TId> mapper)
     {
         ArgumentNullException.ThrowIfNull(peer);
         ArgumentNullException.ThrowIfNull(mapper);

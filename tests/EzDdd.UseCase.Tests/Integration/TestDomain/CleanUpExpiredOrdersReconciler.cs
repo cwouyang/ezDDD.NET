@@ -95,12 +95,7 @@ public record OrderCleanupContext(int ExpirationDays);
 /// <param name="DeletedCount">Number of orders successfully deleted.</param>
 /// <param name="ErrorCount">Number of errors encountered during cleanup.</param>
 /// <param name="Errors">List of error messages (if any).</param>
-public record OrderCleanupReport(
-    int TotalChecked,
-    int DeletedCount,
-    int ErrorCount,
-    IReadOnlyList<string> Errors
-);
+public record OrderCleanupReport(int TotalChecked, int DeletedCount, int ErrorCount, IReadOnlyList<string> Errors);
 
 /// <summary>
 ///     Repository interface for Order aggregate (simplified for example).

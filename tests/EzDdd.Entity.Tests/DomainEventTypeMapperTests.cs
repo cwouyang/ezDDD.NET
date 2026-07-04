@@ -3,7 +3,7 @@ namespace EzDdd.Entity.Tests;
 [Collection("DomainEventTypeMapper")]
 public class DomainEventTypeMapperTests
 {
-#region Register Tests
+    #region Register Tests
 
     [Fact]
     public void Register_WithTypeAndName_StoresMapping()
@@ -21,10 +21,7 @@ public class DomainEventTypeMapperTests
         DomainEventTypeMapper.Clear();
         DomainEventTypeMapper.Register<TestEvent1>("TestEvent1");
 
-        Assert.Throws<ArgumentException>
-        (() =>
-             DomainEventTypeMapper.Register<TestEvent2>("TestEvent1")
-        );
+        Assert.Throws<ArgumentException>(() => DomainEventTypeMapper.Register<TestEvent2>("TestEvent1"));
     }
 
     [Fact]
@@ -33,15 +30,12 @@ public class DomainEventTypeMapperTests
         DomainEventTypeMapper.Clear();
         DomainEventTypeMapper.Register<TestEvent1>("TestEvent1");
 
-        Assert.Throws<ArgumentException>
-        (() =>
-             DomainEventTypeMapper.Register<TestEvent1>("TestEvent1_Duplicate")
-        );
+        Assert.Throws<ArgumentException>(() => DomainEventTypeMapper.Register<TestEvent1>("TestEvent1_Duplicate"));
     }
 
-#endregion
+    #endregion
 
-#region GetTypeName Tests
+    #region GetTypeName Tests
 
     [Fact]
     public void GetTypeName_FromType_ReturnsRegisteredName()
@@ -59,13 +53,7 @@ public class DomainEventTypeMapperTests
     {
         DomainEventTypeMapper.Clear();
         DomainEventTypeMapper.Register<TestEvent1>("TestEvent1");
-        TestEvent1 @event = new
-        (
-            Guid.NewGuid(),
-            DateTimeOffset.UtcNow,
-            "source",
-            new Dictionary<string, string>()
-        );
+        TestEvent1 @event = new(Guid.NewGuid(), DateTimeOffset.UtcNow, "source", new Dictionary<string, string>());
 
         string typeName = DomainEventTypeMapper.GetTypeName(@event);
 
@@ -77,15 +65,12 @@ public class DomainEventTypeMapperTests
     {
         DomainEventTypeMapper.Clear();
 
-        Assert.Throws<InvalidOperationException>
-        (() =>
-             DomainEventTypeMapper.GetTypeName(typeof(TestEvent1))
-        );
+        Assert.Throws<InvalidOperationException>(() => DomainEventTypeMapper.GetTypeName(typeof(TestEvent1)));
     }
 
-#endregion
+    #endregion
 
-#region GetType Tests
+    #region GetType Tests
 
     [Fact]
     public void GetType_WithRegisteredName_ReturnsType()
@@ -103,15 +88,12 @@ public class DomainEventTypeMapperTests
     {
         DomainEventTypeMapper.Clear();
 
-        Assert.Throws<InvalidOperationException>
-        (() =>
-             DomainEventTypeMapper.GetType("UnknownEvent")
-        );
+        Assert.Throws<InvalidOperationException>(() => DomainEventTypeMapper.GetType("UnknownEvent"));
     }
 
-#endregion
+    #endregion
 
-#region Contains Tests
+    #region Contains Tests
 
     [Fact]
     public void Contains_WithRegisteredName_ReturnsTrue()
@@ -134,9 +116,9 @@ public class DomainEventTypeMapperTests
         Assert.False(contains);
     }
 
-#endregion
+    #endregion
 
-#region GetAllMappings Tests
+    #region GetAllMappings Tests
 
     [Fact]
     public void GetAllMappings_ReturnsAllRegisteredMappings()
@@ -166,9 +148,9 @@ public class DomainEventTypeMapperTests
         Assert.IsAssignableFrom<IReadOnlyDictionary<string, Type>>(mappings);
     }
 
-#endregion
+    #endregion
 
-#region Clear Tests
+    #region Clear Tests
 
     [Fact]
     public void Clear_RemovesAllMappings()
@@ -183,9 +165,9 @@ public class DomainEventTypeMapperTests
         Assert.Empty(DomainEventTypeMapper.GetAllMappings());
     }
 
-#endregion
+    #endregion
 
-#region Thread Safety Tests
+    #region Thread Safety Tests
 
     [Fact]
     public async Task ThreadSafety_ConcurrentRegister_HandlesCorrectly()
@@ -198,34 +180,31 @@ public class DomainEventTypeMapperTests
         for (int i = 0; i < eventCount; i++)
         {
             int index = i;
-            tasks.Add
-            (
-                Task.Run
-                (() =>
+            tasks.Add(
+                Task.Run(() =>
+                {
+                    try
                     {
-                        try
+                        // Each task registers a unique event type
+                        // Using TestEvent1, TestEvent2, TestEvent3 repeatedly
+                        switch (index % 3)
                         {
-                            // Each task registers a unique event type
-                            // Using TestEvent1, TestEvent2, TestEvent3 repeatedly
-                            switch (index % 3)
-                            {
-                                case 0:
-                                    DomainEventTypeMapper.Register<TestEvent1>($"Event_{index}");
-                                    break;
-                                case 1:
-                                    DomainEventTypeMapper.Register<TestEvent2>($"Event_{index}");
-                                    break;
-                                default:
-                                    DomainEventTypeMapper.Register<TestEvent3>($"Event_{index}");
-                                    break;
-                            }
-                        }
-                        catch (ArgumentException)
-                        {
-                            // Duplicate registration is expected in concurrent scenario
+                            case 0:
+                                DomainEventTypeMapper.Register<TestEvent1>($"Event_{index}");
+                                break;
+                            case 1:
+                                DomainEventTypeMapper.Register<TestEvent2>($"Event_{index}");
+                                break;
+                            default:
+                                DomainEventTypeMapper.Register<TestEvent3>($"Event_{index}");
+                                break;
                         }
                     }
-                )
+                    catch (ArgumentException)
+                    {
+                        // Duplicate registration is expected in concurrent scenario
+                    }
+                })
             );
         }
         await Task.WhenAll(tasks);
@@ -250,35 +229,29 @@ public class DomainEventTypeMapperTests
             int index = i;
 
             // Write task
-            tasks.Add
-            (
-                Task.Run
-                (() =>
+            tasks.Add(
+                Task.Run(() =>
+                {
+                    try
                     {
-                        try
-                        {
-                            DomainEventTypeMapper.Register<TestEvent2>($"Event_{index}");
-                        }
-                        catch (ArgumentException) { }
+                        DomainEventTypeMapper.Register<TestEvent2>($"Event_{index}");
                     }
-                )
+                    catch (ArgumentException) { }
+                })
             );
 
             // Read task
-            tasks.Add
-            (
-                Task.Run
-                (() =>
+            tasks.Add(
+                Task.Run(() =>
+                {
+                    try
                     {
-                        try
-                        {
-                            string _ = DomainEventTypeMapper.GetTypeName(typeof(TestEvent1));
-                            bool __ = DomainEventTypeMapper.Contains("TestEvent1");
-                            IReadOnlyDictionary<string, Type> ___ = DomainEventTypeMapper.GetAllMappings();
-                        }
-                        catch { }
+                        string _ = DomainEventTypeMapper.GetTypeName(typeof(TestEvent1));
+                        bool __ = DomainEventTypeMapper.Contains("TestEvent1");
+                        IReadOnlyDictionary<string, Type> ___ = DomainEventTypeMapper.GetAllMappings();
                     }
-                )
+                    catch { }
+                })
             );
         }
         await Task.WhenAll(tasks);
@@ -286,19 +259,17 @@ public class DomainEventTypeMapperTests
         Assert.True(DomainEventTypeMapper.Contains("TestEvent1"));
     }
 
-#endregion
+    #endregion
 
     // Test events
-    private record TestEvent1
-    (
+    private record TestEvent1(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent;
 
-    private record TestEvent2
-    (
+    private record TestEvent2(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -306,8 +277,7 @@ public class DomainEventTypeMapperTests
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent;
 
-    private record TestEvent3
-    (
+    private record TestEvent3(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,

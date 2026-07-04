@@ -1,18 +1,16 @@
 using EzDdd.Entity;
 using EzDdd.UseCase.Port.Out;
-
 using Xunit;
 
 namespace EzDdd.UseCase.Tests.Port.Out;
 
 public class EventStoreDataTests
 {
-#region Test Helpers
+    #region Test Helpers
 
     private record TestId(string Value);
 
-    private record TestEvent
-    (
+    private record TestEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -20,9 +18,9 @@ public class EventStoreDataTests
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent;
 
-#endregion
+    #endregion
 
-#region Constructor and Default Values
+    #region Constructor and Default Values
 
     [Fact]
     public void Constructor_WhenCreated_SetsDefaultValues()
@@ -36,9 +34,9 @@ public class EventStoreDataTests
         Assert.Equal(string.Empty, data.StreamName);
     }
 
-#endregion
+    #endregion
 
-#region Property Setters and Getters
+    #region Property Setters and Getters
 
     [Fact]
     public void Id_WhenSet_CanBeRetrieved()
@@ -68,7 +66,7 @@ public class EventStoreDataTests
         var events = new List<IDomainEvent>
         {
             new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", "Event1", new Dictionary<string, string>()),
-            new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", "Event2", new Dictionary<string, string>())
+            new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", "Event2", new Dictionary<string, string>()),
         };
 
         data.Events = events;
@@ -88,9 +86,9 @@ public class EventStoreDataTests
         Assert.Equal("account-123", data.StreamName);
     }
 
-#endregion
+    #endregion
 
-#region GetOptimisticLockVersion
+    #region GetOptimisticLockVersion
 
     [Fact]
     public void GetOptimisticLockVersion_WithNoEvents_ReturnsVersion()
@@ -109,7 +107,7 @@ public class EventStoreDataTests
         {
             new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", "Event1", new Dictionary<string, string>()),
             new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", "Event2", new Dictionary<string, string>()),
-            new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", "Event3", new Dictionary<string, string>())
+            new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", "Event3", new Dictionary<string, string>()),
         };
         var data = new EventStoreData<TestId> { Version = 5, Events = events };
 
@@ -123,7 +121,7 @@ public class EventStoreDataTests
     {
         var events = new List<IDomainEvent>
         {
-            new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", "Event1", new Dictionary<string, string>())
+            new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", "Event1", new Dictionary<string, string>()),
         };
         var data = new EventStoreData<TestId> { Version = 0, Events = events };
 
@@ -132,9 +130,9 @@ public class EventStoreDataTests
         Assert.Equal(1, lockVersion); // Version (0) + 1 event
     }
 
-#endregion
+    #endregion
 
-#region IStoreData Interface Implementation
+    #region IStoreData Interface Implementation
 
     [Fact]
     public void EventStoreData_ImplementsIStoreDataInterface()
@@ -147,12 +145,17 @@ public class EventStoreDataTests
     [Fact]
     public void EventStoreData_IStoreDataMembers_AreAccessible()
     {
-        IStoreData<TestId> data = new EventStoreData<TestId> { Id = new TestId("test-id"), Version = 3, StreamName = "test-stream" };
+        IStoreData<TestId> data = new EventStoreData<TestId>
+        {
+            Id = new TestId("test-id"),
+            Version = 3,
+            StreamName = "test-stream",
+        };
 
         Assert.Equal(new TestId("test-id"), data.Id);
         Assert.Equal("test-stream", data.StreamName);
         Assert.Equal(3, data.GetOptimisticLockVersion());
     }
 
-#endregion
+    #endregion
 }

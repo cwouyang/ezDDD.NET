@@ -1,5 +1,4 @@
 using System.Text.Json;
-
 using EzDdd.Common;
 
 namespace EzDdd.Entity.Tests;
@@ -126,9 +125,8 @@ public class IntegrationTests
         BankAccount account = new(accountId, "Charlie Brown", new Money(100m, "USD"));
 
         // R2 postcondition check prevents negative balance
-        InvalidOperationException exception = Assert.Throws<InvalidOperationException>
-        (() =>
-             account.Withdraw(new Money(150m, "USD"), "Over-withdrawal attempt")
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() =>
+            account.Withdraw(new Money(150m, "USD"), "Over-withdrawal attempt")
         );
         Assert.Contains("balance cannot be negative", exception.Message);
 
@@ -155,7 +153,10 @@ public class IntegrationTests
         Assert.NotEqual(money1, money4); // Different amount
 
         // Immutability via with expression
-        Money money5 = money1 with { Amount = 200m };
+        Money money5 = money1 with
+        {
+            Amount = 200m,
+        };
         Assert.Equal(100m, money1.Amount); // Original unchanged
         Assert.Equal(200m, money5.Amount);
     }
@@ -164,16 +165,14 @@ public class IntegrationTests
     public void Integration_EntityIdentity_WorksWithTransactionType()
     {
         Guid transactionId = Guid.NewGuid();
-        Transaction transaction1 = new
-        (
+        Transaction transaction1 = new(
             transactionId,
             DateTimeOffset.UtcNow,
             new Money(100m, "USD"),
             "Test transaction",
             TransactionType.Deposit
         );
-        Transaction transaction2 = new
-        (
+        Transaction transaction2 = new(
             transactionId,
             DateTimeOffset.UtcNow.AddMinutes(1),
             new Money(200m, "USD"),
@@ -234,24 +233,20 @@ public class IntegrationTests
         for (int i = 0; i < accountCount; i++)
         {
             int accountNumber = i;
-            tasks.Add
-            (
-                Task.Run
-                (() =>
-                    {
-                        BankAccount account = new
-                        (
-                            AccountId.NewId(),
-                            $"User{accountNumber}",
-                            new Money(1000m + accountNumber, "USD")
-                        );
+            tasks.Add(
+                Task.Run(() =>
+                {
+                    BankAccount account = new(
+                        AccountId.NewId(),
+                        $"User{accountNumber}",
+                        new Money(1000m + accountNumber, "USD")
+                    );
 
-                        account.Deposit(new Money(100m, "USD"), "Deposit 1");
-                        account.Withdraw(new Money(50m, "USD"), "Withdrawal 1");
+                    account.Deposit(new Money(100m, "USD"), "Deposit 1");
+                    account.Withdraw(new Money(50m, "USD"), "Withdrawal 1");
 
-                        return account;
-                    }
-                )
+                    return account;
+                })
             );
         }
 
@@ -259,19 +254,19 @@ public class IntegrationTests
 
         // All accounts created successfully
         Assert.Equal(accountCount, accounts.Length);
-        Assert.All
-        (
-            accounts, account =>
+        Assert.All(
+            accounts,
+            account =>
             {
                 Assert.False(account.IsDeleted);
                 Assert.Equal(2L, account.Version); // 3 events (0-2)
             }
         );
     }
+
     // ========== Domain Events ==========
 
-    private record AccountOpenedEvent
-    (
+    private record AccountOpenedEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -280,8 +275,7 @@ public class IntegrationTests
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent, IInternalDomainEvent.IConstructionEvent;
 
-    private record MoneyDepositedEvent
-    (
+    private record MoneyDepositedEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -290,8 +284,7 @@ public class IntegrationTests
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent;
 
-    private record MoneyWithdrawnEvent
-    (
+    private record MoneyWithdrawnEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -300,8 +293,7 @@ public class IntegrationTests
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent;
 
-    private record AccountClosedEvent
-    (
+    private record AccountClosedEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -320,7 +312,10 @@ public class IntegrationTests
                 throw new InvalidOperationException($"Cannot add {other.Currency} to {Currency}");
             }
 
-            return this with { Amount = Amount + other.Amount };
+            return this with
+            {
+                Amount = Amount + other.Amount,
+            };
         }
 
         public Money Subtract(Money other)
@@ -330,7 +325,10 @@ public class IntegrationTests
                 throw new InvalidOperationException($"Cannot subtract {other.Currency} from {Currency}");
             }
 
-            return this with { Amount = Amount - other.Amount };
+            return this with
+            {
+                Amount = Amount - other.Amount,
+            };
         }
 
         public bool IsNegative()
@@ -367,7 +365,7 @@ public class IntegrationTests
     private enum TransactionType
     {
         Deposit,
-        Withdrawal
+        Withdrawal,
     }
 
     // ========== Aggregate Root ==========
@@ -384,8 +382,7 @@ public class IntegrationTests
                 throw new ArgumentException("Initial deposit cannot be negative", nameof(initialDeposit));
             }
 
-            AccountOpenedEvent opened = new
-            (
+            AccountOpenedEvent opened = new(
                 Guid.NewGuid(),
                 DateTimeOffset.UtcNow,
                 id.ToString(),
@@ -398,9 +395,8 @@ public class IntegrationTests
         }
 
         // Constructor for event replay
-        public BankAccount(IEnumerable<IInternalDomainEvent> events) : base(events)
-        {
-        }
+        public BankAccount(IEnumerable<IInternalDomainEvent> events)
+            : base(events) { }
 
         public string AccountHolder { get; private set; } = string.Empty;
 
@@ -415,8 +411,7 @@ public class IntegrationTests
                 throw new ArgumentException("Deposit amount cannot be negative", nameof(amount));
             }
 
-            MoneyDepositedEvent deposited = new
-            (
+            MoneyDepositedEvent deposited = new(
                 Guid.NewGuid(),
                 DateTimeOffset.UtcNow,
                 Id.ToString(),
@@ -435,8 +430,7 @@ public class IntegrationTests
                 throw new ArgumentException("Withdrawal amount cannot be negative", nameof(amount));
             }
 
-            MoneyWithdrawnEvent withdrawn = new
-            (
+            MoneyWithdrawnEvent withdrawn = new(
                 Guid.NewGuid(),
                 DateTimeOffset.UtcNow,
                 Id.ToString(),
@@ -450,8 +444,7 @@ public class IntegrationTests
 
         public void Close(string reason)
         {
-            AccountClosedEvent closed = new
-            (
+            AccountClosedEvent closed = new(
                 Guid.NewGuid(),
                 DateTimeOffset.UtcNow,
                 Id.ToString(),
@@ -470,10 +463,8 @@ public class IntegrationTests
                     Id = new AccountId(Guid.Parse(e.Source));
                     AccountHolder = e.AccountHolder;
                     Balance = e.InitialDeposit;
-                    _transactions.Add
-                    (
-                        new Transaction
-                        (
+                    _transactions.Add(
+                        new Transaction(
                             e.Id,
                             e.OccurredOn,
                             e.InitialDeposit,
@@ -485,31 +476,15 @@ public class IntegrationTests
 
                 case MoneyDepositedEvent e:
                     Balance = Balance.Add(e.Amount);
-                    _transactions.Add
-                    (
-                        new Transaction
-                        (
-                            e.Id,
-                            e.OccurredOn,
-                            e.Amount,
-                            e.Description,
-                            TransactionType.Deposit
-                        )
+                    _transactions.Add(
+                        new Transaction(e.Id, e.OccurredOn, e.Amount, e.Description, TransactionType.Deposit)
                     );
                     break;
 
                 case MoneyWithdrawnEvent e:
                     Balance = Balance.Subtract(e.Amount);
-                    _transactions.Add
-                    (
-                        new Transaction
-                        (
-                            e.Id,
-                            e.OccurredOn,
-                            e.Amount,
-                            e.Description,
-                            TransactionType.Withdrawal
-                        )
+                    _transactions.Add(
+                        new Transaction(e.Id, e.OccurredOn, e.Amount, e.Description, TransactionType.Withdrawal)
                     );
                     break;
 

@@ -142,12 +142,10 @@ public sealed class StateSourcingWorkflowTests : IDisposable
         OrderId orderId = new("order-007");
         Order order = new(orderId, "Grace Kim");
 
-        InvalidOperationException exception = Assert.Throws<InvalidOperationException>
-        (() =>
-            {
-                order.Confirm();
-            }
-        );
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() =>
+        {
+            order.Confirm();
+        });
         Assert.Contains("no items", exception.Message);
     }
 
@@ -169,12 +167,10 @@ public sealed class StateSourcingWorkflowTests : IDisposable
         await _repository.SaveAsync(order2);
 
         order3.AddItem("Item B", 1, 200m);
-        await Assert.ThrowsAsync<RepositorySaveException>
-        (async () =>
-            {
-                await _repository.SaveAsync(order3);
-            }
-        );
+        await Assert.ThrowsAsync<RepositorySaveException>(async () =>
+        {
+            await _repository.SaveAsync(order3);
+        });
     }
 
     [Fact]

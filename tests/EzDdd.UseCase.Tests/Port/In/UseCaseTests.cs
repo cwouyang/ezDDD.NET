@@ -23,9 +23,7 @@ public class UseCaseTests
         FailingUseCase useCase = new();
         TestInput input = new() { Value = "fail" };
 
-        await Assert.ThrowsAsync<UseCaseFailureException>
-        (async () => await useCase.ExecuteAsync(input)
-        );
+        await Assert.ThrowsAsync<UseCaseFailureException>(async () => await useCase.ExecuteAsync(input));
     }
 
     [Fact]

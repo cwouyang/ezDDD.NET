@@ -96,7 +96,8 @@ public class InquiryTests
         }
     }
 
-    private class CommandWithInquiry(IInquiry<TestInquiryInput, bool> inquiry) : ICommand<TestInquiryInput, TestCommandOutput>
+    private class CommandWithInquiry(IInquiry<TestInquiryInput, bool> inquiry)
+        : ICommand<TestInquiryInput, TestCommandOutput>
     {
         public async Task<TestCommandOutput> ExecuteAsync(TestInquiryInput input)
         {
@@ -104,18 +105,12 @@ public class InquiryTests
 
             if (!isValid)
             {
-                return TestCommandOutput.Create()
-                                        .SetMessage("Validation failed")
-                                        .Fail();
+                return TestCommandOutput.Create().SetMessage("Validation failed").Fail();
             }
 
-            return TestCommandOutput.Create()
-                                    .SetMessage("Validation passed - Command executed")
-                                    .Succeed();
+            return TestCommandOutput.Create().SetMessage("Validation passed - Command executed").Succeed();
         }
     }
 
-    private class TestCommandOutput : CqrsOutput<TestCommandOutput>
-    {
-    }
+    private class TestCommandOutput : CqrsOutput<TestCommandOutput> { }
 }

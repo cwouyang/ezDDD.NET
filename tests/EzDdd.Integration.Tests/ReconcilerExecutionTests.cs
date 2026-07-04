@@ -30,7 +30,7 @@ namespace EzDdd.Integration.Tests;
 /// </remarks>
 public sealed class ReconcilerExecutionTests
 {
-#region Realistic Workflow Tests
+    #region Realistic Workflow Tests
 
     [Fact]
     public async Task CleanupWorkflow_WithRealisticData_ShouldWorkEndToEnd()
@@ -44,46 +44,19 @@ public sealed class ReconcilerExecutionTests
         // Add 10 draft orders created 30-60 days ago (expired)
         for (int i = 1; i <= 10; i++)
         {
-            repository.Add
-            (
-                new DataItem
-                (
-                    $"ORDER-DRAFT-{i:D3}",
-                    "DRAFT",
-                    now.AddDays(-30 - i),
-                    now.AddDays(-i)
-                )
-            ); // Expired i days ago
+            repository.Add(new DataItem($"ORDER-DRAFT-{i:D3}", "DRAFT", now.AddDays(-30 - i), now.AddDays(-i))); // Expired i days ago
         }
 
         // Add 5 active orders (should not be deleted)
         for (int i = 1; i <= 5; i++)
         {
-            repository.Add
-            (
-                new DataItem
-                (
-                    $"ORDER-ACTIVE-{i:D3}",
-                    "ACTIVE",
-                    now.AddDays(-10),
-                    now.AddDays(30)
-                )
-            ); // Expires in future
+            repository.Add(new DataItem($"ORDER-ACTIVE-{i:D3}", "ACTIVE", now.AddDays(-10), now.AddDays(30))); // Expires in future
         }
 
         // Add 3 pending orders (different status, should not be deleted even if expired)
         for (int i = 1; i <= 3; i++)
         {
-            repository.Add
-            (
-                new DataItem
-                (
-                    $"ORDER-PENDING-{i:D3}",
-                    "PENDING",
-                    now.AddDays(-40),
-                    now.AddDays(-5)
-                )
-            );
+            repository.Add(new DataItem($"ORDER-PENDING-{i:D3}", "PENDING", now.AddDays(-40), now.AddDays(-5)));
         }
 
         CleanupContext context = new(now, "DRAFT");
@@ -109,9 +82,9 @@ public sealed class ReconcilerExecutionTests
         Assert.Null(await repository.FindByIdAsync("ORDER-DRAFT-001"));
     }
 
-#endregion
+    #endregion
 
-#region Basic Reconciler Execution Tests
+    #region Basic Reconciler Execution Tests
 
     [Fact]
     public async Task Reconciler_WithNoExpiredItems_ShouldReturnEmptyReport()
@@ -188,16 +161,7 @@ public sealed class ReconcilerExecutionTests
         // Add 5 expired draft items
         for (int i = 1; i <= 5; i++)
         {
-            repository.Add
-            (
-                new DataItem
-                (
-                    $"DRAFT-{i:D3}",
-                    "DRAFT",
-                    now.AddDays(-30),
-                    now.AddDays(-10)
-                )
-            );
+            repository.Add(new DataItem($"DRAFT-{i:D3}", "DRAFT", now.AddDays(-30), now.AddDays(-10)));
         }
 
         CleanupContext context = new(now, "DRAFT");
@@ -215,9 +179,9 @@ public sealed class ReconcilerExecutionTests
         Assert.Equal(0, repository.Count);
     }
 
-#endregion
+    #endregion
 
-#region NullContext Reconciler Tests
+    #region NullContext Reconciler Tests
 
     [Fact]
     public async Task NullContextReconciler_ShouldExecuteCorrectly()
@@ -253,9 +217,9 @@ public sealed class ReconcilerExecutionTests
         Assert.Equal("EMPTY", report.Status);
     }
 
-#endregion
+    #endregion
 
-#region Context Validation Tests
+    #region Context Validation Tests
 
     [Fact]
     public async Task Reconciler_WithNullContext_ShouldThrowArgumentNullException()
@@ -264,10 +228,7 @@ public sealed class ReconcilerExecutionTests
         ExpiredDataCleanupReconciler reconciler = new(repository);
 
         // Act & Assert
-        await Assert.ThrowsAsync<ArgumentNullException>
-        (() =>
-             reconciler.ReconcileAsync(null!)
-        );
+        await Assert.ThrowsAsync<ArgumentNullException>(() => reconciler.ReconcileAsync(null!));
     }
 
     [Fact]
@@ -284,10 +245,8 @@ public sealed class ReconcilerExecutionTests
         );
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => reconciler.ReconcileAsync(invalidContext)
-        );
+        await Assert.ThrowsAsync<InvalidOperationException>(() => reconciler.ReconcileAsync(invalidContext));
     }
 
-#endregion
+    #endregion
 }

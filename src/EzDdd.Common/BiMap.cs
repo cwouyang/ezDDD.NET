@@ -144,7 +144,7 @@ public class BiMap<TKey, TValue> : IDictionary<TKey, TValue>
         _reverse[value] = key;
     }
 
-#region IDictionary<TKey, TValue> Implementation
+    #region IDictionary<TKey, TValue> Implementation
 
     public TValue this[TKey key]
     {
@@ -226,7 +226,7 @@ public class BiMap<TKey, TValue> : IDictionary<TKey, TValue>
         lock (_lock)
         {
             return _forward.TryGetValue(item.Key, out TValue? value)
-                   && EqualityComparer<TValue>.Default.Equals(value, item.Value);
+                && EqualityComparer<TValue>.Default.Equals(value, item.Value);
         }
     }
 
@@ -285,8 +285,10 @@ public class BiMap<TKey, TValue> : IDictionary<TKey, TValue>
     {
         lock (_lock)
         {
-            if (_forward.TryGetValue(item.Key, out TValue? value)
-                && EqualityComparer<TValue>.Default.Equals(value, item.Value))
+            if (
+                _forward.TryGetValue(item.Key, out TValue? value)
+                && EqualityComparer<TValue>.Default.Equals(value, item.Value)
+            )
             {
                 _forward.Remove(item.Key);
                 _reverse.Remove(value);
@@ -310,9 +312,9 @@ public class BiMap<TKey, TValue> : IDictionary<TKey, TValue>
         return GetEnumerator();
     }
 
-#endregion
+    #endregion
 
-#region Additional HashMap-compatible Methods
+    #region Additional HashMap-compatible Methods
 
     /// <summary>
     ///     Adds all key-value pairs from the specified dictionary to this BiMap.
@@ -423,9 +425,11 @@ public class BiMap<TKey, TValue> : IDictionary<TKey, TValue>
         lock (_lock)
         {
 #pragma warning disable CS8600
-            if (_forward.TryGetValue(key, out TValue currentValue)
+            if (
+                _forward.TryGetValue(key, out TValue currentValue)
 #pragma warning restore CS8600
-                && EqualityComparer<TValue>.Default.Equals(currentValue, oldValue))
+                && EqualityComparer<TValue>.Default.Equals(currentValue, oldValue)
+            )
             {
                 _AddInternal(key, newValue);
                 return true;
@@ -435,5 +439,5 @@ public class BiMap<TKey, TValue> : IDictionary<TKey, TValue>
         }
     }
 
-#endregion
+    #endregion
 }

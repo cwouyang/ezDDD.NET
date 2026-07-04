@@ -49,7 +49,7 @@ namespace EzDdd.UseCase.Port.Out;
 ///     },
 ///     StreamName = "account-123"
 /// };
-/// 
+///
 /// // Reconstruct aggregate from events
 /// var account = new BankAccount(eventStoreData.Events);
 /// </code>
@@ -121,7 +121,7 @@ public class EventStoreData<TId> : IStoreData<TId>
     ///         new MoneyWithdrawn(...)   // New event 2
     ///     }
     /// };
-    /// 
+    ///
     /// // Expected version after save: 5 + 2 = 7
     /// var expectedVersion = data.GetOptimisticLockVersion(); // Returns 7
     /// </code>

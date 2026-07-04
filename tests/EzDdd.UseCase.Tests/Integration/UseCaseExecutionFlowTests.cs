@@ -13,12 +13,7 @@ public sealed class UseCaseExecutionFlowTests
     {
         IRepository<BankAccount, AccountId, IInternalDomainEvent> repository = CreateRepository();
         CreateAccountUseCase useCase = new(repository);
-        CreateAccountInput input = new
-        (
-            new AccountId("acc-001"),
-            "John Doe",
-            new Money(1000m)
-        );
+        CreateAccountInput input = new(new AccountId("acc-001"), "John Doe", new Money(1000m));
 
         CreateAccountOutput output = await useCase.ExecuteAsync(input);
 
@@ -47,11 +42,7 @@ public sealed class UseCaseExecutionFlowTests
         long currentVersion = account.Version;
 
         DepositUseCase useCase = new(repository);
-        DepositInput input = new
-        (
-            accountId,
-            new Money(300m)
-        ) { Version = currentVersion };
+        DepositInput input = new(accountId, new Money(300m)) { Version = currentVersion };
 
         DepositOutput output = await useCase.ExecuteAsync(input);
 
@@ -77,11 +68,7 @@ public sealed class UseCaseExecutionFlowTests
         long currentVersion = account.Version;
 
         WithdrawUseCase useCase = new(repository);
-        WithdrawInput input = new
-        (
-            accountId,
-            new Money(200m)
-        ) { Version = currentVersion };
+        WithdrawInput input = new(accountId, new Money(200m)) { Version = currentVersion };
 
         WithdrawOutput output = await useCase.ExecuteAsync(input);
 
@@ -100,14 +87,16 @@ public sealed class UseCaseExecutionFlowTests
         await repository.SaveAsync(account);
 
         DepositUseCase useCase = new(repository);
-        DepositInput input = new
-        (
+        DepositInput input = new(
             accountId,
             new Money(-100m) // Invalid: negative amount
-        ) { Version = account.Version };
+        )
+        {
+            Version = account.Version,
+        };
 
-        UseCaseFailureException exception = await Assert.ThrowsAsync<UseCaseFailureException>
-        (async () => await useCase.ExecuteAsync(input)
+        UseCaseFailureException exception = await Assert.ThrowsAsync<UseCaseFailureException>(async () =>
+            await useCase.ExecuteAsync(input)
         );
 
         Assert.Contains("positive", exception.Message, StringComparison.OrdinalIgnoreCase);
@@ -123,14 +112,16 @@ public sealed class UseCaseExecutionFlowTests
         await repository.SaveAsync(account);
 
         WithdrawUseCase useCase = new(repository);
-        WithdrawInput input = new
-        (
+        WithdrawInput input = new(
             accountId,
             new Money(500m) // More than balance
-        ) { Version = account.Version };
+        )
+        {
+            Version = account.Version,
+        };
 
-        UseCaseFailureException exception = await Assert.ThrowsAsync<UseCaseFailureException>
-        (async () => await useCase.ExecuteAsync(input)
+        UseCaseFailureException exception = await Assert.ThrowsAsync<UseCaseFailureException>(async () =>
+            await useCase.ExecuteAsync(input)
         );
 
         Assert.Contains("negative", exception.Message, StringComparison.OrdinalIgnoreCase);
@@ -147,17 +138,13 @@ public sealed class UseCaseExecutionFlowTests
         long currentVersion = account.Version;
 
         DepositUseCase useCase = new(repository);
-        DepositInput input = new
-        (
-            accountId,
-            new Money(100m)
-        )
+        DepositInput input = new(accountId, new Money(100m))
         {
-            Version = currentVersion + 999 // Wrong version (optimistic locking)
+            Version = currentVersion + 999, // Wrong version (optimistic locking)
         };
 
-        UseCaseFailureException exception = await Assert.ThrowsAsync<UseCaseFailureException>
-        (async () => await useCase.ExecuteAsync(input)
+        UseCaseFailureException exception = await Assert.ThrowsAsync<UseCaseFailureException>(async () =>
+            await useCase.ExecuteAsync(input)
         );
 
         Assert.Contains("version", exception.Message, StringComparison.OrdinalIgnoreCase);
@@ -168,14 +155,10 @@ public sealed class UseCaseExecutionFlowTests
     {
         IRepository<BankAccount, AccountId, IInternalDomainEvent> repository = CreateRepository();
         DepositUseCase useCase = new(repository);
-        DepositInput input = new
-        (
-            new AccountId("non-existent"),
-            new Money(100m)
-        ) { Version = 0 };
+        DepositInput input = new(new AccountId("non-existent"), new Money(100m)) { Version = 0 };
 
-        UseCaseFailureException exception = await Assert.ThrowsAsync<UseCaseFailureException>
-        (async () => await useCase.ExecuteAsync(input)
+        UseCaseFailureException exception = await Assert.ThrowsAsync<UseCaseFailureException>(async () =>
+            await useCase.ExecuteAsync(input)
         );
 
         Assert.Contains("not found", exception.Message, StringComparison.OrdinalIgnoreCase);
@@ -187,15 +170,10 @@ public sealed class UseCaseExecutionFlowTests
         FailingRepositoryPeer failingPeer = new();
         EsRepository<BankAccount, AccountId> repository = new(failingPeer);
         CreateAccountUseCase useCase = new(repository);
-        CreateAccountInput input = new
-        (
-            new AccountId("acc-007"),
-            "Eve Black",
-            new Money(1000m)
-        );
+        CreateAccountInput input = new(new AccountId("acc-007"), "Eve Black", new Money(1000m));
 
-        RepositorySaveException exception = await Assert.ThrowsAsync<RepositorySaveException>
-        (async () => await useCase.ExecuteAsync(input)
+        RepositorySaveException exception = await Assert.ThrowsAsync<RepositorySaveException>(async () =>
+            await useCase.ExecuteAsync(input)
         );
 
         // Verify the exception is properly wrapped

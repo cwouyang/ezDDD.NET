@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-
 using EzDdd.Entity;
 
 namespace EzDdd.Integration.Tests.TestDomain;
@@ -31,8 +30,7 @@ public sealed class MetadataTestAggregate : EsAggregateRoot<MetadataTestId, IInt
     /// <param name="name">Aggregate name</param>
     /// <param name="initialValue">Initial value</param>
     /// <param name="metadata">Metadata to attach to the creation event</param>
-    public MetadataTestAggregate
-    (
+    public MetadataTestAggregate(
         MetadataTestId id,
         string name,
         int initialValue,
@@ -43,14 +41,10 @@ public sealed class MetadataTestAggregate : EsAggregateRoot<MetadataTestId, IInt
         ArgumentNullException.ThrowIfNull(name);
 
         Id = id;
-        AggregateCreated @event = new
-        (
-            Guid.NewGuid(),
-            DateTimeOffset.UtcNow,
-            id,
-            name,
-            initialValue
-        ) { Metadata = metadata ?? new ReadOnlyDictionary<string, string>(new Dictionary<string, string>()) };
+        AggregateCreated @event = new(Guid.NewGuid(), DateTimeOffset.UtcNow, id, name, initialValue)
+        {
+            Metadata = metadata ?? new ReadOnlyDictionary<string, string>(new Dictionary<string, string>()),
+        };
         Apply(@event);
     }
 
@@ -58,9 +52,7 @@ public sealed class MetadataTestAggregate : EsAggregateRoot<MetadataTestId, IInt
     ///     Constructor for event replay.
     /// </summary>
     public MetadataTestAggregate(IEnumerable<IInternalDomainEvent> events)
-        : base(events)
-    {
-    }
+        : base(events) { }
 
     // Properties
     public string Name { get; private set; } = string.Empty;
@@ -79,14 +71,10 @@ public sealed class MetadataTestAggregate : EsAggregateRoot<MetadataTestId, IInt
             throw new InvalidOperationException("Cannot update a closed aggregate");
         }
 
-        ValueUpdated @event = new
-        (
-            Guid.NewGuid(),
-            DateTimeOffset.UtcNow,
-            Id,
-            Value,
-            newValue
-        ) { Metadata = metadata ?? new ReadOnlyDictionary<string, string>(new Dictionary<string, string>()) };
+        ValueUpdated @event = new(Guid.NewGuid(), DateTimeOffset.UtcNow, Id, Value, newValue)
+        {
+            Metadata = metadata ?? new ReadOnlyDictionary<string, string>(new Dictionary<string, string>()),
+        };
         Apply(@event);
     }
 
@@ -104,13 +92,10 @@ public sealed class MetadataTestAggregate : EsAggregateRoot<MetadataTestId, IInt
 
         ArgumentNullException.ThrowIfNull(reason);
 
-        AggregateClosed @event = new
-        (
-            Guid.NewGuid(),
-            DateTimeOffset.UtcNow,
-            Id,
-            reason
-        ) { Metadata = metadata ?? new ReadOnlyDictionary<string, string>(new Dictionary<string, string>()) };
+        AggregateClosed @event = new(Guid.NewGuid(), DateTimeOffset.UtcNow, Id, reason)
+        {
+            Metadata = metadata ?? new ReadOnlyDictionary<string, string>(new Dictionary<string, string>()),
+        };
         Apply(@event);
     }
 

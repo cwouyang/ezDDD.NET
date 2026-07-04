@@ -1,12 +1,11 @@
 using EzDdd.UseCase.Port.In;
-
 using Xunit;
 
 namespace EzDdd.UseCase.Tests.Port.In;
 
 public class InputOutputTests
 {
-#region IInput Tests
+    #region IInput Tests
 
     [Fact]
     public void Input_CanBeImplemented_AsMarkerInterface()
@@ -35,9 +34,9 @@ public class InputOutputTests
         Assert.IsAssignableFrom<IInput>(nullInput);
     }
 
-#endregion
+    #endregion
 
-#region ExitCode Tests
+    #region ExitCode Tests
 
     [Fact]
     public void ExitCode_Success_HasCodeZero()
@@ -57,9 +56,9 @@ public class InputOutputTests
         Assert.Equal("Failure", exitCode.ToString());
     }
 
-#endregion
+    #endregion
 
-#region IOutput Tests
+    #region IOutput Tests
 
     [Fact]
     public void Output_SetMessage_ReturnsOutputWithMessage()
@@ -124,10 +123,7 @@ public class InputOutputTests
     {
         var output = new TestOutput();
 
-        var result = output
-                     .SetId("chain-test")
-                     .SetMessage("Chained message")
-                     .Succeed();
+        var result = output.SetId("chain-test").SetMessage("Chained message").Succeed();
 
         Assert.Equal("chain-test", result.Id);
         Assert.Equal("Chained message", result.Message);
@@ -135,9 +131,9 @@ public class InputOutputTests
         Assert.Same(output, result);
     }
 
-#endregion
+    #endregion
 
-#region IVersionedInput Tests
+    #region IVersionedInput Tests
 
     [Fact]
     public void VersionedInput_CanGetAndSetVersion()
@@ -159,13 +155,11 @@ public class InputOutputTests
         Assert.IsAssignableFrom<IVersionedInput>(input);
     }
 
-#endregion
+    #endregion
 
-#region Test Helper Classes
+    #region Test Helper Classes
 
-    private class TestInput : IInput
-    {
-    }
+    private class TestInput : IInput { }
 
     private class TestOutput : IOutput
     {
@@ -209,5 +203,5 @@ public class InputOutputTests
         public long Version { get; set; }
     }
 
-#endregion
+    #endregion
 }

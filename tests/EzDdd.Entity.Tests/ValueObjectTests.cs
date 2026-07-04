@@ -76,10 +76,11 @@ public class ValueObjectTests
     }
 
     // Helper method demonstrating generic constraint usage
-    private static bool _ProcessValueObject<T>(T valueObject) where T : IValueObject
+    private static bool _ProcessValueObject<T>(T valueObject)
+        where T : IValueObject
     // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
     {
-    return valueObject is not null;
+        return valueObject is not null;
     }
 
     // Record-based value object (recommended approach)
@@ -93,9 +94,7 @@ public class ValueObjectTests
 
         public override bool Equals(object? obj)
         {
-            return obj is MoneyClass other &&
-                   Amount == other.Amount &&
-                   Currency == other.Currency;
+            return obj is MoneyClass other && Amount == other.Amount && Currency == other.Currency;
         }
 
         public override int GetHashCode()

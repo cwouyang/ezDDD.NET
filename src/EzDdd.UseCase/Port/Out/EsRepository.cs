@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using System.Reflection;
-
 using EzDdd.Entity;
 using EzDdd.UseCase.Exceptions;
 using EzDdd.UseCase.Port.InOut;
@@ -51,12 +50,12 @@ namespace EzDdd.UseCase.Port.Out;
 /// // Create repository with event store peer
 /// var eventStorePeer = new PostgresEventStorePeer();
 /// var repository = new EsRepository&lt;BankAccount, AccountId&gt;(eventStorePeer);
-/// 
+///
 /// // Save aggregate (stores events)
 /// var account = new BankAccount(accountId, "John Doe", 1000m);
 /// account.Deposit(500m);
 /// await repository.SaveAsync(account);
-/// 
+///
 /// // Load aggregate (reconstructs from events)
 /// var loaded = await repository.FindByIdAsync(accountId);
 /// // loaded.Balance == 1500m (reconstructed by replaying events)
@@ -136,7 +135,7 @@ public class EsRepository<TAggregate, TId> : IRepository<TAggregate, TId, IInter
     ///     <code>
     /// var repository = new EsRepository&lt;Order, OrderId&gt;(eventStorePeer);
     /// var order = await repository.FindByIdAsync(orderId);
-    /// 
+    ///
     /// if (order != null)
     /// {
     ///     // Order reconstructed from its event stream
@@ -206,7 +205,7 @@ public class EsRepository<TAggregate, TId> : IRepository<TAggregate, TId, IInter
     /// var account = new BankAccount(accountId, "Jane Doe", 500m);
     /// account.Deposit(200m);  // Generates MoneyDeposited event
     /// account.Withdraw(100m); // Generates MoneyWithdrawn event
-    /// 
+    ///
     /// try
     /// {
     ///     await repository.SaveAsync(account);
@@ -308,12 +307,11 @@ public class EsRepository<TAggregate, TId> : IRepository<TAggregate, TId, IInter
         Type aggregateType = typeof(TAggregate);
 
         // Get or cache the constructor
-        ConstructorInfo constructor = ConstructorCache.GetOrAdd
-        (
-            aggregateType, type =>
+        ConstructorInfo constructor = ConstructorCache.GetOrAdd(
+            aggregateType,
+            type =>
             {
-                ConstructorInfo? ctor = type.GetConstructor
-                (
+                ConstructorInfo? ctor = type.GetConstructor(
                     BindingFlags.Public | BindingFlags.Instance,
                     null,
                     [typeof(IEnumerable<IInternalDomainEvent>)],
@@ -322,10 +320,9 @@ public class EsRepository<TAggregate, TId> : IRepository<TAggregate, TId, IInter
 
                 if (ctor == null)
                 {
-                    throw new InvalidOperationException
-                    (
-                        $"{type.Name} must have a public constructor accepting IEnumerable<IInternalDomainEvent>. " +
-                        $"This constructor is required for event sourcing to reconstruct aggregates from event streams."
+                    throw new InvalidOperationException(
+                        $"{type.Name} must have a public constructor accepting IEnumerable<IInternalDomainEvent>. "
+                            + $"This constructor is required for event sourcing to reconstruct aggregates from event streams."
                     );
                 }
 
@@ -339,10 +336,9 @@ public class EsRepository<TAggregate, TId> : IRepository<TAggregate, TId, IInter
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException
-            (
-                $"Failed to reconstruct {aggregateType.Name} from event stream. " +
-                $"This may indicate an issue with event replay or invariant validation during reconstruction.",
+            throw new InvalidOperationException(
+                $"Failed to reconstruct {aggregateType.Name} from event stream. "
+                    + $"This may indicate an issue with event replay or invariant validation during reconstruction.",
                 ex
             );
         }

@@ -46,7 +46,7 @@ namespace EzDdd.Cqrs.Query;
 ///         // Read model (stored in Archive)
 ///         public record CustomerReadModel(Guid CustomerId, string Name, string Email);
 ///         public record OrderReadModel(Guid OrderId, Guid CustomerId, decimal Total);
-/// 
+///
 ///         // View model (projection output)
 ///         public record CustomerSummaryView(
 ///             Guid CustomerId,
@@ -55,24 +55,24 @@ namespace EzDdd.Cqrs.Query;
 ///             int OrderCount,
 ///             decimal TotalPurchases
 ///         );
-/// 
+///
 ///         // Projection input
 ///         public record CustomerSummaryInput(Guid CustomerId) : IProjectionInput;
-/// 
+///
 ///         // Projection implementation
 ///         public class CustomerSummaryProjection
 ///             : IProjection&lt;CustomerSummaryInput, CustomerSummaryView&gt;
 ///         {
 ///             private readonly IArchive&lt;CustomerReadModel, Guid&gt; _customerArchive;
 ///             private readonly IArchive&lt;OrderReadModel, Guid&gt; _orderArchive;
-/// 
+///
 ///             public async Task&lt;CustomerSummaryView&gt; QueryAsync(CustomerSummaryInput input)
 ///             {
 ///                 var customer = await _customerArchive.FindByIdAsync(input.CustomerId);
 ///                 // Query orders for this customer...
 ///                 int orderCount = ...; // Count orders
 ///                 decimal totalPurchases = ...; // Sum order totals
-/// 
+///
 ///                 return new CustomerSummaryView(
 ///                     customer.CustomerId,
 ///                     customer.Name,
@@ -82,19 +82,19 @@ namespace EzDdd.Cqrs.Query;
 ///                 );
 ///             }
 ///         }
-/// 
+///
 ///         // Use within query
 ///         public class GetCustomerSummaryQuery
 ///             : IQuery&lt;GetCustomerSummaryInput, GetCustomerSummaryOutput&gt;
 ///         {
 ///             private readonly IProjection&lt;CustomerSummaryInput, CustomerSummaryView&gt; _projection;
-/// 
+///
 ///             public async Task&lt;GetCustomerSummaryOutput&gt; ExecuteAsync(
 ///                 GetCustomerSummaryInput input)
 ///             {
 ///                 var view = await _projection.QueryAsync(
 ///                     new CustomerSummaryInput(input.CustomerId));
-/// 
+///
 ///                 return GetCustomerSummaryOutput.Create()
 ///                     .SetCustomerSummary(view)
 ///                     .Succeed();

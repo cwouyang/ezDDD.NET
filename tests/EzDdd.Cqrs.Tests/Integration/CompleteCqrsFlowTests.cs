@@ -15,7 +15,7 @@ namespace EzDdd.Cqrs.Tests.Integration;
 /// </summary>
 public sealed class CompleteCqrsFlowTests
 {
-#region Setup Infrastructure
+    #region Setup Infrastructure
 
     /// <summary>
     ///     Creates the complete CQRS infrastructure for testing.
@@ -38,7 +38,7 @@ public sealed class CompleteCqrsFlowTests
             Repository = repository,
             Archive = archive,
             Projector = projector,
-            Query = query
+            Query = query,
         };
     }
 
@@ -71,9 +71,9 @@ public sealed class CompleteCqrsFlowTests
         }
     }
 
-#endregion
+    #endregion
 
-#region Command to Query Flow Tests
+    #region Command to Query Flow Tests
 
     [Fact]
     public async Task CreateAccount_Command_ShouldBeQueryable()
@@ -109,9 +109,9 @@ public sealed class CompleteCqrsFlowTests
         await Assert.ThrowsAsync<UseCaseFailureException>(() => infra.Query.ExecuteAsync(input));
     }
 
-#endregion
+    #endregion
 
-#region Event Projection Tests
+    #region Event Projection Tests
 
     [Fact]
     public async Task AccountCreatedEvent_ShouldCreateReadModel()
@@ -179,9 +179,9 @@ public sealed class CompleteCqrsFlowTests
         Assert.Equal(1, readModel.TransactionCount);
     }
 
-#endregion
+    #endregion
 
-#region Complete CQRS Flow Tests
+    #region Complete CQRS Flow Tests
 
     [Fact]
     public async Task CompleteFlow_CreateDepositWithdrawQuery_ShouldWork()
@@ -241,9 +241,9 @@ public sealed class CompleteCqrsFlowTests
         Assert.Equal(5, output.TransactionCount);
     }
 
-#endregion
+    #endregion
 
-#region Deletion Flow Tests
+    #region Deletion Flow Tests
 
     [Fact]
     public async Task AccountClosed_ShouldRemoveReadModel()
@@ -288,9 +288,9 @@ public sealed class CompleteCqrsFlowTests
         await Assert.ThrowsAsync<UseCaseFailureException>(() => infra.Query.ExecuteAsync(input));
     }
 
-#endregion
+    #endregion
 
-#region Event Replay Consistency Tests
+    #region Event Replay Consistency Tests
 
     [Fact]
     public async Task EventReplay_ShouldProduceSameReadModel()
@@ -366,5 +366,5 @@ public sealed class CompleteCqrsFlowTests
         Assert.Equal(2, result.TransactionCount);
     }
 
-#endregion
+    #endregion
 }

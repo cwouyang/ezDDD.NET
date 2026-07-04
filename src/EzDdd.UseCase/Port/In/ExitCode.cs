@@ -13,7 +13,7 @@ public enum ExitCode
     /// <summary>
     ///     Indicates failed execution.
     /// </summary>
-    Failure = 1
+    Failure = 1,
 }
 
 /// <summary>

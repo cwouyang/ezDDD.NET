@@ -6,13 +6,12 @@ using EzDdd.UseCase.Port.Out;
 
 public class RepositoryTests
 {
-#region Test Fixtures
+    #region Test Fixtures
 
     // Test aggregate for repository testing
     private record TestAggregateId(string Value);
 
-    private record TestEvent
-    (
+    private record TestEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -25,8 +24,7 @@ public class RepositoryTests
 
         public TestAggregate(TestAggregateId id, string name)
         {
-            var @event = new TestEvent
-            (
+            var @event = new TestEvent(
                 Guid.NewGuid(),
                 DateTimeOffset.UtcNow,
                 id.Value,
@@ -41,9 +39,9 @@ public class RepositoryTests
         public TestAggregate() { }
     }
 
-#endregion
+    #endregion
 
-#region Mock Implementations
+    #region Mock Implementations
 
     private class MockRepository : IRepository<TestAggregate, TestAggregateId, IInternalDomainEvent>
     {
@@ -74,9 +72,9 @@ public class RepositoryTests
         }
     }
 
-#endregion
+    #endregion
 
-#region FindByIdAsync Tests
+    #region FindByIdAsync Tests
 
     [Fact]
     public async Task FindByIdAsync_ExistingAggregate_ReturnsAggregate()
@@ -104,9 +102,9 @@ public class RepositoryTests
         Assert.Null(result);
     }
 
-#endregion
+    #endregion
 
-#region SaveAsync Tests
+    #region SaveAsync Tests
 
     [Fact]
     public async Task SaveAsync_NewAggregate_PersistsAggregate()
@@ -143,16 +141,16 @@ public class RepositoryTests
         var aggregateId = new TestAggregateId("test-4");
         var aggregate = new TestAggregate(aggregateId, "Test");
 
-        var exception = await Assert.ThrowsAsync<RepositorySaveException>
-        (async () => await repository.SaveAsync(aggregate)
+        var exception = await Assert.ThrowsAsync<RepositorySaveException>(async () =>
+            await repository.SaveAsync(aggregate)
         );
 
         Assert.Equal(RepositorySaveException.OptimisticLockingFailure, exception.Message);
     }
 
-#endregion
+    #endregion
 
-#region DeleteAsync Tests
+    #region DeleteAsync Tests
 
     [Fact]
     public async Task DeleteAsync_ExistingAggregate_RemovesAggregate()
@@ -168,9 +166,9 @@ public class RepositoryTests
         Assert.Null(retrieved);
     }
 
-#endregion
+    #endregion
 
-#region Type Constraint Tests
+    #region Type Constraint Tests
 
     [Fact]
     public async Task Repository_WorksWithAggregateRootConstraint()
@@ -187,5 +185,5 @@ public class RepositoryTests
         Assert.IsAssignableFrom<AggregateRoot<TestAggregateId, IInternalDomainEvent>>(result);
     }
 
-#endregion
+    #endregion
 }

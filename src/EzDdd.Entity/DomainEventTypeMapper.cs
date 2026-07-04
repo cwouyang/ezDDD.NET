@@ -1,5 +1,4 @@
 using EzDdd.Common;
-
 using uContract;
 
 namespace EzDdd.Entity;
@@ -41,11 +40,11 @@ namespace EzDdd.Entity;
 /// DomainEventTypeMapper.Register&lt;OrderCreated&gt;("OrderCreated");
 /// DomainEventTypeMapper.Register&lt;OrderItemAdded&gt;("OrderItemAdded");
 /// DomainEventTypeMapper.Register&lt;OrderCancelled&gt;("OrderCancelled");
-/// 
+///
 /// // Serialization - get type name from event
 /// var typeName = DomainEventTypeMapper.GetTypeName(orderCreatedEvent);
 /// // Returns: "OrderCreated"
-/// 
+///
 /// // Deserialization - get type from stored name
 /// var eventType = DomainEventTypeMapper.GetType("OrderCreated");
 /// // Returns: typeof(OrderCreated)
@@ -94,7 +93,8 @@ public static class DomainEventTypeMapper
     /// DomainEventTypeMapper.Register&lt;MoneyDeposited&gt;("MoneyDeposited");
     /// </code>
     /// </example>
-    public static void Register<TEvent>(string typeName) where TEvent : IInternalDomainEvent
+    public static void Register<TEvent>(string typeName)
+        where TEvent : IInternalDomainEvent
     {
         Contract.Require("Type name cannot be null or empty", () => !string.IsNullOrWhiteSpace(typeName));
 
@@ -105,10 +105,9 @@ public static class DomainEventTypeMapper
         {
             if (existingType != eventType)
             {
-                throw new ArgumentException
-                (
-                    $"Type name '{typeName}' is already registered to type '{existingType.Name}'. " +
-                    $"Cannot register it to '{eventType.Name}'."
+                throw new ArgumentException(
+                    $"Type name '{typeName}' is already registered to type '{existingType.Name}'. "
+                        + $"Cannot register it to '{eventType.Name}'."
                 );
             }
 
@@ -122,10 +121,9 @@ public static class DomainEventTypeMapper
         {
             if (existingName != typeName)
             {
-                throw new ArgumentException
-                (
-                    $"Type '{eventType.Name}' is already registered with name '{existingName}'. " +
-                    $"Cannot register it with name '{typeName}'."
+                throw new ArgumentException(
+                    $"Type '{eventType.Name}' is already registered with name '{existingName}'. "
+                        + $"Cannot register it with name '{typeName}'."
                 );
             }
 
@@ -161,10 +159,9 @@ public static class DomainEventTypeMapper
         string? typeName = Mapper.Value.GetKey(eventType);
         if (typeName == null)
         {
-            throw new InvalidOperationException
-            (
-                $"Event type '{eventType.Name}' is not registered. " +
-                $"Register it using DomainEventTypeMapper.Register<{eventType.Name}>(\"TypeName\") at application startup."
+            throw new InvalidOperationException(
+                $"Event type '{eventType.Name}' is not registered. "
+                    + $"Register it using DomainEventTypeMapper.Register<{eventType.Name}>(\"TypeName\") at application startup."
             );
         }
 
@@ -211,7 +208,7 @@ public static class DomainEventTypeMapper
     ///     <code>
     /// var eventType = DomainEventTypeMapper.GetType("OrderCreated");
     /// // Returns: typeof(OrderCreated)
-    /// 
+    ///
     /// // Use with reflection to deserialize
     /// var eventInstance = JsonSerializer.Deserialize(json, eventType);
     /// </code>
@@ -222,10 +219,9 @@ public static class DomainEventTypeMapper
 
         if (!Mapper.Value.TryGetValue(typeName, out Type? type))
         {
-            throw new InvalidOperationException
-            (
-                $"Event type name '{typeName}' is not registered. " +
-                $"Available types: {string.Join(", ", Mapper.Value.Keys)}"
+            throw new InvalidOperationException(
+                $"Event type name '{typeName}' is not registered. "
+                    + $"Available types: {string.Join(", ", Mapper.Value.Keys)}"
             );
         }
 

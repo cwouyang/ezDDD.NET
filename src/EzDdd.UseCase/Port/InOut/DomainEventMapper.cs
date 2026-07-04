@@ -1,5 +1,4 @@
 using System.Text.Json;
-
 using EzDdd.Entity;
 
 namespace EzDdd.UseCase.Port.InOut;
@@ -42,11 +41,11 @@ namespace EzDdd.UseCase.Port.InOut;
 /// // Application startup - register event types
 /// DomainEventTypeMapper.Register&lt;AccountCreated&gt;("AccountCreated");
 /// DomainEventTypeMapper.Register&lt;MoneyDeposited&gt;("MoneyDeposited");
-/// 
+///
 /// // Convert event to data (for persistence)
 /// var @event = new AccountCreated(...);
 /// var data = DomainEventMapper.ToData(@event);
-/// 
+///
 /// // Convert data back to event (from persistence)
 /// var reconstructedEvent = DomainEventMapper.ToDomain&lt;AccountCreated&gt;(data);
 /// </code>
@@ -77,7 +76,8 @@ public static class DomainEventMapper
     /// <param name="data">The persisted event data</param>
     /// <returns>The reconstructed domain event</returns>
     /// <exception cref="InvalidOperationException">Thrown when deserialization fails or event type is not registered</exception>
-    public static T ToDomain<T>(DomainEventData data) where T : IInternalDomainEvent
+    public static T ToDomain<T>(DomainEventData data)
+        where T : IInternalDomainEvent
     {
         ArgumentNullException.ThrowIfNull(data);
 
@@ -86,10 +86,7 @@ public static class DomainEventMapper
 
         if (@event is not T typedEvent)
         {
-            throw new InvalidOperationException
-            (
-                $"Failed to cast event of type {eventClass.Name} to {typeof(T).Name}"
-            );
+            throw new InvalidOperationException($"Failed to cast event of type {eventClass.Name} to {typeof(T).Name}");
         }
 
         return typedEvent;

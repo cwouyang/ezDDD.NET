@@ -10,9 +10,7 @@ public sealed class Order : AggregateRoot<OrderId, IInternalDomainEvent>
     private readonly List<OrderItem> _items = [];
 
     // Parameterless constructor for OutboxMapper reconstruction
-    public Order()
-    {
-    }
+    public Order() { }
 
     // Constructor for creation
     public Order(OrderId id, string customerName)
@@ -22,14 +20,7 @@ public sealed class Order : AggregateRoot<OrderId, IInternalDomainEvent>
         TotalAmount = 0;
         Status = OrderStatus.Draft;
 
-        OrderCreated @event = new
-        (
-            Guid.NewGuid(),
-            DateTimeOffset.UtcNow,
-            id,
-            customerName,
-            0
-        );
+        OrderCreated @event = new(Guid.NewGuid(), DateTimeOffset.UtcNow, id, customerName, 0);
         Apply(@event);
     }
 
@@ -62,15 +53,7 @@ public sealed class Order : AggregateRoot<OrderId, IInternalDomainEvent>
         _items.Add(item);
         TotalAmount += item.Subtotal;
 
-        OrderItemAdded @event = new
-        (
-            Guid.NewGuid(),
-            DateTimeOffset.UtcNow,
-            Id,
-            productName,
-            quantity,
-            price
-        );
+        OrderItemAdded @event = new(Guid.NewGuid(), DateTimeOffset.UtcNow, Id, productName, quantity, price);
         Apply(@event);
     }
 
@@ -88,12 +71,7 @@ public sealed class Order : AggregateRoot<OrderId, IInternalDomainEvent>
 
         Status = OrderStatus.Confirmed;
 
-        OrderConfirmed @event = new
-        (
-            Guid.NewGuid(),
-            DateTimeOffset.UtcNow,
-            Id
-        );
+        OrderConfirmed @event = new(Guid.NewGuid(), DateTimeOffset.UtcNow, Id);
         Apply(@event);
     }
 
@@ -106,13 +84,7 @@ public sealed class Order : AggregateRoot<OrderId, IInternalDomainEvent>
 
         Status = OrderStatus.Cancelled;
 
-        OrderCancelled @event = new
-        (
-            Guid.NewGuid(),
-            DateTimeOffset.UtcNow,
-            Id,
-            reason
-        );
+        OrderCancelled @event = new(Guid.NewGuid(), DateTimeOffset.UtcNow, Id, reason);
         Apply(@event);
     }
 }
@@ -142,5 +114,5 @@ public enum OrderStatus
 {
     Draft,
     Confirmed,
-    Cancelled
+    Cancelled,
 }

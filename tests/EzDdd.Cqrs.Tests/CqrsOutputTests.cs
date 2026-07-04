@@ -4,7 +4,7 @@ namespace EzDdd.Cqrs.Tests;
 
 public class CqrsOutputTests
 {
-#region Factory and Properties Tests
+    #region Factory and Properties Tests
 
     [Fact]
     public void Create_WhenCalled_ShouldReturnNewInstance()
@@ -25,9 +25,9 @@ public class CqrsOutputTests
         Assert.Equal(ExitCode.Success, output.ExitCode);
     }
 
-#endregion
+    #endregion
 
-#region Fluent API Tests
+    #region Fluent API Tests
 
     [Fact]
     public void SetId_WhenCalled_ShouldSetIdAndReturnSelf()
@@ -83,8 +83,7 @@ public class CqrsOutputTests
     [Fact]
     public void Succeed_WhenCalled_ShouldSetExitCodeToSuccessAndReturnSelf()
     {
-        TestOutput output = TestOutput.Create()
-                                      .Fail();
+        TestOutput output = TestOutput.Create().Fail();
 
         TestOutput result = output.Succeed();
 
@@ -99,10 +98,7 @@ public class CqrsOutputTests
         const string expectedId = "id-001";
         const string expectedMessage = "Operation completed";
 
-        TestOutput output = TestOutput.Create()
-                                      .SetId(expectedId)
-                                      .SetMessage(expectedMessage)
-                                      .Succeed();
+        TestOutput output = TestOutput.Create().SetId(expectedId).SetMessage(expectedMessage).Succeed();
 
         Assert.Equal(expectedId, output.Id);
         Assert.Equal(expectedMessage, output.Message);
@@ -110,9 +106,9 @@ public class CqrsOutputTests
         Assert.IsType<TestOutput>(output);
     }
 
-#endregion
+    #endregion
 
-#region Subclass Scenarios Tests
+    #region Subclass Scenarios Tests
 
     [Fact]
     public void Subclass_WithCustomProperties_ShouldSupportFluentAPI()
@@ -120,10 +116,11 @@ public class CqrsOutputTests
         const string expectedData = "custom-data";
         const string expectedId = "sub-001";
 
-        TestOutputWithCustomProperty output = TestOutputWithCustomProperty.Create()
-                                                                          .SetId(expectedId)
-                                                                          .SetCustomData(expectedData)
-                                                                          .Succeed();
+        TestOutputWithCustomProperty output = TestOutputWithCustomProperty
+            .Create()
+            .SetId(expectedId)
+            .SetCustomData(expectedData)
+            .Succeed();
 
         Assert.Equal(expectedId, output.Id);
         Assert.Equal(expectedData, output.CustomData);
@@ -139,12 +136,13 @@ public class CqrsOutputTests
         const string expectedData = "custom-data";
         const int expectedValue = 42;
 
-        TestOutputWithCustomProperty output = TestOutputWithCustomProperty.Create()
-                                                                          .SetId(expectedId)
-                                                                          .SetCustomData(expectedData)
-                                                                          .SetMessage(expectedMessage)
-                                                                          .SetCustomValue(expectedValue)
-                                                                          .Succeed();
+        TestOutputWithCustomProperty output = TestOutputWithCustomProperty
+            .Create()
+            .SetId(expectedId)
+            .SetCustomData(expectedData)
+            .SetMessage(expectedMessage)
+            .SetCustomValue(expectedValue)
+            .Succeed();
 
         Assert.IsType<TestOutputWithCustomProperty>(output);
         Assert.Equal(expectedId, output.Id);
@@ -154,9 +152,9 @@ public class CqrsOutputTests
         Assert.Equal(ExitCode.Success, output.ExitCode);
     }
 
-#endregion
+    #endregion
 
-#region Explicit IOutput Implementation Tests
+    #region Explicit IOutput Implementation Tests
 
     [Fact]
     public void ExplicitIOutput_SetMessage_ShouldWorkThroughInterface()
@@ -216,13 +214,11 @@ public class CqrsOutputTests
         Assert.Same(output, result);
     }
 
-#endregion
+    #endregion
 
-#region Test Helper Classes
+    #region Test Helper Classes
 
-    private class TestOutput : CqrsOutput<TestOutput>
-    {
-    }
+    private class TestOutput : CqrsOutput<TestOutput> { }
 
     private class TestOutputWithCustomProperty : CqrsOutput<TestOutputWithCustomProperty>
     {
@@ -242,5 +238,5 @@ public class CqrsOutputTests
         }
     }
 
-#endregion
+    #endregion
 }

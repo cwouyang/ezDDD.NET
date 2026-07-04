@@ -5,7 +5,7 @@ namespace EzDdd.Common.Tests;
 
 public class JsonUtilTests
 {
-#region AsString Tests
+    #region AsString Tests
 
     [Fact]
     public void AsString_WhenGivenSimpleObject_SerializesSuccessfully()
@@ -53,9 +53,9 @@ public class JsonUtilTests
         Assert.Contains("\"Data\":\"Field Value\"", json);
     }
 
-#endregion
+    #endregion
 
-#region ReadValue Tests
+    #region ReadValue Tests
 
     [Theory]
     [InlineData("{\"Id\":1,\"Name\":\"Alice\"}")]
@@ -88,16 +88,16 @@ public class JsonUtilTests
     [InlineData("")]
     public void ReadValue_WhenGivenInvalidJson_ThrowsException(string invalidJson)
     {
-        InvalidOperationException exception = Assert.Throws<InvalidOperationException>
-        (() => JsonUtil.ReadValue<User>(invalidJson)
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() =>
+            JsonUtil.ReadValue<User>(invalidJson)
         );
 
         Assert.Contains("Failed to deserialize JSON", exception.Message);
     }
 
-#endregion
+    #endregion
 
-#region ReadAs Tests
+    #region ReadAs Tests
 
     [Fact]
     public void ReadAs_WhenGivenByteArray_DeserializesSuccessfully()
@@ -116,16 +116,16 @@ public class JsonUtilTests
     {
         byte[] emptyBytes = [];
 
-        InvalidOperationException exception = Assert.Throws<InvalidOperationException>
-        (() => JsonUtil.ReadAs<User>(emptyBytes)
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() =>
+            JsonUtil.ReadAs<User>(emptyBytes)
         );
 
         Assert.Contains("Failed to deserialize byte array", exception.Message);
     }
 
-#endregion
+    #endregion
 
-#region ReadTree Tests
+    #region ReadTree Tests
 
     [Fact]
     public void ReadTree_WhenGivenString_ParsesSuccessfully()
@@ -154,8 +154,8 @@ public class JsonUtilTests
     {
         const string invalidJson = "{invalid}";
 
-        InvalidOperationException exception = Assert.Throws<InvalidOperationException>
-        (() => JsonUtil.ReadTree(invalidJson)
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() =>
+            JsonUtil.ReadTree(invalidJson)
         );
 
         Assert.Contains("Failed to parse JSON", exception.Message);
@@ -174,9 +174,9 @@ public class JsonUtilTests
         Assert.Equal("Alice", profile.GetProperty("name").GetString());
     }
 
-#endregion
+    #endregion
 
-#region DeepCopy Tests
+    #region DeepCopy Tests
 
     [Fact]
     public void DeepCopy_WhenGivenSimpleObject_CreatesIndependentCopy()
@@ -219,7 +219,13 @@ public class JsonUtilTests
     [Fact]
     public void DeepCopy_WhenGivenComplexObject_CopiesAllProperties()
     {
-        Order original = new() { Id = 100, ProductName = "Widget", Quantity = 5, UnitPrice = 10.50m };
+        Order original = new()
+        {
+            Id = 100,
+            ProductName = "Widget",
+            Quantity = 5,
+            UnitPrice = 10.50m,
+        };
 
         Order? copy = JsonUtil.DeepCopy(original);
 
@@ -230,9 +236,9 @@ public class JsonUtilTests
         Assert.Equal(original.UnitPrice, copy.UnitPrice);
     }
 
-#endregion
+    #endregion
 
-#region Round-Trip Tests
+    #region Round-Trip Tests
 
     [Fact]
     public void AsString_AndReadValue_RoundTripSuccessfully()
@@ -261,7 +267,7 @@ public class JsonUtilTests
         Assert.Equal(original.Name, restored.Name);
     }
 
-#endregion
+    #endregion
 
     // Test domain classes
     private class User

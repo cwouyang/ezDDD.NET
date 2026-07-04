@@ -45,44 +45,44 @@ namespace EzDdd.Cqrs.Command;
 ///         <b>Example</b>:
 ///         <code>
 ///         public record CheckAccountExistsInput(AccountId AccountId) : IInquiryInput;
-/// 
+///
 ///         public class CheckAccountExistsInquiry
 ///             : IInquiry&lt;CheckAccountExistsInput, bool&gt;
 ///         {
 ///             private readonly IArchive&lt;AccountSummary, AccountId&gt; _archive;
-/// 
+///
 ///             public CheckAccountExistsInquiry(
 ///                 IArchive&lt;AccountSummary, AccountId&gt; archive)
 ///             {
 ///                 _archive = archive;
 ///             }
-/// 
+///
 ///             public async Task&lt;bool&gt; QueryAsync(CheckAccountExistsInput input)
 ///             {
 ///                 var account = await _archive.FindByIdAsync(input.AccountId);
 ///                 return account != null;
 ///             }
 ///         }
-/// 
+///
 ///         // Usage within a command:
 ///         public class TransferMoneyCommand : ICommand&lt;TransferInput, TransferOutput&gt;
 ///         {
 ///             private readonly IInquiry&lt;CheckAccountExistsInput, bool&gt; _accountExistsInquiry;
-/// 
+///
 ///             public async Task&lt;TransferOutput&gt; ExecuteAsync(TransferInput input)
 ///             {
 ///                 // Validate source account exists
 ///                 var sourceExists = await _accountExistsInquiry.QueryAsync(
 ///                     new CheckAccountExistsInput(input.SourceAccountId)
 ///                 );
-/// 
+///
 ///                 if (!sourceExists)
 ///                 {
 ///                     return TransferOutput.Create()
 ///                         .SetMessage("Source account not found")
 ///                         .Fail();
 ///                 }
-/// 
+///
 ///                 // Continue with transfer logic...
 ///             }
 ///         }
@@ -96,51 +96,51 @@ namespace EzDdd.Cqrs.Command;
 ///             AccountId AccountId,
 ///             decimal Amount
 ///         ) : IInquiryInput;
-/// 
+///
 ///         // Output: Validation result with sufficient balance flag
 ///         public record ValidateWithdrawalOutput(
 ///             bool IsSufficient,
 ///             decimal CurrentBalance
 ///         );
-/// 
+///
 ///         // Inquiry: Check if account has sufficient balance for withdrawal
 ///         public class ValidateWithdrawalInquiry
 ///             : IInquiry&lt;ValidateWithdrawalInput, ValidateWithdrawalOutput&gt;
 ///         {
 ///             private readonly IArchive&lt;AccountSummary, AccountId&gt; _archive;
-/// 
+///
 ///             public async Task&lt;ValidateWithdrawalOutput&gt; QueryAsync(
 ///                 ValidateWithdrawalInput input)
 ///             {
 ///                 var account = await _archive.FindByIdAsync(input.AccountId);
 ///                 if (account == null)
 ///                     return new ValidateWithdrawalOutput(false, 0m);
-/// 
+///
 ///                 bool isSufficient = account.Balance >= input.Amount;
 ///                 return new ValidateWithdrawalOutput(isSufficient, account.Balance);
 ///             }
 ///         }
-/// 
+///
 ///         // Usage in command:
 ///         public class WithdrawMoneyCommand : ICommand&lt;WithdrawInput, WithdrawOutput&gt;
 ///         {
 ///             private readonly IInquiry&lt;ValidateWithdrawalInput, ValidateWithdrawalOutput&gt;
 ///                 _validateInquiry;
-/// 
+///
 ///             public async Task&lt;WithdrawOutput&gt; ExecuteAsync(WithdrawInput input)
 ///             {
 ///                 // Pre-validation using inquiry
 ///                 var validation = await _validateInquiry.QueryAsync(
 ///                     new ValidateWithdrawalInput(input.AccountId, input.Amount)
 ///                 );
-/// 
+///
 ///                 if (!validation.IsSufficient)
 ///                 {
 ///                     return WithdrawOutput.Create()
 ///                         .SetMessage($"Insufficient balance. Current: {validation.CurrentBalance}")
 ///                         .Fail();
 ///                 }
-/// 
+///
 ///                 // Proceed with withdrawal logic...
 ///             }
 ///         }

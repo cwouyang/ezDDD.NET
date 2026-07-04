@@ -1,5 +1,4 @@
 using System.Text.Json;
-
 using EzDdd.Entity;
 using EzDdd.UseCase.Port.InOut;
 
@@ -25,7 +24,7 @@ public class DomainEventMetadataTests
         DomainEventTypeMapper.Register<TestDestructionEvent>("TestDestructionEvent");
     }
 
-#region Metadata Immutability
+    #region Metadata Immutability
 
     [Fact]
     public void Metadata_IsReadOnly_CannotBeModified()
@@ -36,9 +35,9 @@ public class DomainEventMetadataTests
         Assert.IsAssignableFrom<IReadOnlyDictionary<string, string>>(@event.Metadata);
     }
 
-#endregion
+    #endregion
 
-#region Metadata Serialization/Deserialization
+    #region Metadata Serialization/Deserialization
 
     [Fact]
     public void ToData_WithMetadata_SerializesMetadataCorrectly()
@@ -52,8 +51,9 @@ public class DomainEventMetadataTests
         Assert.NotEmpty(data.UserMetadata);
 
         // Verify metadata can be deserialized
-        Dictionary<string, string>? deserializedMetadata =
-            JsonSerializer.Deserialize<Dictionary<string, string>>(data.UserMetadata);
+        Dictionary<string, string>? deserializedMetadata = JsonSerializer.Deserialize<Dictionary<string, string>>(
+            data.UserMetadata
+        );
 
         Assert.NotNull(deserializedMetadata);
         Assert.Equal(2, deserializedMetadata.Count);
@@ -72,8 +72,9 @@ public class DomainEventMetadataTests
 
         Assert.NotNull(data.UserMetadata);
 
-        Dictionary<string, string>? deserializedMetadata =
-            JsonSerializer.Deserialize<Dictionary<string, string>>(data.UserMetadata);
+        Dictionary<string, string>? deserializedMetadata = JsonSerializer.Deserialize<Dictionary<string, string>>(
+            data.UserMetadata
+        );
 
         Assert.NotNull(deserializedMetadata);
         Assert.Empty(deserializedMetadata);
@@ -101,7 +102,7 @@ public class DomainEventMetadataTests
             ["CorrelationId"] = "corr-123",
             ["CausationId"] = "cause-456",
             ["UserId"] = "user-789",
-            ["TraceContext"] = "trace-context-abc"
+            ["TraceContext"] = "trace-context-abc",
         };
         TestEvent originalEvent = new(Guid.NewGuid(), DateTimeOffset.UtcNow, "source-1", "test-data", metadata);
 
@@ -116,9 +117,9 @@ public class DomainEventMetadataTests
         }
     }
 
-#endregion
+    #endregion
 
-#region Metadata Equality
+    #region Metadata Equality
 
     [Fact]
     public void DomainEventData_WithSameMetadata_AreEqual()
@@ -163,9 +164,9 @@ public class DomainEventMetadataTests
         Assert.NotEqual(data1, data2);
     }
 
-#endregion
+    #endregion
 
-#region Metadata Special Cases
+    #region Metadata Special Cases
 
     [Fact]
     public void Metadata_WithSpecialCharacters_HandledCorrectly()
@@ -176,7 +177,7 @@ public class DomainEventMetadataTests
             ["Key.With.Dots"] = "value.with.dots",
             ["Key_With_Underscores"] = "value_with_underscores",
             ["KeyWithNumbers123"] = "ValueWithNumbers456",
-            ["Key@Symbol"] = "value@domain.com"
+            ["Key@Symbol"] = "value@domain.com",
         };
         TestEvent originalEvent = new(Guid.NewGuid(), DateTimeOffset.UtcNow, "source-1", "test", metadata);
 
@@ -199,7 +200,7 @@ public class DomainEventMetadataTests
             ["Japanese"] = "日本語テスト",
             ["Korean"] = "한국어 테스트",
             ["Emoji"] = "🎉🚀✅",
-            ["Arabic"] = "اختبار"
+            ["Arabic"] = "اختبار",
         };
         TestEvent originalEvent = new(Guid.NewGuid(), DateTimeOffset.UtcNow, "source-1", "test", metadata);
 
@@ -260,9 +261,9 @@ public class DomainEventMetadataTests
         Assert.Equal("value", reconstructedEvent.Metadata["NonEmptyKey"]);
     }
 
-#endregion
+    #endregion
 
-#region Metadata in Different Event Types
+    #region Metadata in Different Event Types
 
     [Fact]
     public void ConstructionEvent_WithMetadata_PreservesMetadata()
@@ -292,15 +293,14 @@ public class DomainEventMetadataTests
         Assert.Equal("cleanup", reconstructedEvent.Metadata["Reason"]);
     }
 
-#endregion
+    #endregion
 
-#region Helper Test Events
+    #region Helper Test Events
 
     /// <summary>
     ///     Test event for metadata testing.
     /// </summary>
-    private sealed record TestEvent
-    (
+    private sealed record TestEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -311,8 +311,7 @@ public class DomainEventMetadataTests
     /// <summary>
     ///     Test construction event for metadata testing.
     /// </summary>
-    private sealed record TestConstructionEvent
-    (
+    private sealed record TestConstructionEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -323,8 +322,7 @@ public class DomainEventMetadataTests
     /// <summary>
     ///     Test destruction event for metadata testing.
     /// </summary>
-    private sealed record TestDestructionEvent
-    (
+    private sealed record TestDestructionEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -332,5 +330,5 @@ public class DomainEventMetadataTests
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent, IInternalDomainEvent.IDestructionEvent;
 
-#endregion
+    #endregion
 }

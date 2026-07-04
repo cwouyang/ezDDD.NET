@@ -5,7 +5,7 @@ using EzDdd.UseCase.Port.Out;
 
 public class StoreDataTests
 {
-#region Test Helpers
+    #region Test Helpers
 
     private class TestStoreData : IStoreData<string>
     {
@@ -15,17 +15,16 @@ public class StoreDataTests
         public string StreamName { get; set; } = string.Empty;
     }
 
-    private record TestEvent
-    (
+    private record TestEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent, IInternalDomainEvent.IConstructionEvent;
 
-#endregion
+    #endregion
 
-#region Property Tests
+    #region Property Tests
 
     [Fact]
     public void Version_DefaultValue_IsMinusOne()
@@ -55,9 +54,9 @@ public class StoreDataTests
         Assert.Empty(storeData.Events);
     }
 
-#endregion
+    #endregion
 
-#region GetOptimisticLockVersion Tests
+    #region GetOptimisticLockVersion Tests
 
     [Fact]
     public void GetOptimisticLockVersion_NewAggregate_ReturnsZero()
@@ -67,8 +66,8 @@ public class StoreDataTests
             Version = -1,
             Events = new List<IDomainEvent>
             {
-                new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", new Dictionary<string, string>())
-            }
+                new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", new Dictionary<string, string>()),
+            },
         };
 
         var optimisticLockVersion = storeData.GetOptimisticLockVersion();
@@ -84,8 +83,8 @@ public class StoreDataTests
             Version = 0,
             Events = new List<IDomainEvent>
             {
-                new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", new Dictionary<string, string>())
-            }
+                new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", new Dictionary<string, string>()),
+            },
         };
 
         var optimisticLockVersion = storeData.GetOptimisticLockVersion();
@@ -103,8 +102,8 @@ public class StoreDataTests
             {
                 new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", new Dictionary<string, string>()),
                 new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", new Dictionary<string, string>()),
-                new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", new Dictionary<string, string>())
-            }
+                new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", new Dictionary<string, string>()),
+            },
         };
 
         var optimisticLockVersion = storeData.GetOptimisticLockVersion();
@@ -112,9 +111,9 @@ public class StoreDataTests
         Assert.Equal(8, optimisticLockVersion); // 5 + 3 = 8
     }
 
-#endregion
+    #endregion
 
-#region StreamName Tests
+    #region StreamName Tests
 
     [Fact]
     public void StreamName_SetAndGet_ReturnsCorrectValue()
@@ -136,18 +135,23 @@ public class StoreDataTests
         Assert.StartsWith("bankaccount-", storeData.StreamName);
     }
 
-#endregion
+    #endregion
 
-#region Lifecycle Tests
+    #region Lifecycle Tests
 
     [Fact]
     public void CompleteLifecycle_NewToExisting_VersionProgression()
     {
-        IStoreData<string> storeData = new TestStoreData { Id = "account-789", Version = -1, StreamName = "account-789" };
+        IStoreData<string> storeData = new TestStoreData
+        {
+            Id = "account-789",
+            Version = -1,
+            StreamName = "account-789",
+        };
 
         storeData.Events = new List<IDomainEvent>
         {
-            new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", new Dictionary<string, string>())
+            new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", new Dictionary<string, string>()),
         };
 
         Assert.Equal(0, storeData.GetOptimisticLockVersion());
@@ -159,11 +163,11 @@ public class StoreDataTests
 
         storeData.Events = new List<IDomainEvent>
         {
-            new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", new Dictionary<string, string>())
+            new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", new Dictionary<string, string>()),
         };
 
         Assert.Equal(1, storeData.GetOptimisticLockVersion());
     }
 
-#endregion
+    #endregion
 }

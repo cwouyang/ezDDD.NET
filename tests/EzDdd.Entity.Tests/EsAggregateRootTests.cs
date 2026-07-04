@@ -4,7 +4,7 @@ namespace EzDdd.Entity.Tests;
 
 public class EsAggregateRootTests
 {
-#region R1: Construction Event Tests
+    #region R1: Construction Event Tests
 
     [Fact]
     public void EsAggregateRoot_Constructor_AppliesConstructionEvent()
@@ -30,15 +30,12 @@ public class EsAggregateRootTests
     public void EsAggregateRoot_R1_ConstructionEvent_ChecksPostcondition()
     {
         // Negative initial balance violates invariant
-        Assert.Throws<InvalidOperationException>
-        (() =>
-             new Account(Guid.NewGuid(), "Alice", -100m)
-        );
+        Assert.Throws<InvalidOperationException>(() => new Account(Guid.NewGuid(), "Alice", -100m));
     }
 
-#endregion
+    #endregion
 
-#region R2: Command Event Tests
+    #region R2: Command Event Tests
 
     [Fact]
     public void EsAggregateRoot_R2_CommandEvent_ChecksPrecondition()
@@ -83,9 +80,9 @@ public class EsAggregateRootTests
         Assert.Equal(120m, account.Balance); // 100 + 50 - 30
     }
 
-#endregion
+    #endregion
 
-#region R3: Destruction Event Tests
+    #region R3: Destruction Event Tests
 
     [Fact]
     public void EsAggregateRoot_R3_DestructionEvent_ChecksPrecondition()
@@ -110,9 +107,9 @@ public class EsAggregateRootTests
         Assert.True(account.IsDeleted);
     }
 
-#endregion
+    #endregion
 
-#region Replay and Reconstruction Tests
+    #region Replay and Reconstruction Tests
 
     [Fact]
     public void EsAggregateRoot_ReplayConstructor_ReconstructsState()
@@ -121,23 +118,28 @@ public class EsAggregateRootTests
         Guid accountId = Guid.NewGuid();
         List<IInternalDomainEvent> events =
         [
-            new AccountCreated
-            (
-                Guid.NewGuid(), DateTimeOffset.UtcNow, accountId.ToString(),
-                "Alice", 100m, new Dictionary<string, string>()
+            new AccountCreated(
+                Guid.NewGuid(),
+                DateTimeOffset.UtcNow,
+                accountId.ToString(),
+                "Alice",
+                100m,
+                new Dictionary<string, string>()
             ),
-
-            new MoneyDeposited
-            (
-                Guid.NewGuid(), DateTimeOffset.UtcNow, accountId.ToString(),
-                50m, new Dictionary<string, string>()
+            new MoneyDeposited(
+                Guid.NewGuid(),
+                DateTimeOffset.UtcNow,
+                accountId.ToString(),
+                50m,
+                new Dictionary<string, string>()
             ),
-
-            new MoneyWithdrawn
-            (
-                Guid.NewGuid(), DateTimeOffset.UtcNow, accountId.ToString(),
-                30m, new Dictionary<string, string>()
-            )
+            new MoneyWithdrawn(
+                Guid.NewGuid(),
+                DateTimeOffset.UtcNow,
+                accountId.ToString(),
+                30m,
+                new Dictionary<string, string>()
+            ),
         ];
 
         // Reconstruct from events
@@ -154,11 +156,14 @@ public class EsAggregateRootTests
         Guid accountId = Guid.NewGuid();
         List<IInternalDomainEvent> events =
         [
-            new AccountCreated
-            (
-                Guid.NewGuid(), DateTimeOffset.UtcNow, accountId.ToString(),
-                "Alice", 100m, new Dictionary<string, string>()
-            )
+            new AccountCreated(
+                Guid.NewGuid(),
+                DateTimeOffset.UtcNow,
+                accountId.ToString(),
+                "Alice",
+                100m,
+                new Dictionary<string, string>()
+            ),
         ];
 
         Account account = new(events);
@@ -173,23 +178,28 @@ public class EsAggregateRootTests
         Guid accountId = Guid.NewGuid();
         List<IInternalDomainEvent> events =
         [
-            new AccountCreated
-            (
-                Guid.NewGuid(), DateTimeOffset.UtcNow, accountId.ToString(),
-                "Alice", 100m, new Dictionary<string, string>()
+            new AccountCreated(
+                Guid.NewGuid(),
+                DateTimeOffset.UtcNow,
+                accountId.ToString(),
+                "Alice",
+                100m,
+                new Dictionary<string, string>()
             ),
-
-            new MoneyDeposited
-            (
-                Guid.NewGuid(), DateTimeOffset.UtcNow, accountId.ToString(),
-                50m, new Dictionary<string, string>()
+            new MoneyDeposited(
+                Guid.NewGuid(),
+                DateTimeOffset.UtcNow,
+                accountId.ToString(),
+                50m,
+                new Dictionary<string, string>()
             ),
-
-            new MoneyWithdrawn
-            (
-                Guid.NewGuid(), DateTimeOffset.UtcNow, accountId.ToString(),
-                30m, new Dictionary<string, string>()
-            )
+            new MoneyWithdrawn(
+                Guid.NewGuid(),
+                DateTimeOffset.UtcNow,
+                accountId.ToString(),
+                30m,
+                new Dictionary<string, string>()
+            ),
         ];
 
         Account account = new(events);
@@ -198,9 +208,9 @@ public class EsAggregateRootTests
         Assert.Equal(2L, account.Version);
     }
 
-#endregion
+    #endregion
 
-#region API and Contract Tests
+    #region API and Contract Tests
 
     [Fact]
     public void EsAggregateRoot_GetCategory_ReturnsAggregateType()
@@ -235,8 +245,10 @@ public class EsAggregateRootTests
     [Fact]
     public void EsAggregateRoot_When_IsAbstract_MustBeImplemented()
     {
-        MethodInfo? whenMethod = typeof(EsAggregateRoot<Guid, IInternalDomainEvent>)
-            .GetMethod("_When", BindingFlags.NonPublic | BindingFlags.Instance);
+        MethodInfo? whenMethod = typeof(EsAggregateRoot<Guid, IInternalDomainEvent>).GetMethod(
+            "_When",
+            BindingFlags.NonPublic | BindingFlags.Instance
+        );
 
         Assert.True(whenMethod?.IsAbstract);
     }
@@ -244,16 +256,18 @@ public class EsAggregateRootTests
     [Fact]
     public void EsAggregateRoot_EnsureInvariant_IsVirtual_CanBeOverridden()
     {
-        MethodInfo? ensureInvariantMethod = typeof(EsAggregateRoot<Guid, IInternalDomainEvent>)
-            .GetMethod("_EnsureInvariant", BindingFlags.NonPublic | BindingFlags.Instance);
+        MethodInfo? ensureInvariantMethod = typeof(EsAggregateRoot<Guid, IInternalDomainEvent>).GetMethod(
+            "_EnsureInvariant",
+            BindingFlags.NonPublic | BindingFlags.Instance
+        );
 
         Assert.True(ensureInvariantMethod?.IsVirtual);
         Assert.False(ensureInvariantMethod?.IsAbstract);
     }
 
-#endregion
+    #endregion
 
-#region Integration Tests
+    #region Integration Tests
 
     [Fact]
     public void EsAggregateRoot_CompleteLifecycle_AllRulesEnforced()
@@ -268,11 +282,10 @@ public class EsAggregateRootTests
         Assert.Equal(3L, account.Version); // 4 events total (0, 1, 2, 3)
     }
 
-#endregion
+    #endregion
 
     // Test events
-    private record AccountCreated
-    (
+    private record AccountCreated(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -281,8 +294,7 @@ public class EsAggregateRootTests
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent, IInternalDomainEvent.IConstructionEvent;
 
-    private record MoneyDeposited
-    (
+    private record MoneyDeposited(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -290,8 +302,7 @@ public class EsAggregateRootTests
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent;
 
-    private record MoneyWithdrawn
-    (
+    private record MoneyWithdrawn(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -299,8 +310,7 @@ public class EsAggregateRootTests
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent;
 
-    private record AccountClosed
-    (
+    private record AccountClosed(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -314,8 +324,7 @@ public class EsAggregateRootTests
         // Constructor for new aggregate
         public Account(Guid id, string owner, decimal initialBalance)
         {
-            AccountCreated created = new
-            (
+            AccountCreated created = new(
                 Guid.NewGuid(),
                 DateTimeOffset.UtcNow,
                 id.ToString(),
@@ -328,9 +337,8 @@ public class EsAggregateRootTests
         }
 
         // Constructor for event replay (required by framework)
-        public Account(IEnumerable<IInternalDomainEvent> events) : base(events)
-        {
-        }
+        public Account(IEnumerable<IInternalDomainEvent> events)
+            : base(events) { }
 
         public string Owner { get; private set; } = string.Empty;
 
@@ -338,8 +346,7 @@ public class EsAggregateRootTests
 
         public void Deposit(decimal amount)
         {
-            MoneyDeposited deposited = new
-            (
+            MoneyDeposited deposited = new(
                 Guid.NewGuid(),
                 DateTimeOffset.UtcNow,
                 Id.ToString(),
@@ -352,8 +359,7 @@ public class EsAggregateRootTests
 
         public void Withdraw(decimal amount)
         {
-            MoneyWithdrawn withdrawn = new
-            (
+            MoneyWithdrawn withdrawn = new(
                 Guid.NewGuid(),
                 DateTimeOffset.UtcNow,
                 Id.ToString(),
@@ -366,8 +372,7 @@ public class EsAggregateRootTests
 
         public void Close(string reason)
         {
-            AccountClosed closed = new
-            (
+            AccountClosed closed = new(
                 Guid.NewGuid(),
                 DateTimeOffset.UtcNow,
                 Id.ToString(),

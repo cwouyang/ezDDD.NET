@@ -57,5 +57,6 @@ public interface IEventStore
     /// </remarks>
     Task<IReadOnlyList<IInternalDomainEvent>> GetEventsAfterAsync(
         int afterIndex,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 }

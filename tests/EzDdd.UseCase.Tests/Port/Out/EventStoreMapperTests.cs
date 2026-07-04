@@ -1,21 +1,19 @@
 using EzDdd.Entity;
 using EzDdd.UseCase.Port.Out;
-
 using Xunit;
 
 namespace EzDdd.UseCase.Tests.Port.Out;
 
 public class EventStoreMapperTests
 {
-#region Test Helpers
+    #region Test Helpers
 
     private record TestId(string Value)
     {
         public override string ToString() => Value;
     }
 
-    private record TestEvent
-    (
+    private record TestEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -29,11 +27,11 @@ public class EventStoreMapperTests
 
         public string Name => _name;
 
-        public TestAggregate(TestId id, string name) : base()
+        public TestAggregate(TestId id, string name)
+            : base()
         {
             Id = id; // Set Id directly since we're not calling base(id)
-            var @event = new TestEvent
-            (
+            var @event = new TestEvent(
                 Guid.NewGuid(),
                 DateTimeOffset.UtcNow,
                 id.Value,
@@ -44,14 +42,12 @@ public class EventStoreMapperTests
             _name = name;
         }
 
-        public TestAggregate(IEnumerable<IInternalDomainEvent> events) : base(events)
-        {
-        }
+        public TestAggregate(IEnumerable<IInternalDomainEvent> events)
+            : base(events) { }
 
         public void DoSomething(string action)
         {
-            var @event = new TestEvent
-            (
+            var @event = new TestEvent(
                 Guid.NewGuid(),
                 DateTimeOffset.UtcNow,
                 Id.Value,
@@ -87,9 +83,9 @@ public class EventStoreMapperTests
         public override string GetCategory() => "test";
     }
 
-#endregion
+    #endregion
 
-#region ToData Tests
+    #region ToData Tests
 
     [Fact]
     public void ToData_WithValidAggregate_ReturnsEventStoreData()
@@ -155,7 +151,7 @@ public class EventStoreMapperTests
         var id = new TestId("test-versioned");
         var events = new List<IInternalDomainEvent>
         {
-            new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, id.Value, "Event1", new Dictionary<string, string>())
+            new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, id.Value, "Event1", new Dictionary<string, string>()),
         };
         var aggregate = new TestAggregate(events);
 
@@ -168,21 +164,23 @@ public class EventStoreMapperTests
         Assert.Equal(aggregate.Version, data.Version);
     }
 
-#endregion
+    #endregion
 
-#region ToDomain Tests
+    #region ToDomain Tests
 
     [Fact]
     public void ToDomain_ThrowsNotSupportedException()
     {
         var data = new EventStoreData<TestId>
         {
-            Id = new TestId("test-123"), Version = 0, Events = new List<IInternalDomainEvent>(), StreamName = "test-123"
+            Id = new TestId("test-123"),
+            Version = 0,
+            Events = new List<IInternalDomainEvent>(),
+            StreamName = "test-123",
         };
 
-        var exception = Assert.Throws<NotSupportedException>
-        (() =>
-             EventStoreMapper.ToDomain<TestAggregate, TestId>(data)
+        var exception = Assert.Throws<NotSupportedException>(() =>
+            EventStoreMapper.ToDomain<TestAggregate, TestId>(data)
         );
 
         Assert.Contains("Event sourcing aggregates are reconstructed from events", exception.Message);
@@ -197,16 +195,13 @@ public class EventStoreMapperTests
             Version = 10,
             Events = new List<IInternalDomainEvent>
             {
-                new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", "Event", new Dictionary<string, string>())
+                new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", "Event", new Dictionary<string, string>()),
             },
-            StreamName = "test-456"
+            StreamName = "test-456",
         };
 
-        Assert.Throws<NotSupportedException>
-        (() =>
-             EventStoreMapper.ToDomain<TestAggregate, TestId>(data)
-        );
+        Assert.Throws<NotSupportedException>(() => EventStoreMapper.ToDomain<TestAggregate, TestId>(data));
     }
 
-#endregion
+    #endregion
 }

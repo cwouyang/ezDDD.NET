@@ -37,7 +37,7 @@ namespace EzDdd.Entity;
 ///     decimal InitialBalance,
 ///     IReadOnlyDictionary&lt;string, string&gt; Metadata
 /// ) : IInternalDomainEvent, IInternalDomainEvent.IConstructionEvent;
-/// 
+///
 /// // Command event (R2 rule - middle events)
 /// public record MoneyDeposited(
 ///     Guid Id,
@@ -46,7 +46,7 @@ namespace EzDdd.Entity;
 ///     decimal Amount,
 ///     IReadOnlyDictionary&lt;string, string&gt; Metadata
 /// ) : IInternalDomainEvent;
-/// 
+///
 /// // Destruction event (R3 rule - last event)
 /// public record AccountClosed(
 ///     Guid Id,

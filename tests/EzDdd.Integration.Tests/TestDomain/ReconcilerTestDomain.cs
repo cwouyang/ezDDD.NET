@@ -5,13 +5,7 @@ namespace EzDdd.Integration.Tests.TestDomain;
 /// <summary>
 ///     Simple data item for reconciler testing.
 /// </summary>
-public sealed record DataItem
-(
-    string Id,
-    string Status,
-    DateTimeOffset CreatedAt,
-    DateTimeOffset? ExpiresAt = null
-);
+public sealed record DataItem(string Id, string Status, DateTimeOffset CreatedAt, DateTimeOffset? ExpiresAt = null);
 
 /// <summary>
 ///     In-memory repository for testing reconciler operations.
@@ -36,17 +30,15 @@ public sealed class InMemoryDataItemRepository
 
     public Task<List<DataItem>> FindByStatusAsync(string status)
     {
-        List<DataItem> items = _storage.Values
-                                       .Where(i => i.Status == status)
-                                       .ToList();
+        List<DataItem> items = _storage.Values.Where(i => i.Status == status).ToList();
         return Task.FromResult(items);
     }
 
     public Task<List<DataItem>> FindExpiredAsync(DateTimeOffset cutoffDate)
     {
-        List<DataItem> items = _storage.Values
-                                       .Where(i => i.ExpiresAt.HasValue && i.ExpiresAt.Value < cutoffDate)
-                                       .ToList();
+        List<DataItem> items = _storage
+            .Values.Where(i => i.ExpiresAt.HasValue && i.ExpiresAt.Value < cutoffDate)
+            .ToList();
         return Task.FromResult(items);
     }
 
@@ -70,8 +62,7 @@ public sealed record CleanupContext(DateTimeOffset CutoffDate, string TargetStat
 /// <summary>
 ///     Report for cleanup reconciliation results.
 /// </summary>
-public sealed record CleanupReport
-(
+public sealed record CleanupReport(
     int TotalChecked,
     int DeletedCount,
     int SkippedCount,
@@ -109,9 +100,7 @@ public sealed class ExpiredDataCleanupReconciler : IReconciler<CleanupContext, C
         // Filter by target status if specified
         if (!string.IsNullOrEmpty(context.TargetStatus))
         {
-            expiredItems = expiredItems
-                           .Where(i => i.Status == context.TargetStatus)
-                           .ToList();
+            expiredItems = expiredItems.Where(i => i.Status == context.TargetStatus).ToList();
         }
 
         int totalChecked = expiredItems.Count;
@@ -137,15 +126,7 @@ public sealed class ExpiredDataCleanupReconciler : IReconciler<CleanupContext, C
             }
         }
 
-        return new CleanupReport
-        (
-            totalChecked,
-            deletedCount,
-            skippedCount,
-            errorCount,
-            deletedIds,
-            errors
-        );
+        return new CleanupReport(totalChecked, deletedCount, skippedCount, errorCount, deletedIds, errors);
     }
 }
 
@@ -167,12 +148,7 @@ public sealed class SimpleStatusCheckReconciler : IReconciler<NullContext, Statu
         ArgumentNullException.ThrowIfNull(context);
 
         int totalItems = _repository.Count;
-        StatusCheckReport report = new
-        (
-            totalItems,
-            DateTimeOffset.UtcNow,
-            totalItems > 0 ? "OK" : "EMPTY"
-        );
+        StatusCheckReport report = new(totalItems, DateTimeOffset.UtcNow, totalItems > 0 ? "OK" : "EMPTY");
 
         return Task.FromResult(report);
     }
@@ -181,9 +157,4 @@ public sealed class SimpleStatusCheckReconciler : IReconciler<NullContext, Statu
 /// <summary>
 ///     Report for simple status check.
 /// </summary>
-public sealed record StatusCheckReport
-(
-    int TotalItems,
-    DateTimeOffset CheckedAt,
-    string Status
-);
+public sealed record StatusCheckReport(int TotalItems, DateTimeOffset CheckedAt, string Status);

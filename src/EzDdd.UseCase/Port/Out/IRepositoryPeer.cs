@@ -94,13 +94,13 @@ namespace EzDdd.UseCase.Port.Out;
 ///     {
 ///         // 1. Save aggregate state
 ///         _dbContext.Aggregates.Update(data);
-/// 
+///
 ///         // 2. Save events (Transactional Outbox)
 ///         foreach (var @event in data.Events)
 ///         {
 ///             _dbContext.OutboxEvents.Add(new OutboxEventEntity(@event));
 ///         }
-/// 
+///
 ///         // 3. Commit atomically
 ///         await _dbContext.SaveChangesAsync();
 ///         await transaction.CommitAsync();
@@ -111,7 +111,7 @@ namespace EzDdd.UseCase.Port.Out;
 ///         throw new RepositoryPeerSaveException("Optimistic locking failure", ex);
 ///     }
 /// }
-/// 
+///
 /// // Option 2: TransactionScope
 /// using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
 /// // ... save operations ...
@@ -126,13 +126,13 @@ namespace EzDdd.UseCase.Port.Out;
 /// public class SqlBankAccountRepositoryPeer : IRepositoryPeer&lt;BankAccountData, AccountId&gt;
 /// {
 ///     private readonly ApplicationDbContext _dbContext;
-/// 
+///
 ///     public async Task&lt;BankAccountData?&gt; FindByIdAsync(AccountId id)
 ///     {
 ///         return await _dbContext.BankAccounts
 ///             .FirstOrDefaultAsync(a => a.Id == id);
 ///     }
-/// 
+///
 ///     public async Task SaveAsync(BankAccountData data)
 ///     {
 ///         using var transaction = await _dbContext.Database.BeginTransactionAsync();
@@ -143,7 +143,7 @@ namespace EzDdd.UseCase.Port.Out;
 ///                 _dbContext.BankAccounts.Add(data);
 ///             else
 ///                 _dbContext.BankAccounts.Update(data);
-/// 
+///
 ///             // Store events in outbox
 ///             foreach (var @event in data.Events)
 ///             {
@@ -155,7 +155,7 @@ namespace EzDdd.UseCase.Port.Out;
 ///                     OccurredOn = @event.OccurredOn
 ///                 });
 ///             }
-/// 
+///
 ///             await _dbContext.SaveChangesAsync();
 ///             await transaction.CommitAsync();
 ///         }
@@ -170,7 +170,7 @@ namespace EzDdd.UseCase.Port.Out;
 ///             throw new RepositoryPeerSaveException("Database save failed", ex);
 ///         }
 ///     }
-/// 
+///
 ///     public async Task DeleteAsync(BankAccountData data)
 ///     {
 ///         _dbContext.BankAccounts.Remove(data);

@@ -116,12 +116,10 @@ public sealed class EventSourcingWorkflowTests : IDisposable
         AccountId accountId = new("acc-006");
         BankAccount account = new(accountId, "David Lee", new Money(100m));
 
-        InvalidOperationException exception = Assert.Throws<InvalidOperationException>
-        (() =>
-            {
-                account.Withdraw(new Money(200m)); // Withdraw more than balance
-            }
-        );
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() =>
+        {
+            account.Withdraw(new Money(200m)); // Withdraw more than balance
+        });
         Assert.Contains("balance cannot be negative", exception.Message);
     }
 
@@ -160,12 +158,10 @@ public sealed class EventSourcingWorkflowTests : IDisposable
         await _repository.SaveAsync(account2);
 
         account3.Deposit(new Money(200m));
-        await Assert.ThrowsAsync<RepositorySaveException>
-        (async () =>
-            {
-                await _repository.SaveAsync(account3);
-            }
-        );
+        await Assert.ThrowsAsync<RepositorySaveException>(async () =>
+        {
+            await _repository.SaveAsync(account3);
+        });
     }
 
     [Fact]

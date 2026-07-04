@@ -26,7 +26,7 @@ namespace EzDdd.UseCase.Port.InOut;
 ///     <code>
 /// // Internal event (aggregate lifecycle)
 /// public record AccountCreated(...) : InternalDomainEvent, IConstructionEvent;
-/// 
+///
 /// // External event (cross-context integration)
 /// public record CustomerRegistered(...) : ExternalDomainEvent;
 /// </code>

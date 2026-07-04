@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-
 using EzDdd.Entity;
 
 namespace EzDdd.UseCase.Tests.Integration.TestDomain;
@@ -7,8 +6,7 @@ namespace EzDdd.UseCase.Tests.Integration.TestDomain;
 /// <summary>
 ///     Order created event.
 /// </summary>
-public sealed record OrderCreated
-(
+public sealed record OrderCreated(
     Guid Id,
     DateTimeOffset OccurredOn,
     OrderId OrderId,
@@ -25,8 +23,7 @@ public sealed record OrderCreated
 /// <summary>
 ///     Order item added event.
 /// </summary>
-public sealed record OrderItemAdded
-(
+public sealed record OrderItemAdded(
     Guid Id,
     DateTimeOffset OccurredOn,
     OrderId OrderId,
@@ -44,12 +41,7 @@ public sealed record OrderItemAdded
 /// <summary>
 ///     Order confirmed event.
 /// </summary>
-public sealed record OrderConfirmed
-(
-    Guid Id,
-    DateTimeOffset OccurredOn,
-    OrderId OrderId
-) : IInternalDomainEvent
+public sealed record OrderConfirmed(Guid Id, DateTimeOffset OccurredOn, OrderId OrderId) : IInternalDomainEvent
 {
     public string Source => OrderId.Value;
 
@@ -60,13 +52,8 @@ public sealed record OrderConfirmed
 /// <summary>
 ///     Order cancelled event.
 /// </summary>
-public sealed record OrderCancelled
-(
-    Guid Id,
-    DateTimeOffset OccurredOn,
-    OrderId OrderId,
-    string Reason
-) : IInternalDomainEvent
+public sealed record OrderCancelled(Guid Id, DateTimeOffset OccurredOn, OrderId OrderId, string Reason)
+    : IInternalDomainEvent
 {
     public string Source => OrderId.Value;
 

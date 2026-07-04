@@ -94,22 +94,22 @@ namespace EzDdd.Entity;
 /// {
 ///     private OrderStatus _status = OrderStatus.Draft;
 ///     private List&lt;OrderItem&gt; _items = new();
-/// 
+///
 ///     public Order(Guid orderId, Guid customerId)
 ///     {
 ///         Id = orderId;
-/// 
+///
 ///         var created = new OrderCreated(
 ///             Id: Guid.NewGuid(),
 ///             OccurredOn: DateTimeOffset.UtcNow,
 ///             Source: orderId.ToString(),
 ///             CustomerId: customerId,
 ///             Metadata: new Dictionary&lt;string, string&gt;());
-/// 
+///
 ///         Apply(created); // Adds event to collection, increments version
 ///         _status = OrderStatus.Created; // State mutation (state sourcing)
 ///     }
-/// 
+///
 ///     public void AddItem(string productId, int quantity)
 ///     {
 ///         var itemAdded = new OrderItemAdded(/* ... */);

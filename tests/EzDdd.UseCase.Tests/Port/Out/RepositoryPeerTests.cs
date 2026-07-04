@@ -6,7 +6,7 @@ using EzDdd.UseCase.Port.Out;
 
 public class RepositoryPeerTests
 {
-#region Test Fixtures
+    #region Test Fixtures
 
     // Test data structure implementing IStoreData
     private record TestDataId(string Value);
@@ -20,9 +20,9 @@ public class RepositoryPeerTests
         public string Data { get; set; } = string.Empty;
     }
 
-#endregion
+    #endregion
 
-#region Mock Implementations
+    #region Mock Implementations
 
     private class MockRepositoryPeer : IRepositoryPeer<TestStoreDataImpl, TestDataId>
     {
@@ -54,16 +54,21 @@ public class RepositoryPeerTests
         }
     }
 
-#endregion
+    #endregion
 
-#region FindByIdAsync Tests
+    #region FindByIdAsync Tests
 
     [Fact]
     public async Task FindByIdAsync_ExistingData_ReturnsData()
     {
         var peer = new MockRepositoryPeer();
         var dataId = new TestDataId("test-1");
-        var storeData = new TestStoreDataImpl { Id = dataId, Version = 0, Data = "Test Data" };
+        var storeData = new TestStoreDataImpl
+        {
+            Id = dataId,
+            Version = 0,
+            Data = "Test Data",
+        };
         await peer.SaveAsync(storeData);
 
         var result = await peer.FindByIdAsync(dataId);
@@ -84,16 +89,21 @@ public class RepositoryPeerTests
         Assert.Null(result);
     }
 
-#endregion
+    #endregion
 
-#region SaveAsync Tests
+    #region SaveAsync Tests
 
     [Fact]
     public async Task SaveAsync_NewData_PersistsData()
     {
         var peer = new MockRepositoryPeer();
         var dataId = new TestDataId("test-2");
-        var storeData = new TestStoreDataImpl { Id = dataId, Version = -1, Data = "New Data" };
+        var storeData = new TestStoreDataImpl
+        {
+            Id = dataId,
+            Version = -1,
+            Data = "New Data",
+        };
 
         await peer.SaveAsync(storeData);
 
@@ -107,7 +117,12 @@ public class RepositoryPeerTests
     {
         var peer = new MockRepositoryPeer();
         var dataId = new TestDataId("test-3");
-        var storeData = new TestStoreDataImpl { Id = dataId, Version = 0, Data = "Updated Data" };
+        var storeData = new TestStoreDataImpl
+        {
+            Id = dataId,
+            Version = 0,
+            Data = "Updated Data",
+        };
         await peer.SaveAsync(storeData);
 
         await peer.SaveAsync(storeData);
@@ -123,16 +138,16 @@ public class RepositoryPeerTests
         var dataId = new TestDataId("test-4");
         var storeData = new TestStoreDataImpl { Id = dataId, Data = "Test" };
 
-        var exception = await Assert.ThrowsAsync<RepositoryPeerSaveException>
-        (async () => await peer.SaveAsync(storeData)
+        var exception = await Assert.ThrowsAsync<RepositoryPeerSaveException>(async () =>
+            await peer.SaveAsync(storeData)
         );
 
         Assert.Equal("Database error", exception.Message);
     }
 
-#endregion
+    #endregion
 
-#region DeleteAsync Tests
+    #region DeleteAsync Tests
 
     [Fact]
     public async Task DeleteAsync_ExistingData_RemovesData()
@@ -148,9 +163,9 @@ public class RepositoryPeerTests
         Assert.Null(retrieved);
     }
 
-#endregion
+    #endregion
 
-#region Type Constraint Tests
+    #region Type Constraint Tests
 
     [Fact]
     public async Task RepositoryPeer_WorksWithStoreDataConstraint()
@@ -185,7 +200,7 @@ public class RepositoryPeerTests
                 // 2. Save aggregate state
                 // 3. Save events (outbox)
                 // 4. Commit transaction atomically
-            }
+            },
         };
 
         await peer.SaveAsync(storeData);
@@ -194,5 +209,5 @@ public class RepositoryPeerTests
         Assert.NotNull(retrieved);
     }
 
-#endregion
+    #endregion
 }

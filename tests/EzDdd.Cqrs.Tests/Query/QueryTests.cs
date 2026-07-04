@@ -70,11 +70,12 @@ public class QueryTests
     {
         public Task<TestOutput> ExecuteAsync(TestInput input)
         {
-            TestOutput output = TestOutput.Create()
-                                          .SetId(input.Id)
-                                          .SetMessage("Query executed successfully")
-                                          .SetRetrievedData($"Retrieved data for {input.Id}")
-                                          .Succeed();
+            TestOutput output = TestOutput
+                .Create()
+                .SetId(input.Id)
+                .SetMessage("Query executed successfully")
+                .SetRetrievedData($"Retrieved data for {input.Id}")
+                .Succeed();
 
             return Task.FromResult(output);
         }

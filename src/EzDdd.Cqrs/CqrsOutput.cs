@@ -32,14 +32,14 @@ namespace EzDdd.Cqrs;
 ///         public class CreateAccountOutput : CqrsOutput&lt;CreateAccountOutput&gt;
 ///         {
 ///             public string AccountNumber { get; set; } = string.Empty;
-/// 
+///
 ///             public CreateAccountOutput SetAccountNumber(string accountNumber)
 ///             {
 ///                 AccountNumber = accountNumber;
 ///                 return this;
 ///             }
 ///         }
-/// 
+///
 ///         // Usage with fluent API:
 ///         var output = CreateAccountOutput.Create()
 ///             .SetId("ACC-001")

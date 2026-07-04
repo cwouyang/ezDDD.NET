@@ -34,9 +34,10 @@ public class DomainEventTypeMapperConcurrencyTests : IDisposable
         ConcurrentBag<Exception> exceptions = [];
 
         // Act - Launch multiple threads registering different types
-        Parallel.For
-        (
-            0, THREAD_COUNT, i =>
+        Parallel.For(
+            0,
+            THREAD_COUNT,
+            i =>
             {
                 try
                 {
@@ -96,9 +97,10 @@ public class DomainEventTypeMapperConcurrencyTests : IDisposable
         ConcurrentBag<Exception> exceptions = [];
 
         // Act - Launch multiple threads registering the same type/name
-        Parallel.For
-        (
-            0, THREAD_COUNT, _ =>
+        Parallel.For(
+            0,
+            THREAD_COUNT,
+            _ =>
             {
                 try
                 {
@@ -132,9 +134,10 @@ public class DomainEventTypeMapperConcurrencyTests : IDisposable
         ConcurrentBag<Exception> exceptions = [];
 
         // Act - Launch multiple threads reading type names
-        Parallel.For
-        (
-            0, THREAD_COUNT, i =>
+        Parallel.For(
+            0,
+            THREAD_COUNT,
+            i =>
             {
                 try
                 {
@@ -142,7 +145,7 @@ public class DomainEventTypeMapperConcurrencyTests : IDisposable
                     {
                         0 => typeof(TestEvent1),
                         1 => typeof(TestEvent2),
-                        _ => typeof(TestEvent3)
+                        _ => typeof(TestEvent3),
                     };
 
                     string typeName = DomainEventTypeMapper.GetTypeName(type);
@@ -176,9 +179,10 @@ public class DomainEventTypeMapperConcurrencyTests : IDisposable
         ConcurrentBag<Exception> exceptions = [];
 
         // Act - Launch multiple threads reading types
-        Parallel.For
-        (
-            0, THREAD_COUNT, i =>
+        Parallel.For(
+            0,
+            THREAD_COUNT,
+            i =>
             {
                 try
                 {
@@ -186,7 +190,7 @@ public class DomainEventTypeMapperConcurrencyTests : IDisposable
                     {
                         0 => "TestEvent1",
                         1 => "TestEvent2",
-                        _ => "TestEvent3"
+                        _ => "TestEvent3",
                     };
 
                     Type type = DomainEventTypeMapper.GetType(typeName);
@@ -217,9 +221,10 @@ public class DomainEventTypeMapperConcurrencyTests : IDisposable
         ConcurrentBag<string> readResults = [];
 
         // Act - Launch threads doing different operations
-        Parallel.For
-        (
-            0, THREAD_COUNT, i =>
+        Parallel.For(
+            0,
+            THREAD_COUNT,
+            i =>
             {
                 try
                 {
@@ -301,15 +306,17 @@ public class DomainEventTypeMapperConcurrencyTests : IDisposable
         ConcurrentBag<bool> results = [];
         ConcurrentBag<Exception> exceptions = [];
 
-        Parallel.For
-        (
-            0, THREAD_COUNT, i =>
+        Parallel.For(
+            0,
+            THREAD_COUNT,
+            i =>
             {
                 try
                 {
-                    bool contains = i % 2 == 0
-                        ? DomainEventTypeMapper.Contains("TestEvent1")
-                        : DomainEventTypeMapper.Contains("TestEvent2");
+                    bool contains =
+                        i % 2 == 0
+                            ? DomainEventTypeMapper.Contains("TestEvent1")
+                            : DomainEventTypeMapper.Contains("TestEvent2");
                     results.Add(contains);
                 }
                 catch (Exception ex)
@@ -336,9 +343,10 @@ public class DomainEventTypeMapperConcurrencyTests : IDisposable
         var readCount = 0;
 
         // Act - High concurrency with mixed operations
-        Parallel.For
-        (
-            0, THREAD_COUNT, i =>
+        Parallel.For(
+            0,
+            THREAD_COUNT,
+            i =>
             {
                 try
                 {
@@ -404,33 +412,73 @@ public class DomainEventTypeMapperConcurrencyTests : IDisposable
     }
 
     // Test event types (need 10 different types for concurrency tests)
-    private record TestEvent1(Guid Id, DateTimeOffset OccurredOn, string Source, IReadOnlyDictionary<string, string> Metadata)
-        : IInternalDomainEvent;
+    private record TestEvent1(
+        Guid Id,
+        DateTimeOffset OccurredOn,
+        string Source,
+        IReadOnlyDictionary<string, string> Metadata
+    ) : IInternalDomainEvent;
 
-    private record TestEvent2(Guid Id, DateTimeOffset OccurredOn, string Source, IReadOnlyDictionary<string, string> Metadata)
-        : IInternalDomainEvent;
+    private record TestEvent2(
+        Guid Id,
+        DateTimeOffset OccurredOn,
+        string Source,
+        IReadOnlyDictionary<string, string> Metadata
+    ) : IInternalDomainEvent;
 
-    private record TestEvent3(Guid Id, DateTimeOffset OccurredOn, string Source, IReadOnlyDictionary<string, string> Metadata)
-        : IInternalDomainEvent;
+    private record TestEvent3(
+        Guid Id,
+        DateTimeOffset OccurredOn,
+        string Source,
+        IReadOnlyDictionary<string, string> Metadata
+    ) : IInternalDomainEvent;
 
-    private record TestEvent4(Guid Id, DateTimeOffset OccurredOn, string Source, IReadOnlyDictionary<string, string> Metadata)
-        : IInternalDomainEvent;
+    private record TestEvent4(
+        Guid Id,
+        DateTimeOffset OccurredOn,
+        string Source,
+        IReadOnlyDictionary<string, string> Metadata
+    ) : IInternalDomainEvent;
 
-    private record TestEvent5(Guid Id, DateTimeOffset OccurredOn, string Source, IReadOnlyDictionary<string, string> Metadata)
-        : IInternalDomainEvent;
+    private record TestEvent5(
+        Guid Id,
+        DateTimeOffset OccurredOn,
+        string Source,
+        IReadOnlyDictionary<string, string> Metadata
+    ) : IInternalDomainEvent;
 
-    private record TestEvent6(Guid Id, DateTimeOffset OccurredOn, string Source, IReadOnlyDictionary<string, string> Metadata)
-        : IInternalDomainEvent;
+    private record TestEvent6(
+        Guid Id,
+        DateTimeOffset OccurredOn,
+        string Source,
+        IReadOnlyDictionary<string, string> Metadata
+    ) : IInternalDomainEvent;
 
-    private record TestEvent7(Guid Id, DateTimeOffset OccurredOn, string Source, IReadOnlyDictionary<string, string> Metadata)
-        : IInternalDomainEvent;
+    private record TestEvent7(
+        Guid Id,
+        DateTimeOffset OccurredOn,
+        string Source,
+        IReadOnlyDictionary<string, string> Metadata
+    ) : IInternalDomainEvent;
 
-    private record TestEvent8(Guid Id, DateTimeOffset OccurredOn, string Source, IReadOnlyDictionary<string, string> Metadata)
-        : IInternalDomainEvent;
+    private record TestEvent8(
+        Guid Id,
+        DateTimeOffset OccurredOn,
+        string Source,
+        IReadOnlyDictionary<string, string> Metadata
+    ) : IInternalDomainEvent;
 
-    private record TestEvent9(Guid Id, DateTimeOffset OccurredOn, string Source, IReadOnlyDictionary<string, string> Metadata)
-        : IInternalDomainEvent;
+    private record TestEvent9(
+        Guid Id,
+        DateTimeOffset OccurredOn,
+        string Source,
+        IReadOnlyDictionary<string, string> Metadata
+    ) : IInternalDomainEvent;
 
-    private record TestEvent10(Guid Id, DateTimeOffset OccurredOn, string Source, IReadOnlyDictionary<string, string> Metadata)
-        : IInternalDomainEvent;
+    private record TestEvent10(
+        Guid Id,
+        DateTimeOffset OccurredOn,
+        string Source,
+        IReadOnlyDictionary<string, string> Metadata
+    ) : IInternalDomainEvent;
 }

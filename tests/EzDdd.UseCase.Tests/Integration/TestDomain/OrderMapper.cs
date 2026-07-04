@@ -1,5 +1,4 @@
 using System.Reflection;
-
 using EzDdd.UseCase.Port.Out;
 
 namespace EzDdd.UseCase.Tests.Integration.TestDomain;
@@ -19,9 +18,15 @@ public sealed class OrderMapper : OutboxMapper<Order, OrderData, OrderId>
             StreamName = $"order-{aggregate.Id.Value}",
             CustomerName = aggregate.CustomerName,
             TotalAmount = aggregate.TotalAmount,
-            Items = aggregate.Items.Select
-                (item => new OrderItemData { ProductName = item.ProductName, Quantity = item.Quantity, Price = item.Price }).ToList(),
-            Status = aggregate.Status
+            Items = aggregate
+                .Items.Select(item => new OrderItemData
+                {
+                    ProductName = item.ProductName,
+                    Quantity = item.Quantity,
+                    Price = item.Price,
+                })
+                .ToList(),
+            Status = aggregate.Status,
         };
     }
 
@@ -31,39 +36,31 @@ public sealed class OrderMapper : OutboxMapper<Order, OrderData, OrderId>
         Order order = new();
 
         // Restore state using reflection (accessing private fields)
-        FieldInfo? idField = typeof(Order).BaseType!.GetField
-        (
+        FieldInfo? idField = typeof(Order).BaseType!.GetField(
             "<Id>k__BackingField",
             BindingFlags.Instance | BindingFlags.NonPublic
         );
         idField!.SetValue(order, data.Id);
 
-        FieldInfo? versionField = typeof(Order).BaseType!.GetField
-        (
+        FieldInfo? versionField = typeof(Order).BaseType!.GetField(
             "<Version>k__BackingField",
             BindingFlags.Instance | BindingFlags.NonPublic
         );
         versionField!.SetValue(order, data.Version);
 
-        FieldInfo? customerNameField = typeof(Order).GetField
-        (
+        FieldInfo? customerNameField = typeof(Order).GetField(
             "<CustomerName>k__BackingField",
             BindingFlags.Instance | BindingFlags.NonPublic
         );
         customerNameField!.SetValue(order, data.CustomerName);
 
-        FieldInfo? totalAmountField = typeof(Order).GetField
-        (
+        FieldInfo? totalAmountField = typeof(Order).GetField(
             "<TotalAmount>k__BackingField",
             BindingFlags.Instance | BindingFlags.NonPublic
         );
         totalAmountField!.SetValue(order, data.TotalAmount);
 
-        FieldInfo? itemsField = typeof(Order).GetField
-        (
-            "_items",
-            BindingFlags.Instance | BindingFlags.NonPublic
-        );
+        FieldInfo? itemsField = typeof(Order).GetField("_items", BindingFlags.Instance | BindingFlags.NonPublic);
         List<OrderItem> itemsList = (List<OrderItem>)itemsField!.GetValue(order)!;
         itemsList.Clear();
         foreach (OrderItemData itemData in data.Items)
@@ -71,8 +68,7 @@ public sealed class OrderMapper : OutboxMapper<Order, OrderData, OrderId>
             itemsList.Add(new OrderItem(itemData.ProductName, itemData.Quantity, itemData.Price));
         }
 
-        FieldInfo? statusField = typeof(Order).GetField
-        (
+        FieldInfo? statusField = typeof(Order).GetField(
             "<Status>k__BackingField",
             BindingFlags.Instance | BindingFlags.NonPublic
         );

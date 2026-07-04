@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-
 using EzDdd.Entity;
 using EzDdd.Integration.Tests.TestDomain;
 using EzDdd.UseCase.Port.InOut;
@@ -35,7 +34,7 @@ namespace EzDdd.Integration.Tests;
 /// </remarks>
 public sealed class EventSourcingMetadataTests
 {
-#region Version Control and Metadata Tests
+    #region Version Control and Metadata Tests
 
     [Fact]
     public async Task MultipleUpdates_ShouldPreserveMetadataIndependently()
@@ -72,9 +71,9 @@ public sealed class EventSourcingMetadataTests
         Assert.NotEqual(v1Event.Metadata["UserId"], v2Event.Metadata["UserId"]);
     }
 
-#endregion
+    #endregion
 
-#region Test Infrastructure
+    #region Test Infrastructure
 
     private static TestInfrastructure _CreateInfrastructure()
     {
@@ -118,8 +117,7 @@ public sealed class EventSourcingMetadataTests
         }
     }
 
-    private static IReadOnlyDictionary<string, string> _CreateMetadata
-    (
+    private static IReadOnlyDictionary<string, string> _CreateMetadata(
         string correlationId,
         string? causationId = null,
         string? userId = null,
@@ -146,9 +144,9 @@ public sealed class EventSourcingMetadataTests
         return new ReadOnlyDictionary<string, string>(metadata);
     }
 
-#endregion
+    #endregion
 
-#region Event Replay with Metadata Tests
+    #region Event Replay with Metadata Tests
 
     [Fact]
     public async Task SingleSaveLoadCycle_ShouldPreserveMetadata()
@@ -172,8 +170,7 @@ public sealed class EventSourcingMetadataTests
 
         // Assert: Events with metadata should be in the published events
         Assert.Single(infra.PublishedEvents);
-        AggregateCreated deserializedEvent = DomainEventMapper.ToDomain<AggregateCreated>
-        (
+        AggregateCreated deserializedEvent = DomainEventMapper.ToDomain<AggregateCreated>(
             infra.PublishedEvents.First()
         );
         Assert.Equal(correlationId, deserializedEvent.Metadata["CorrelationId"]);
@@ -238,8 +235,7 @@ public sealed class EventSourcingMetadataTests
         const int eventCount = 50; // Create 50 events
 
         // Act: Create aggregate and perform many updates
-        MetadataTestAggregate aggregate = new
-        (
+        MetadataTestAggregate aggregate = new(
             id,
             "Large Stream Test",
             0,
@@ -248,11 +244,7 @@ public sealed class EventSourcingMetadataTests
 
         for (int i = 1; i <= eventCount - 1; i++)
         {
-            aggregate.UpdateValue
-            (
-                i * 10,
-                _CreateMetadata(correlationId, userId: $"user{i}", traceId: $"trace-{i:D3}")
-            );
+            aggregate.UpdateValue(i * 10, _CreateMetadata(correlationId, userId: $"user{i}", traceId: $"trace-{i:D3}"));
         }
 
         await infra.SaveAndPublishAsync(aggregate);
@@ -268,26 +260,20 @@ public sealed class EventSourcingMetadataTests
         Assert.Equal(eventCount, infra.PublishedEvents.Count);
 
         // Verify first and last events have correct metadata
-        AggregateCreated firstEvent = DomainEventMapper.ToDomain<AggregateCreated>
-        (
-            infra.PublishedEvents.First()
-        );
+        AggregateCreated firstEvent = DomainEventMapper.ToDomain<AggregateCreated>(infra.PublishedEvents.First());
         Assert.Equal(correlationId, firstEvent.Metadata["CorrelationId"]);
         Assert.Equal("system", firstEvent.Metadata["UserId"]);
         Assert.Equal("trace-001", firstEvent.Metadata["TraceId"]);
 
-        ValueUpdated lastEvent = DomainEventMapper.ToDomain<ValueUpdated>
-        (
-            infra.PublishedEvents.Last()
-        );
+        ValueUpdated lastEvent = DomainEventMapper.ToDomain<ValueUpdated>(infra.PublishedEvents.Last());
         Assert.Equal(correlationId, lastEvent.Metadata["CorrelationId"]);
         Assert.Equal($"user{eventCount - 1}", lastEvent.Metadata["UserId"]);
         Assert.Equal($"trace-{eventCount - 1:D3}", lastEvent.Metadata["TraceId"]);
     }
 
-#endregion
+    #endregion
 
-#region Event Store Persistence Tests
+    #region Event Store Persistence Tests
 
     [Fact]
     public async Task EventStore_ShouldPersistMetadataInEventStoreData()
@@ -297,8 +283,7 @@ public sealed class EventSourcingMetadataTests
         string correlationId = Guid.NewGuid().ToString();
 
         // Act: Create and save aggregate
-        MetadataTestAggregate aggregate = new
-        (
+        MetadataTestAggregate aggregate = new(
             id,
             "Persistence Test",
             200,
@@ -314,10 +299,7 @@ public sealed class EventSourcingMetadataTests
         // Verify the stored event has correct type and metadata via the published events
         // (EventStoreData stores IDomainEvent, which includes metadata)
         Assert.Single(infra.PublishedEvents);
-        AggregateCreated publishedEvent = DomainEventMapper.ToDomain<AggregateCreated>
-        (
-            infra.PublishedEvents.First()
-        );
+        AggregateCreated publishedEvent = DomainEventMapper.ToDomain<AggregateCreated>(infra.PublishedEvents.First());
 
         Assert.Equal(correlationId, publishedEvent.Metadata["CorrelationId"]);
         Assert.Equal("alice", publishedEvent.Metadata["UserId"]);
@@ -371,9 +353,9 @@ public sealed class EventSourcingMetadataTests
         Assert.Equal(30, final.Value);
     }
 
-#endregion
+    #endregion
 
-#region Metadata Consistency Tests
+    #region Metadata Consistency Tests
 
     [Fact]
     public async Task ReloadedAggregate_ShouldHaveNoUnpublishedEvents()
@@ -403,12 +385,11 @@ public sealed class EventSourcingMetadataTests
             ["CorrelationId"] = "abc-123",
             ["UserId"] = "test@example.com",
             ["TraceId"] = "trace-456",
-            ["CustomKey"] = "CustomValue with spaces and 特殊字符"
+            ["CustomKey"] = "CustomValue with spaces and 特殊字符",
         };
 
         // Act: Create aggregate with specific metadata
-        MetadataTestAggregate aggregate = new
-        (
+        MetadataTestAggregate aggregate = new(
             id,
             "Round Trip Test",
             999,
@@ -418,8 +399,7 @@ public sealed class EventSourcingMetadataTests
 
         // Assert: Deserialized event should have identical metadata
         Assert.Single(infra.PublishedEvents);
-        AggregateCreated deserializedEvent = DomainEventMapper.ToDomain<AggregateCreated>
-        (
+        AggregateCreated deserializedEvent = DomainEventMapper.ToDomain<AggregateCreated>(
             infra.PublishedEvents.First()
         );
 
@@ -432,5 +412,5 @@ public sealed class EventSourcingMetadataTests
         }
     }
 
-#endregion
+    #endregion
 }

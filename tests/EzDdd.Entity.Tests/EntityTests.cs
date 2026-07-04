@@ -57,8 +57,7 @@ public class EntityTests
         return;
 
         // Helper method demonstrating generic constraint usage
-        static TId GetEntityId<TId>(IEntity<TId> entity)
-            => entity.Id;
+        static TId GetEntityId<TId>(IEntity<TId> entity) => entity.Id;
     }
 
     // Test implementation classes

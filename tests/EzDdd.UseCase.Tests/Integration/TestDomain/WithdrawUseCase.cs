@@ -9,11 +9,7 @@ namespace EzDdd.UseCase.Tests.Integration.TestDomain;
 ///     Input for withdrawing money from an account.
 ///     Implements IVersionedInput for optimistic locking.
 /// </summary>
-public sealed record WithdrawInput
-(
-    AccountId AccountId,
-    Money Amount
-) : IVersionedInput
+public sealed record WithdrawInput(AccountId AccountId, Money Amount) : IVersionedInput
 {
     public long Version { get; set; }
 }
@@ -65,8 +61,8 @@ public sealed class WithdrawOutput : IOutput
 ///     Use case for withdrawing money from a bank account.
 ///     Validates version for optimistic locking.
 /// </summary>
-public sealed class WithdrawUseCase
-    (IRepository<BankAccount, AccountId, IInternalDomainEvent> repository) : IUseCase<WithdrawInput, WithdrawOutput>
+public sealed class WithdrawUseCase(IRepository<BankAccount, AccountId, IInternalDomainEvent> repository)
+    : IUseCase<WithdrawInput, WithdrawOutput>
 {
     public async Task<WithdrawOutput> ExecuteAsync(WithdrawInput input)
     {
@@ -76,17 +72,13 @@ public sealed class WithdrawUseCase
             BankAccount? account = await repository.FindByIdAsync(input.AccountId);
             if (account is null)
             {
-                throw new UseCaseFailureException
-                (
-                    $"Account not found: {input.AccountId.Value}"
-                );
+                throw new UseCaseFailureException($"Account not found: {input.AccountId.Value}");
             }
 
             // Validate version (optimistic locking)
             if (account.Version != input.Version)
             {
-                throw new UseCaseFailureException
-                (
+                throw new UseCaseFailureException(
                     $"Version mismatch: expected {input.Version}, actual {account.Version}"
                 );
             }
@@ -105,11 +97,7 @@ public sealed class WithdrawUseCase
         catch (InvalidOperationException ex)
         {
             // Business rule violation (e.g., insufficient balance)
-            throw new UseCaseFailureException
-            (
-                $"Failed to withdraw: {ex.Message}",
-                ex
-            );
+            throw new UseCaseFailureException($"Failed to withdraw: {ex.Message}", ex);
         }
         // RepositorySaveException propagates to caller
     }

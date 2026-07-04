@@ -57,17 +57,17 @@ namespace EzDdd.Cqrs.Query;
 ///             : IQuery&lt;GetAccountSummaryInput, GetAccountSummaryOutput&gt;
 ///         {
 ///             private readonly IArchive&lt;AccountSummaryReadModel, AccountId&gt; _archive;
-/// 
+///
 ///             public async Task&lt;GetAccountSummaryOutput&gt; ExecuteAsync(
 ///                 GetAccountSummaryInput input)
 ///             {
 ///                 var readModel = await _archive.FindByIdAsync(input.AccountId);
-/// 
+///
 ///                 if (readModel == null)
 ///                 {
 ///                     throw new UseCaseFailureException("Account not found");
 ///                 }
-/// 
+///
 ///                 return GetAccountSummaryOutput.Create()
 ///                     .SetAccountNumber(readModel.AccountNumber)
 ///                     .SetBalance(readModel.Balance)

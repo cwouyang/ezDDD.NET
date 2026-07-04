@@ -67,20 +67,20 @@ namespace EzDdd.UseCase.Port.InOut;
 ///     // .EventId(...) optional - auto-generates Guid.NewGuid()
 ///     // .MetadataAsJson(...) optional - defaults to "{}"
 ///     .Build();
-/// 
+///
 /// // Production code: With all options
 /// var eventData = DomainEventDataBuilder
 ///     .Json("MoneyDeposited", depositEvent)
 ///     .EventId(Guid.Parse("..."))
 ///     .MetadataAsJson(new { CorrelationId = "123", UserId = "user@example.com" })
 ///     .Build();
-/// 
+///
 /// // Binary payload support
 /// var eventData = DomainEventDataBuilder
 ///     .Binary("LegacyEvent", avroBytes)
 ///     .MetadataAsBytes(metadataBytes)
 ///     .Build();
-/// 
+///
 /// // Alternative: Direct construction (test code, full control)
 /// var eventData = new DomainEventData(
 ///     Guid.NewGuid(),
@@ -102,9 +102,7 @@ public class DomainEventDataBuilder
     /// <summary>
     ///     Private constructor - use factory methods <see cref="Json{T}" /> or <see cref="Binary" />.
     /// </summary>
-    private DomainEventDataBuilder()
-    {
-    }
+    private DomainEventDataBuilder() { }
 
     /// <summary>
     ///     Creates a builder for JSON-serialized event data.
@@ -159,7 +157,12 @@ public class DomainEventDataBuilder
         ArgumentNullException.ThrowIfNull(eventType);
         ArgumentNullException.ThrowIfNull(payload);
 
-        DomainEventDataBuilder builder = new() { _eventType = eventType, _eventBody = payload, _contentType = "application/octet-stream" };
+        DomainEventDataBuilder builder = new()
+        {
+            _eventType = eventType,
+            _eventBody = payload,
+            _contentType = "application/octet-stream",
+        };
 
         return builder;
     }
@@ -249,13 +252,6 @@ public class DomainEventDataBuilder
         Guid eventId = _id ?? Guid.NewGuid();
         byte[] userMetadata = _metadata ?? "{}"u8.ToArray();
 
-        return new DomainEventData
-        (
-            eventId,
-            _eventType,
-            _contentType,
-            _eventBody,
-            userMetadata
-        );
+        return new DomainEventData(eventId, _eventType, _contentType, _eventBody, userMetadata);
     }
 }

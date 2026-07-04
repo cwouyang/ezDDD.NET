@@ -42,7 +42,7 @@ namespace EzDdd.UseCase.Exceptions;
 /// {
 ///     throw new RepositoryPeerSaveException("Database concurrency error", ex);
 /// }
-/// 
+///
 /// // In IRepository implementation (Domain layer)
 /// try
 /// {
@@ -59,18 +59,15 @@ public class RepositoryPeerSaveException : Exception
     /// <summary>
     ///     Initializes a new instance of the <see cref="RepositoryPeerSaveException" /> class.
     /// </summary>
-    public RepositoryPeerSaveException()
-    {
-    }
+    public RepositoryPeerSaveException() { }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="RepositoryPeerSaveException" /> class
     ///     with a specified error message.
     /// </summary>
     /// <param name="message">The error message that explains the reason for the exception.</param>
-    public RepositoryPeerSaveException(string message) : base(message)
-    {
-    }
+    public RepositoryPeerSaveException(string message)
+        : base(message) { }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="RepositoryPeerSaveException" /> class
@@ -81,9 +78,7 @@ public class RepositoryPeerSaveException : Exception
     ///     The inner exception's message is used as this exception's message.
     /// </param>
     public RepositoryPeerSaveException(Exception innerException)
-        : base(innerException.Message, innerException)
-    {
-    }
+        : base(innerException.Message, innerException) { }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="RepositoryPeerSaveException" /> class
@@ -94,7 +89,5 @@ public class RepositoryPeerSaveException : Exception
     ///     The exception that is the cause of the current exception, or null if no inner exception is specified.
     /// </param>
     public RepositoryPeerSaveException(string message, Exception innerException)
-        : base(message, innerException)
-    {
-    }
+        : base(message, innerException) { }
 }

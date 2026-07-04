@@ -73,10 +73,10 @@ public interface IStoreData<TId>
     /// // New aggregate
     /// Version = -1, Events = [CreatedEvent]
     /// OptimisticLockVersion = -1 + 1 = 0  (expected version after save)
-    /// 
+    ///
     /// // After save
     /// Version = 0, Events = [] (cleared)
-    /// 
+    ///
     /// // After command
     /// Version = 0, Events = [CommandEvent]
     /// OptimisticLockVersion = 0 + 1 = 1  (expected version after save)
