@@ -1,6 +1,5 @@
 using EzDdd.Entity;
 using EzDdd.UseCase.Port.InOut;
-using EzDdd.UseCase.Port.InOut.Messaging;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -12,8 +11,15 @@ namespace EzDdd.Examples.EventInfrastructure;
 /// </summary>
 /// <remarks>
 ///     <para>
-///         This is a reference implementation demonstrating the Relay pattern used in Java ezddd 4.1.0.
+///         This is a reference implementation demonstrating the Relay pattern used in Java ezddd.
 ///         Production implementations should adapt this to their specific event store and infrastructure.
+///     </para>
+///     <para>
+///         <strong>Note on <see cref="IMessageProducer{TMessage}" />:</strong> the producer
+///         abstraction used here is declared locally in this example directory. The ezDDD.NET
+///         core packages no longer contain a message producer abstraction (upstream Java 6.0.0
+///         moved it to the external ezddd-gateway artifact); the official abstraction will ship
+///         in the ezDDD.Gateway package post-1.0. See ADR-0029.
 ///     </para>
 ///     <para>
 ///         <strong>Outbox Pattern Guarantee:</strong>

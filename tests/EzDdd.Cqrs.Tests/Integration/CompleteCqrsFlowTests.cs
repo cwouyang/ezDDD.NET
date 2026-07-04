@@ -4,7 +4,6 @@ using EzDdd.Entity;
 using EzDdd.UseCase.Exceptions;
 using EzDdd.UseCase.Port.In;
 using EzDdd.UseCase.Port.InOut;
-using EzDdd.UseCase.Port.InOut.Messaging;
 using EzDdd.UseCase.Port.Out;
 using EzDdd.UseCase.Tests.Integration.TestDomain;
 
@@ -12,7 +11,7 @@ namespace EzDdd.Cqrs.Tests.Integration;
 
 /// <summary>
 ///     Integration tests for complete CQRS flow.
-///     Tests the entire flow: Command → Aggregate → Events → Repository → MessageBus → Projector → Archive → Query.
+///     Tests the entire flow: Command → Aggregate → Events → Repository → Relay → Projector → Archive → Query.
 /// </summary>
 public sealed class CompleteCqrsFlowTests
 {
@@ -28,7 +27,6 @@ public sealed class CompleteCqrsFlowTests
         DomainEventTypeMapper.Register<MoneyWithdrawn>("MoneyWithdrawn");
         DomainEventTypeMapper.Register<AccountClosed>("AccountClosed");
 
-        InMemoryMessageProducer<DomainEventData> eventProducer = new();
         InMemoryEventStorePeer eventStorePeer = new();
         EsRepository<BankAccount, AccountId> repository = new(eventStorePeer);
         InMemoryArchive<AccountSummaryReadModel, AccountId> archive = new(m => m.AccountId);
@@ -40,23 +38,16 @@ public sealed class CompleteCqrsFlowTests
             Repository = repository,
             Archive = archive,
             Projector = projector,
-            Query = query,
-            EventProducer = eventProducer
+            Query = query
         };
     }
 
-    private sealed class CqrsTestInfrastructure : IDisposable
+    private sealed class CqrsTestInfrastructure
     {
         public required EsRepository<BankAccount, AccountId> Repository { get; init; }
         public required InMemoryArchive<AccountSummaryReadModel, AccountId> Archive { get; init; }
         public required AccountProjector Projector { get; init; }
         public required GetAccountSummaryQuery Query { get; init; }
-        public required InMemoryMessageProducer<DomainEventData> EventProducer { get; init; }
-
-        public void Dispose()
-        {
-            EventProducer.Dispose();
-        }
 
         /// <summary>
         ///     Helper method to save aggregate and manually publish events (simulating Relay pattern).
@@ -73,9 +64,8 @@ public sealed class CompleteCqrsFlowTests
             foreach (IInternalDomainEvent domainEvent in events)
             {
                 DomainEventData eventData = DomainEventMapper.ToData(domainEvent);
-                await EventProducer.PostAsync(eventData);
 
-                // Process event through projector
+                // Process event through projector (the relay's downstream consumer)
                 await Projector.ExecuteAsync(eventData);
             }
         }

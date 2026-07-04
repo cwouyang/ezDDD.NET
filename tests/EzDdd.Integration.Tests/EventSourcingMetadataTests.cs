@@ -3,7 +3,6 @@ using System.Collections.ObjectModel;
 using EzDdd.Entity;
 using EzDdd.Integration.Tests.TestDomain;
 using EzDdd.UseCase.Port.InOut;
-using EzDdd.UseCase.Port.InOut.Messaging;
 using EzDdd.UseCase.Port.Out;
 
 namespace EzDdd.Integration.Tests;
@@ -56,8 +55,8 @@ public sealed class EventSourcingMetadataTests
         await infra.SaveAndPublishAsync(agg2);
 
         // Assert: Both events should have correct metadata
-        Assert.Equal(2, infra.EventProducer.PostedMessages.Count);
-        List<DomainEventData> events = infra.EventProducer.PostedMessages.ToList();
+        Assert.Equal(2, infra.PublishedEvents.Count);
+        List<DomainEventData> events = infra.PublishedEvents.ToList();
 
         AggregateCreated v1Event = DomainEventMapper.ToDomain<AggregateCreated>(events[0]);
         ValueUpdated v2Event = DomainEventMapper.ToDomain<ValueUpdated>(events[1]);
@@ -83,23 +82,21 @@ public sealed class EventSourcingMetadataTests
         DomainEventTypeMapper.Register<ValueUpdated>("ValueUpdated");
         DomainEventTypeMapper.Register<AggregateClosed>("AggregateClosed");
 
-        InMemoryMessageProducer<DomainEventData> eventProducer = new();
         InMemoryMetadataTestEventStorePeer eventStorePeer = new();
         EsRepository<MetadataTestAggregate, MetadataTestId> repository = new(eventStorePeer);
 
-        return new TestInfrastructure { Repository = repository, EventProducer = eventProducer, EventStorePeer = eventStorePeer };
+        return new TestInfrastructure { Repository = repository, EventStorePeer = eventStorePeer };
     }
 
-    private sealed class TestInfrastructure : IDisposable
+    private sealed class TestInfrastructure
     {
         public required EsRepository<MetadataTestAggregate, MetadataTestId> Repository { get; init; }
-        public required InMemoryMessageProducer<DomainEventData> EventProducer { get; init; }
         public required InMemoryMetadataTestEventStorePeer EventStorePeer { get; init; }
 
-        public void Dispose()
-        {
-            EventProducer.Dispose();
-        }
+        /// <summary>
+        ///     Events published by <see cref="SaveAndPublishAsync" /> (simulating a message broker sink).
+        /// </summary>
+        public List<DomainEventData> PublishedEvents { get; } = [];
 
         /// <summary>
         ///     Helper method to save aggregate and manually publish events (simulating Relay pattern).
@@ -116,7 +113,7 @@ public sealed class EventSourcingMetadataTests
             foreach (IInternalDomainEvent domainEvent in events)
             {
                 DomainEventData eventData = DomainEventMapper.ToData(domainEvent);
-                await EventProducer.PostAsync(eventData);
+                PublishedEvents.Add(eventData);
             }
         }
     }
@@ -173,11 +170,11 @@ public sealed class EventSourcingMetadataTests
         Assert.Equal("Test", reloaded.Name);
         Assert.Equal(100, reloaded.Value);
 
-        // Assert: Events with metadata should be in MessageProducer
-        Assert.Single(infra.EventProducer.PostedMessages);
+        // Assert: Events with metadata should be in the published events
+        Assert.Single(infra.PublishedEvents);
         AggregateCreated deserializedEvent = DomainEventMapper.ToDomain<AggregateCreated>
         (
-            infra.EventProducer.PostedMessages.First()
+            infra.PublishedEvents.First()
         );
         Assert.Equal(correlationId, deserializedEvent.Metadata["CorrelationId"]);
         Assert.Equal("user1", deserializedEvent.Metadata["UserId"]);
@@ -214,8 +211,8 @@ public sealed class EventSourcingMetadataTests
         Assert.Equal(150, final.Value);
 
         // Assert: All three events with metadata should be published
-        Assert.Equal(3, infra.EventProducer.PostedMessages.Count);
-        List<DomainEventData> events = infra.EventProducer.PostedMessages.ToList();
+        Assert.Equal(3, infra.PublishedEvents.Count);
+        List<DomainEventData> events = infra.PublishedEvents.ToList();
 
         AggregateCreated created = DomainEventMapper.ToDomain<AggregateCreated>(events[0]);
         ValueUpdated updated1 = DomainEventMapper.ToDomain<ValueUpdated>(events[1]);
@@ -268,12 +265,12 @@ public sealed class EventSourcingMetadataTests
         Assert.Equal((eventCount - 1) * 10, reloaded.Value);
 
         // Assert: All events should be published with metadata
-        Assert.Equal(eventCount, infra.EventProducer.PostedMessages.Count);
+        Assert.Equal(eventCount, infra.PublishedEvents.Count);
 
         // Verify first and last events have correct metadata
         AggregateCreated firstEvent = DomainEventMapper.ToDomain<AggregateCreated>
         (
-            infra.EventProducer.PostedMessages.First()
+            infra.PublishedEvents.First()
         );
         Assert.Equal(correlationId, firstEvent.Metadata["CorrelationId"]);
         Assert.Equal("system", firstEvent.Metadata["UserId"]);
@@ -281,7 +278,7 @@ public sealed class EventSourcingMetadataTests
 
         ValueUpdated lastEvent = DomainEventMapper.ToDomain<ValueUpdated>
         (
-            infra.EventProducer.PostedMessages.Last()
+            infra.PublishedEvents.Last()
         );
         Assert.Equal(correlationId, lastEvent.Metadata["CorrelationId"]);
         Assert.Equal($"user{eventCount - 1}", lastEvent.Metadata["UserId"]);
@@ -314,12 +311,12 @@ public sealed class EventSourcingMetadataTests
         Assert.NotNull(storeData);
         Assert.Single(storeData.Events);
 
-        // Verify the stored event has correct type and metadata via MessageProducer
+        // Verify the stored event has correct type and metadata via the published events
         // (EventStoreData stores IDomainEvent, which includes metadata)
-        Assert.Single(infra.EventProducer.PostedMessages);
+        Assert.Single(infra.PublishedEvents);
         AggregateCreated publishedEvent = DomainEventMapper.ToDomain<AggregateCreated>
         (
-            infra.EventProducer.PostedMessages.First()
+            infra.PublishedEvents.First()
         );
 
         Assert.Equal(correlationId, publishedEvent.Metadata["CorrelationId"]);
@@ -351,8 +348,8 @@ public sealed class EventSourcingMetadataTests
         await infra.SaveAndPublishAsync(agg3);
 
         // Assert: All 3 events should be published with correct metadata
-        Assert.Equal(3, infra.EventProducer.PostedMessages.Count);
-        List<DomainEventData> events = infra.EventProducer.PostedMessages.ToList();
+        Assert.Equal(3, infra.PublishedEvents.Count);
+        List<DomainEventData> events = infra.PublishedEvents.ToList();
 
         AggregateCreated event1 = DomainEventMapper.ToDomain<AggregateCreated>(events[0]);
         ValueUpdated event2 = DomainEventMapper.ToDomain<ValueUpdated>(events[1]);
@@ -420,10 +417,10 @@ public sealed class EventSourcingMetadataTests
         await infra.SaveAndPublishAsync(aggregate);
 
         // Assert: Deserialized event should have identical metadata
-        Assert.Single(infra.EventProducer.PostedMessages);
+        Assert.Single(infra.PublishedEvents);
         AggregateCreated deserializedEvent = DomainEventMapper.ToDomain<AggregateCreated>
         (
-            infra.EventProducer.PostedMessages.First()
+            infra.PublishedEvents.First()
         );
 
         // Check all keys and values

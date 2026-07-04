@@ -36,8 +36,28 @@ The Transactional Outbox pattern guarantees **at-least-once delivery** of domain
 
 - **`IEventStore.cs`** - Interface for event stores supporting relay polling
 - **`InMemoryEventStore.cs`** - In-memory implementation for testing
+- **`IMessageProducer.cs`** - Minimal producer abstraction used by the relay (example-local, see below)
 - **`EventStoreRelay.cs`** - Background service that polls event store and publishes events
 - **`README.md`** - This file
+
+## About `IMessageProducer<TMessage>` (Example-Local Abstraction)
+
+The ezDDD.NET **core packages do not contain a message producer abstraction**. Upstream Java
+ezddd 6.0.0 (commit `67686ac`) moved the `MessageProducer` interface out of the core library
+into the external `ezddd-gateway` artifact, and ezDDD.NET mirrors that module boundary
+([ADR-0029](../../docs/adr/0029-messageproducer-removal-gateway-deferral.md)).
+
+The official .NET counterpart will be provided by the **ezDDD.Gateway** package (planned
+post-1.0). Until then, this example carries its own minimal `IMessageProducer<TMessage>`
+declaration (`IMessageProducer.cs`), and applications that need a producer port should do the
+same in their composition root:
+
+```csharp
+public interface IMessageProducer<in TMessage> : IDisposable
+{
+    Task PostAsync(TMessage message);
+}
+```
 
 ## Usage
 
@@ -80,12 +100,27 @@ services.AddHostedService<EventStoreRelay>(sp =>
 ### Testing with Relay
 
 ```csharp
+// Simple test double implementing the example-local IMessageProducer<TMessage>
+public sealed class FakeMessageProducer<TMessage> : IMessageProducer<TMessage>
+{
+    private readonly List<TMessage> _postedMessages = [];
+    public IReadOnlyList<TMessage> PostedMessages => _postedMessages;
+
+    public Task PostAsync(TMessage message)
+    {
+        _postedMessages.Add(message);
+        return Task.CompletedTask;
+    }
+
+    public void Dispose() { }
+}
+
 [Fact]
 public async Task OrderCreated_EventPublishedViaRelay()
 {
     // Arrange
     var eventStore = new InMemoryEventStore();
-    var producer = new InMemoryMessageProducer<DomainEventData>();
+    var producer = new FakeMessageProducer<DomainEventData>();
     var repository = new EsRepository<Order, OrderId>(
         new InMemoryEventStorePeer(eventStore));
 
@@ -232,9 +267,10 @@ public class PostgresEventStore : IEventStore
 
 ## References
 
-- **Java ezddd 4.1.0 InMemoryEventStoreRelay**: Reference implementation in Java
+- **Java ezddd InMemoryEventStoreRelay**: Reference implementation in Java
 - **Transactional Outbox Pattern**: [Chris Richardson - Microservices.io](https://microservices.io/patterns/data/transactional-outbox.html)
 - **ADR-0025**: [MessageProducer Refactoring](../../docs/adr/0025-messageproducer-refactoring-java-4-1-0-alignment.md)
+- **ADR-0029**: [MessageProducer Removal from Core & Gateway Package Deferral](../../docs/adr/0029-messageproducer-removal-gateway-deferral.md)
 - **Session Handoff**: [Repository MessageProducer Removal](../../docs/SESSION_HANDOFF_REPOSITORY_MESSAGEPRODUCER_REMOVAL.md)
 
 ## FAQ

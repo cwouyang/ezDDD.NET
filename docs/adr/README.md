@@ -261,10 +261,11 @@ CLAUDE.md
 | [ADR-0022](0022-read-model-design-patterns.md) | Read Model Design Patterns | 2025-11-18 | Accepted |
 | [ADR-0023](0023-archive-idempotency-requirements.md) | Archive Idempotency Requirements | 2025-11-18 | Accepted |
 | [ADR-0024](0024-ireconciler-interface-system-reconciliation.md) | IReconciler Interface for System State Reconciliation | 2026-01-07 | Accepted |
-| [ADR-0025](0025-messageproducer-refactoring-java-4-1-0-alignment.md) | MessageProducer Refactoring - Java 4.1.0 Alignment | 2026-01-07 | Accepted |
+| [ADR-0025](0025-messageproducer-refactoring-java-4-1-0-alignment.md) | MessageProducer Refactoring - Java 4.1.0 Alignment | 2026-01-07 | Accepted (Amended by [ADR-0029](0029-messageproducer-removal-gateway-deferral.md)) |
 | [ADR-0026](0026-service-layer-pattern.md) | Service Layer Pattern for Complex Business Logic | 2026-01-08 | Accepted |
 | [ADR-0027](0027-thread-null-safety-review.md) | Thread Safety and Null Safety Review (Java 4.1.0 Sync - Stage S5) | 2026-01-08 | Accepted |
 | [ADR-0028](0028-reactor-hierarchy-projector-notifier-genericization.md) | Reactor Type Hierarchy and Projector/Notifier Genericization | 2026-07-04 | Accepted |
+| [ADR-0029](0029-messageproducer-removal-gateway-deferral.md) | MessageProducer Removal from Core & Gateway Package Deferral | 2026-07-04 | Accepted |
 
 ### Proposed
 

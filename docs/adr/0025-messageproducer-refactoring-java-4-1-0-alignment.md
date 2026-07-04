@@ -2,11 +2,18 @@
 
 ## Status
 
-**Accepted**
+**Accepted (Amended by [ADR-0029](0029-messageproducer-removal-gateway-deferral.md))**
+
+> Partially amended: upstream Java 6.0.0 (commit `67686ac`) moved the `MessageProducer`
+> interface out of core into the external `ezddd-gateway` artifact. `IMessageProducer` and
+> `InMemoryMessageProducer` are therefore removed from EzDdd.UseCase; the official .NET
+> abstraction will ship in the ezDDD.Gateway package post-1.0 (see ADR-0029). The
+> producer-only pattern, the MessageBus removal, and the Relay (Transactional Outbox)
+> guidance in this ADR remain in force.
 
 - **Date**: 2026-01-07
 - **Deciders**: Development Team
-- **Status Date**: 2026-01-07
+- **Status Date**: 2026-07-04
 
 ---
 
@@ -514,6 +521,7 @@ See "Alternatives Considered" section above for detailed analysis of:
 |------------|-------------|--------------------------------------------------------|
 | 2026-01-07 | Proposed    | Initial draft based on Java 4.1.0 synchronization plan |
 | 2026-01-07 | Accepted    | Decision finalized after Checkpoint 4 completion        |
+| 2026-07-04 | Amended     | Amended by ADR-0029: IMessageProducer moved out of core (upstream 6.0.0) |
 
 ---
 

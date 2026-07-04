@@ -8,7 +8,6 @@ This test project verifies that all ezDDD components work correctly together in 
 
 - **IDomainEvent.Metadata**: Idempotency support throughout event lifecycle
 - **IReconciler**: System state reconciliation workflows
-- **MessageProducer**: Resource management and event distribution
 - **Thread Safety**: Concurrent access patterns
 - **Event Sourcing**: Complete aggregate lifecycle with metadata
 
@@ -17,7 +16,7 @@ This test project verifies that all ezDDD components work correctly together in 
 ### 1. CQRS Flow Tests (`CqrsFlowWithMetadataTests`)
 End-to-end CQRS workflows with metadata propagation:
 - Command → Aggregate → Events (with Metadata)
-- Repository → MessageProducer → Projector
+- Repository → Relay publication → Projector
 - Archive → Query
 - Metadata idempotency detection
 
@@ -33,16 +32,9 @@ System reconciliation workflows:
 - Real-world scenarios (e.g., expired order cleanup)
 - Error handling and reporting
 
-### 4. Resource Management Tests (`MessageProducerResourceTests`)
-MessageProducer lifecycle and resource management:
-- IDisposable implementation
-- Proper resource cleanup
-- Concurrent posting
-
-### 5. Concurrent Operations Tests (`ConcurrentOperationsTests`)
+### 4. Concurrent Operations Tests (`ConcurrentOperationsTests`)
 Thread safety verification under high concurrency:
 - DomainEventTypeMapper concurrent registration
-- MessageProducer concurrent posting
 - Repository concurrent operations
 
 ## Test Domain
@@ -72,7 +64,6 @@ dotnet test --verbosity detailed
 - ✅ Complete workflow scenarios (not isolated units)
 - ✅ Realistic domain models
 - ✅ Thread safety verification
-- ✅ Resource management verification
 
 ## Related Documentation
 

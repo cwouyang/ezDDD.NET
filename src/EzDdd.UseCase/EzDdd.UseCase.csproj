@@ -32,14 +32,12 @@ Features:
 • IRepository/IRepositoryPeer - Bridge pattern for persistence abstraction
 • EsRepository - Generic event sourcing repository with reflection optimization
 • OutboxRepository - State sourcing with Transactional Outbox pattern
-• BlockingMessageBus - In-process event bus (Observer pattern)
 • DomainEventMapper - Event serialization/deserialization
-• EventBusProducer - External event bus integration
 • Transaction boundary enforcement
 • Async/await throughout
 
 Implements Clean Architecture layers with tactical DDD patterns.</Description>
-    <PackageTags>ddd;domain-driven-design;clean-architecture;use-case;repository;event-sourcing;state-sourcing;outbox-pattern;message-bus;dotnet;csharp</PackageTags>
+    <PackageTags>ddd;domain-driven-design;clean-architecture;use-case;repository;event-sourcing;state-sourcing;outbox-pattern;dotnet;csharp</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/TeddyChen/ezddd.NET</PackageProjectUrl>
     <RepositoryUrl>https://github.com/TeddyChen/ezddd.NET</RepositoryUrl>

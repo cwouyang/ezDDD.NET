@@ -1,8 +1,6 @@
 using EzDdd.Entity;
 using EzDdd.Integration.Tests.TestDomain;
 using EzDdd.UseCase.Exceptions;
-using EzDdd.UseCase.Port.InOut;
-using EzDdd.UseCase.Port.InOut.Messaging;
 using EzDdd.UseCase.Port.Out;
 
 namespace EzDdd.Integration.Tests;
@@ -17,9 +15,6 @@ namespace EzDdd.Integration.Tests;
 ///         <list type="bullet">
 ///             <item>
 ///                 <description>DomainEventTypeMapper concurrent registration (Lazy&lt;BiMap&gt; fix)</description>
-///             </item>
-///             <item>
-///                 <description>MessageProducer concurrent posting (ConcurrentQueue)</description>
 ///             </item>
 ///             <item>
 ///                 <description>Repository concurrent save/load operations</description>
@@ -89,7 +84,6 @@ public sealed class ConcurrentOperationsTests
     [Fact]
     public async Task MixedOperations_ConcurrentSaveAndLoad_ShouldMaintainConsistency()
     {
-        using InMemoryMessageProducer<DomainEventData> producer = new();
         InMemoryMetadataTestEventStorePeer peer = new();
         EsRepository<MetadataTestAggregate, MetadataTestId> repository = new(peer);
 
@@ -166,108 +160,11 @@ public sealed class ConcurrentOperationsTests
 
 #endregion
 
-#region Helper Methods
-
-    /// <summary>
-    ///     Creates a test DomainEventData for concurrent testing.
-    /// </summary>
-    private static DomainEventData _CreateTestEvent(string eventType)
-    {
-        byte[] emptyJson = "{}"u8.ToArray();
-        return new DomainEventData
-        (
-            Guid.NewGuid(),
-            eventType,
-            "application/json",
-            emptyJson,
-            emptyJson
-        );
-    }
-
-#endregion
-
-#region MessageProducer Concurrent Posting Tests
-
-    [Fact]
-    public async Task MessageProducer_ConcurrentPosting_ShouldHandleAllMessages()
-    {
-        using InMemoryMessageProducer<DomainEventData> producer = new();
-        const int concurrentTasks = 50;
-
-        // Act: Post messages concurrently from multiple tasks
-        List<Task> tasks = [];
-        for (int i = 0; i < concurrentTasks; i++)
-        {
-            int taskId = i;
-            tasks.Add
-            (
-                Task.Run
-                (async () =>
-                    {
-                        DomainEventData evt = _CreateTestEvent($"CONCURRENT-POST-{taskId:D3}");
-                        await producer.PostAsync(evt);
-                    }
-                )
-            );
-        }
-
-        await Task.WhenAll(tasks);
-
-        // Assert: All messages should be posted (no lost messages due to race conditions)
-        Assert.Equal(concurrentTasks, producer.PostedMessages.Count);
-    }
-
-    [Fact]
-    public async Task MessageProducer_HighVolumeConcurrentPosting_ShouldMaintainIntegrity()
-    {
-        using InMemoryMessageProducer<DomainEventData> producer = new();
-        const int threadCount = 10;
-        const int messagesPerThread = 20;
-        const int totalExpected = threadCount * messagesPerThread;
-
-        // Act: Each thread posts multiple messages
-        List<Task> tasks = [];
-        for (int t = 0; t < threadCount; t++)
-        {
-            int threadId = t;
-            tasks.Add
-            (
-                Task.Run
-                (async () =>
-                    {
-                        for (int m = 0; m < messagesPerThread; m++)
-                        {
-                            DomainEventData evt = _CreateTestEvent($"T{threadId:D2}_M{m:D3}");
-                            await producer.PostAsync(evt);
-                        }
-                    }
-                )
-            );
-        }
-
-        await Task.WhenAll(tasks);
-
-        // Assert: Total message count should match expected
-        Assert.Equal(totalExpected, producer.PostedMessages.Count);
-
-        // Assert: All messages should be unique (no duplicates)
-        HashSet<string> eventTypes = [];
-        foreach (DomainEventData evt in producer.PostedMessages)
-        {
-            eventTypes.Add(evt.EventType);
-        }
-
-        Assert.Equal(totalExpected, eventTypes.Count);
-    }
-
-#endregion
-
 #region Repository Concurrent Operations Tests
 
     [Fact]
     public async Task Repository_ConcurrentSaves_ShouldHandleCorrectly()
     {
-        using InMemoryMessageProducer<DomainEventData> producer = new();
         InMemoryMetadataTestEventStorePeer peer = new();
         EsRepository<MetadataTestAggregate, MetadataTestId> repository = new(peer);
 
@@ -306,7 +203,6 @@ public sealed class ConcurrentOperationsTests
     [Fact]
     public async Task Repository_ConcurrentLoadOperations_ShouldReturnCorrectData()
     {
-        using InMemoryMessageProducer<DomainEventData> producer = new();
         InMemoryMetadataTestEventStorePeer peer = new();
         EsRepository<MetadataTestAggregate, MetadataTestId> repository = new(peer);
 
