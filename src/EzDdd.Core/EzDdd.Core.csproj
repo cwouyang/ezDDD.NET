@@ -14,7 +14,7 @@
 This package references all 4 core modules:
 • ezDDD.Common - Foundation utilities (BiMap, Converter, JsonUtil)
 • ezDDD.Entity - DDD tactical patterns (Entity, AggregateRoot, EsAggregateRoot, DomainEvent)
-• ezDDD.UseCase - Use cases and repositories (IUseCase, EsRepository, OutboxRepository, MessageBus)
+• ezDDD.UseCase - Use cases and repositories (IUseCase, EsRepository, OutboxRepository, IReactor)
 • ezDDD.Cqrs - CQRS patterns (Command, Query, Projection, Projector, Archive)
 
 Features:
@@ -22,7 +22,7 @@ Features:
 • State sourcing with Transactional Outbox
 • Bridge pattern (IRepository ↔ IRepositoryPeer)
 • Template method pattern (EsAggregateRoot)
-• Observer pattern (MessageBus)
+• Transactional Outbox relay for event publishing
 • Clean Architecture layers
 • Async/await throughout
 • Nullable reference types
@@ -30,8 +30,8 @@ Features:
 • Pattern matching for event handlers
 • Zero external dependencies (only .NET BCL + uContract.NET)
 
-~98% semantic parity with Java ezddd. Perfect for DDD practitioners using C# and .NET.</Description>
-    <PackageTags>ddd;domain-driven-design;cqrs;event-sourcing;state-sourcing;clean-architecture;aggregate-root;tactical-ddd;outbox-pattern;message-bus;dotnet;csharp</PackageTags>
+~99% semantic parity with Java ezddd 6.0.1. Perfect for DDD practitioners using C# and .NET.</Description>
+    <PackageTags>ddd;domain-driven-design;cqrs;event-sourcing;state-sourcing;clean-architecture;aggregate-root;tactical-ddd;outbox-pattern;dotnet;csharp</PackageTags>
   </PropertyGroup>
 
 </Project>
