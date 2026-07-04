@@ -27,6 +27,7 @@
     <RepositoryUrl>https://github.com/cwouyang/ezDDD.NET</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
     <PackageReleaseNotes>See https://github.com/cwouyang/ezDDD.NET/blob/master/CHANGELOG.md for release notes.</PackageReleaseNotes>
 
     <!-- Documentation -->
@@ -35,6 +36,7 @@
 
     <!-- Symbols and Debugging -->
     <DebugType>embedded</DebugType>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
 
   <ItemGroup>
@@ -51,5 +53,6 @@
   <ItemGroup Condition="'$(IsPackable)' != 'false'">
     <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" />
     <None Include="$(MSBuildThisFileDirectory)THIRD-PARTY-NOTICES.txt" Pack="true" PackagePath="\" />
+    <None Include="$(MSBuildThisFileDirectory)icon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 </Project>
