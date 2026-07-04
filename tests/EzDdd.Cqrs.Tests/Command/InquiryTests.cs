@@ -66,11 +66,11 @@ public class InquiryTests
         Assert.Contains("Validation failed", output.Message);
     }
 
-    private record TestInquiryInput(string Value) : IInput, IInquiryInput;
+    private sealed record TestInquiryInput(string Value) : IInput, IInquiryInput;
 
-    private record TestInquiryDto(string Id, string Status);
+    private sealed record TestInquiryDto(string Id, string Status);
 
-    private class TestInquiry : IInquiry<TestInquiryInput, bool>
+    private sealed class TestInquiry : IInquiry<TestInquiryInput, bool>
     {
         public Task<bool> QueryAsync(TestInquiryInput input)
         {
@@ -78,16 +78,16 @@ public class InquiryTests
         }
     }
 
-    private class BooleanInquiry : IInquiry<TestInquiryInput, bool>
+    private sealed class BooleanInquiry : IInquiry<TestInquiryInput, bool>
     {
         public Task<bool> QueryAsync(TestInquiryInput input)
         {
-            bool isValid = input.Value == "valid";
+            bool isValid = string.Equals(input.Value, "valid", StringComparison.Ordinal);
             return Task.FromResult(isValid);
         }
     }
 
-    private class DtoInquiry : IInquiry<TestInquiryInput, TestInquiryDto>
+    private sealed class DtoInquiry : IInquiry<TestInquiryInput, TestInquiryDto>
     {
         public Task<TestInquiryDto> QueryAsync(TestInquiryInput input)
         {
@@ -96,7 +96,7 @@ public class InquiryTests
         }
     }
 
-    private class CommandWithInquiry(IInquiry<TestInquiryInput, bool> inquiry)
+    private sealed class CommandWithInquiry(IInquiry<TestInquiryInput, bool> inquiry)
         : ICommand<TestInquiryInput, TestCommandOutput>
     {
         public async Task<TestCommandOutput> ExecuteAsync(TestInquiryInput input)
@@ -112,5 +112,5 @@ public class InquiryTests
         }
     }
 
-    private class TestCommandOutput : CqrsOutput<TestCommandOutput> { }
+    private sealed class TestCommandOutput : CqrsOutput<TestCommandOutput> { }
 }

@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace EzDdd.Entity;
 
 /// <summary>
@@ -50,6 +52,11 @@ public interface IDomainEventSource<TEvent>
     ///     For state-sourced aggregates, this method only collects the event without
     ///     automatically mutating state.
     /// </remarks>
+    [SuppressMessage(
+        "Naming",
+        "CA1716:Identifiers should not match keywords",
+        Justification = "The parameter name 'event' is the established domain-event vocabulary inherited from Java ezddd's public API; C# implementers use the escaped identifier @event. Renaming would break named-argument compatibility and cross-language parity."
+    )]
     void Apply(TEvent @event);
 
     /// <summary>

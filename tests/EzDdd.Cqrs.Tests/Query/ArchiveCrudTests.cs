@@ -37,7 +37,7 @@ public class ArchiveCrudTests
 
     #endregion
 
-    private record TestReadModel(string Id, string Data, int IntId = 0);
+    private sealed record TestReadModel(string Id, string Data, int IntId = 0);
 
     #region FindByIdAsync Tests
 

@@ -22,6 +22,7 @@ public class DomainEventTypeMapperConcurrencyTests : IDisposable
     {
         // Clean up after each test
         DomainEventTypeMapper.Clear();
+        GC.SuppressFinalize(this);
     }
 
     /// <summary>
@@ -232,28 +233,7 @@ public class DomainEventTypeMapperConcurrencyTests : IDisposable
                     {
                         case < 10:
                             // First 10 threads: Register
-                            switch (i)
-                            {
-                                case 0:
-                                    DomainEventTypeMapper.Register<TestEvent1>("Event1");
-                                    break;
-                                case 1:
-                                    DomainEventTypeMapper.Register<TestEvent2>("Event2");
-                                    break;
-                                case 2:
-                                    DomainEventTypeMapper.Register<TestEvent3>("Event3");
-                                    break;
-                                case 3:
-                                    DomainEventTypeMapper.Register<TestEvent4>("Event4");
-                                    break;
-                                case 4:
-                                    DomainEventTypeMapper.Register<TestEvent5>("Event5");
-                                    break;
-                                default:
-                                    // Re-register existing types (idempotent)
-                                    DomainEventTypeMapper.Register<TestEvent1>("Event1");
-                                    break;
-                            }
+                            _RegisterEventForThread(i);
 
                             break;
                         case < 20:
@@ -353,41 +333,7 @@ public class DomainEventTypeMapperConcurrencyTests : IDisposable
                     if (i % 10 == 0)
                     {
                         // Every 10th thread registers
-                        int eventNumber = i / 10;
-                        switch (eventNumber % 10)
-                        {
-                            case 0:
-                                DomainEventTypeMapper.Register<TestEvent1>($"StressEvent{eventNumber}");
-                                break;
-                            case 1:
-                                DomainEventTypeMapper.Register<TestEvent2>($"StressEvent{eventNumber}");
-                                break;
-                            case 2:
-                                DomainEventTypeMapper.Register<TestEvent3>($"StressEvent{eventNumber}");
-                                break;
-                            case 3:
-                                DomainEventTypeMapper.Register<TestEvent4>($"StressEvent{eventNumber}");
-                                break;
-                            case 4:
-                                DomainEventTypeMapper.Register<TestEvent5>($"StressEvent{eventNumber}");
-                                break;
-                            case 5:
-                                DomainEventTypeMapper.Register<TestEvent6>($"StressEvent{eventNumber}");
-                                break;
-                            case 6:
-                                DomainEventTypeMapper.Register<TestEvent7>($"StressEvent{eventNumber}");
-                                break;
-                            case 7:
-                                DomainEventTypeMapper.Register<TestEvent8>($"StressEvent{eventNumber}");
-                                break;
-                            case 8:
-                                DomainEventTypeMapper.Register<TestEvent9>($"StressEvent{eventNumber}");
-                                break;
-                            case 9:
-                                DomainEventTypeMapper.Register<TestEvent10>($"StressEvent{eventNumber}");
-                                break;
-                        }
-
+                        _RegisterStressEvent(i / 10);
                         Interlocked.Increment(ref registrationCount);
                     }
                     else
@@ -411,71 +357,141 @@ public class DomainEventTypeMapperConcurrencyTests : IDisposable
         Assert.True(DomainEventTypeMapper.GetAllMappings().Count >= 10);
     }
 
+    /// <summary>
+    ///     Registers the event type assigned to the given registering thread (idempotent re-registration
+    ///     for thread indexes above the distinct event count).
+    /// </summary>
+    private static void _RegisterEventForThread(int threadIndex)
+    {
+        switch (threadIndex)
+        {
+            case 0:
+                DomainEventTypeMapper.Register<TestEvent1>("Event1");
+                break;
+            case 1:
+                DomainEventTypeMapper.Register<TestEvent2>("Event2");
+                break;
+            case 2:
+                DomainEventTypeMapper.Register<TestEvent3>("Event3");
+                break;
+            case 3:
+                DomainEventTypeMapper.Register<TestEvent4>("Event4");
+                break;
+            case 4:
+                DomainEventTypeMapper.Register<TestEvent5>("Event5");
+                break;
+            default:
+                // Re-register existing types (idempotent)
+                DomainEventTypeMapper.Register<TestEvent1>("Event1");
+                break;
+        }
+    }
+
+    /// <summary>
+    ///     Registers one of the ten stress-test event types based on the event number.
+    /// </summary>
+    private static void _RegisterStressEvent(int eventNumber)
+    {
+        switch (eventNumber % 10)
+        {
+            case 0:
+                DomainEventTypeMapper.Register<TestEvent1>($"StressEvent{eventNumber}");
+                break;
+            case 1:
+                DomainEventTypeMapper.Register<TestEvent2>($"StressEvent{eventNumber}");
+                break;
+            case 2:
+                DomainEventTypeMapper.Register<TestEvent3>($"StressEvent{eventNumber}");
+                break;
+            case 3:
+                DomainEventTypeMapper.Register<TestEvent4>($"StressEvent{eventNumber}");
+                break;
+            case 4:
+                DomainEventTypeMapper.Register<TestEvent5>($"StressEvent{eventNumber}");
+                break;
+            case 5:
+                DomainEventTypeMapper.Register<TestEvent6>($"StressEvent{eventNumber}");
+                break;
+            case 6:
+                DomainEventTypeMapper.Register<TestEvent7>($"StressEvent{eventNumber}");
+                break;
+            case 7:
+                DomainEventTypeMapper.Register<TestEvent8>($"StressEvent{eventNumber}");
+                break;
+            case 8:
+                DomainEventTypeMapper.Register<TestEvent9>($"StressEvent{eventNumber}");
+                break;
+            case 9:
+                DomainEventTypeMapper.Register<TestEvent10>($"StressEvent{eventNumber}");
+                break;
+        }
+    }
+
     // Test event types (need 10 different types for concurrency tests)
-    private record TestEvent1(
+    private sealed record TestEvent1(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent;
 
-    private record TestEvent2(
+    private sealed record TestEvent2(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent;
 
-    private record TestEvent3(
+    private sealed record TestEvent3(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent;
 
-    private record TestEvent4(
+    private sealed record TestEvent4(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent;
 
-    private record TestEvent5(
+    private sealed record TestEvent5(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent;
 
-    private record TestEvent6(
+    private sealed record TestEvent6(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent;
 
-    private record TestEvent7(
+    private sealed record TestEvent7(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent;
 
-    private record TestEvent8(
+    private sealed record TestEvent8(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent;
 
-    private record TestEvent9(
+    private sealed record TestEvent9(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent;
 
-    private record TestEvent10(
+    private sealed record TestEvent10(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,

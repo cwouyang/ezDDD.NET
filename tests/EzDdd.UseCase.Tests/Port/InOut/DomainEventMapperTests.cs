@@ -279,7 +279,7 @@ public class DomainEventMapperTests
     #region Test Event Definitions
 
     // Test internal domain event
-    private record TestAccountCreated(
+    private sealed record TestAccountCreated(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -288,7 +288,7 @@ public class DomainEventMapperTests
         decimal InitialBalance
     ) : IInternalDomainEvent, IInternalDomainEvent.IConstructionEvent;
 
-    private record TestMoneyDeposited(
+    private sealed record TestMoneyDeposited(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,

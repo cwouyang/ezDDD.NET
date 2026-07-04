@@ -270,27 +270,27 @@ public class JsonUtilTests
     #endregion
 
     // Test domain classes
-    private class User
+    private sealed class User
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
     }
 
-    private record UserDto(int Id, string Name);
+    private sealed record UserDto(int Id, string Name);
 
-    private class OrderCreated
+    private sealed class OrderCreated
     {
         public int OrderId { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 
-    private class EntityWithPublicFields
+    private sealed class EntityWithPublicFields
     {
         public string Data = string.Empty;
         public int Id;
     }
 
-    private class Order
+    private sealed class Order
     {
         public int Id { get; set; }
         public string ProductName { get; set; } = string.Empty;
@@ -298,7 +298,7 @@ public class JsonUtilTests
         public decimal UnitPrice { get; set; }
     }
 
-    private record MutableRecord
+    private sealed record MutableRecord
     {
         public int Id { get; set; }
         public string Data { get; set; } = string.Empty;

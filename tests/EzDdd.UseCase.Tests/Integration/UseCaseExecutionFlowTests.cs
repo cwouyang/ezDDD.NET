@@ -11,7 +11,7 @@ public sealed class UseCaseExecutionFlowTests
     [Fact]
     public async Task CreateAccountUseCase_WithValidInput_CreatesAccountSuccessfully()
     {
-        IRepository<BankAccount, AccountId, IInternalDomainEvent> repository = CreateRepository();
+        EsRepository<BankAccount, AccountId> repository = CreateRepository();
         CreateAccountUseCase useCase = new(repository);
         CreateAccountInput input = new(new AccountId("acc-001"), "John Doe", new Money(1000m));
 
@@ -33,7 +33,7 @@ public sealed class UseCaseExecutionFlowTests
     [Fact]
     public async Task DepositUseCase_WithValidInputAndVersion_DepositsSuccessfully()
     {
-        IRepository<BankAccount, AccountId, IInternalDomainEvent> repository = CreateRepository();
+        EsRepository<BankAccount, AccountId> repository = CreateRepository();
         AccountId accountId = new("acc-002");
 
         // Create account first
@@ -60,7 +60,7 @@ public sealed class UseCaseExecutionFlowTests
     [Fact]
     public async Task WithdrawUseCase_WithValidInput_WithdrawsSuccessfully()
     {
-        IRepository<BankAccount, AccountId, IInternalDomainEvent> repository = CreateRepository();
+        EsRepository<BankAccount, AccountId> repository = CreateRepository();
         AccountId accountId = new("acc-003");
 
         BankAccount account = new(accountId, "Bob Smith", new Money(1000m));
@@ -80,7 +80,7 @@ public sealed class UseCaseExecutionFlowTests
     [Fact]
     public async Task DepositUseCase_WithNegativeAmount_ThrowsUseCaseFailureException()
     {
-        IRepository<BankAccount, AccountId, IInternalDomainEvent> repository = CreateRepository();
+        EsRepository<BankAccount, AccountId> repository = CreateRepository();
         AccountId accountId = new("acc-004");
 
         BankAccount account = new(accountId, "Alice Brown", new Money(1000m));
@@ -105,7 +105,7 @@ public sealed class UseCaseExecutionFlowTests
     [Fact]
     public async Task WithdrawUseCase_WithInsufficientBalance_ThrowsUseCaseFailureException()
     {
-        IRepository<BankAccount, AccountId, IInternalDomainEvent> repository = CreateRepository();
+        EsRepository<BankAccount, AccountId> repository = CreateRepository();
         AccountId accountId = new("acc-005");
 
         BankAccount account = new(accountId, "Charlie Green", new Money(100m));
@@ -130,7 +130,7 @@ public sealed class UseCaseExecutionFlowTests
     [Fact]
     public async Task DepositUseCase_WithWrongVersion_ThrowsUseCaseFailureException()
     {
-        IRepository<BankAccount, AccountId, IInternalDomainEvent> repository = CreateRepository();
+        EsRepository<BankAccount, AccountId> repository = CreateRepository();
         AccountId accountId = new("acc-006");
 
         BankAccount account = new(accountId, "David White", new Money(1000m));
@@ -153,7 +153,7 @@ public sealed class UseCaseExecutionFlowTests
     [Fact]
     public async Task DepositUseCase_WhenAccountNotFound_ThrowsUseCaseFailureException()
     {
-        IRepository<BankAccount, AccountId, IInternalDomainEvent> repository = CreateRepository();
+        EsRepository<BankAccount, AccountId> repository = CreateRepository();
         DepositUseCase useCase = new(repository);
         DepositInput input = new(new AccountId("non-existent"), new Money(100m)) { Version = 0 };
 
@@ -184,7 +184,7 @@ public sealed class UseCaseExecutionFlowTests
     }
 
     // Helper method
-    private static IRepository<BankAccount, AccountId, IInternalDomainEvent> CreateRepository()
+    private static EsRepository<BankAccount, AccountId> CreateRepository()
     {
         InMemoryEventStorePeer peer = new();
         return new EsRepository<BankAccount, AccountId>(peer);
@@ -207,7 +207,7 @@ public sealed class UseCaseExecutionFlowTests
 
         public Task DeleteAsync(EventStoreData<AccountId> data)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
     }
 }

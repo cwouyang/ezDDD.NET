@@ -65,7 +65,7 @@ public class DomainEventMetadataTests
     public void ToData_WithEmptyMetadata_SerializesEmptyDictionary()
     {
         // ReSharper disable once CollectionNeverUpdated.Local
-        Dictionary<string, string> emptyMetadata = new();
+        Dictionary<string, string> emptyMetadata = [];
         TestEvent @event = new(Guid.NewGuid(), DateTimeOffset.UtcNow, "source-1", "test", emptyMetadata);
 
         DomainEventData data = DomainEventMapper.ToData(@event);
@@ -217,7 +217,7 @@ public class DomainEventMetadataTests
     [Fact]
     public void Metadata_WithLargeNumberOfKeys_HandledCorrectly()
     {
-        Dictionary<string, string> metadata = new();
+        Dictionary<string, string> metadata = [];
         for (int i = 0; i < 100; i++)
         {
             metadata[$"Key{i}"] = $"Value{i}";

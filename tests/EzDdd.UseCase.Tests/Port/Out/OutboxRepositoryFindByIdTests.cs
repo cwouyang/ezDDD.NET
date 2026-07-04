@@ -44,7 +44,7 @@ public class OutboxRepositoryFindByIdTests
 
     #region Test Infrastructure
 
-    private class TestAggregate : AggregateRoot<string, IInternalDomainEvent>
+    private sealed class TestAggregate : AggregateRoot<string, IInternalDomainEvent>
     {
         public TestAggregate(string id, bool isDeleted)
         {
@@ -53,7 +53,7 @@ public class OutboxRepositoryFindByIdTests
         }
     }
 
-    private class TestOutboxData : IOutboxData<string>
+    private sealed class TestOutboxData : IOutboxData<string>
     {
         public TestOutboxData(string id, bool isDeleted)
         {
@@ -73,7 +73,7 @@ public class OutboxRepositoryFindByIdTests
         }
     }
 
-    private class TestOutboxMapper : OutboxMapper<TestAggregate, TestOutboxData, string>
+    private sealed class TestOutboxMapper : OutboxMapper<TestAggregate, TestOutboxData, string>
     {
         public override TestOutboxData ToData(TestAggregate aggregate)
         {
@@ -86,9 +86,9 @@ public class OutboxRepositoryFindByIdTests
         }
     }
 
-    private class InMemoryPeer : IRepositoryPeer<TestOutboxData, string>
+    private sealed class InMemoryPeer : IRepositoryPeer<TestOutboxData, string>
     {
-        private readonly Dictionary<string, TestOutboxData> _storage = new();
+        private readonly Dictionary<string, TestOutboxData> _storage = [];
 
         public Task<TestOutboxData?> FindByIdAsync(string id)
         {

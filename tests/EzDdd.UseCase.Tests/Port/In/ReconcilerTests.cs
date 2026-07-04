@@ -154,9 +154,9 @@ public class ReconcilerTests
 
     #region Test Helper Classes
 
-    private record TestContext(int ItemCount);
+    private sealed record TestContext(int ItemCount);
 
-    private record TestReport(
+    private sealed record TestReport(
         int ProcessedCount,
         int ReconciledCount = 0,
         int ErrorCount = 0,
@@ -164,7 +164,7 @@ public class ReconcilerTests
         bool WasGlobalCleanup = false
     );
 
-    private class TestReconciler : IReconciler<TestContext, TestReport>
+    private sealed class TestReconciler : IReconciler<TestContext, TestReport>
     {
         public Task<TestReport> ReconcileAsync(TestContext context)
         {
@@ -176,7 +176,7 @@ public class ReconcilerTests
         }
     }
 
-    private class NullContextReconciler : IReconciler<NullContext, TestReport>
+    private sealed class NullContextReconciler : IReconciler<NullContext, TestReport>
     {
         public Task<TestReport> ReconcileAsync(NullContext context)
         {
@@ -185,7 +185,7 @@ public class ReconcilerTests
         }
     }
 
-    private class AsyncReconciler : IReconciler<TestContext, TestReport>
+    private sealed class AsyncReconciler : IReconciler<TestContext, TestReport>
     {
         public async Task<TestReport> ReconcileAsync(TestContext context)
         {
@@ -197,7 +197,7 @@ public class ReconcilerTests
         }
     }
 
-    private class MultiItemReconciler : IReconciler<TestContext, TestReport>
+    private sealed class MultiItemReconciler : IReconciler<TestContext, TestReport>
     {
         public Task<TestReport> ReconcileAsync(TestContext context)
         {
@@ -208,7 +208,7 @@ public class ReconcilerTests
         }
     }
 
-    private class NoChangeReconciler : IReconciler<TestContext, TestReport>
+    private sealed class NoChangeReconciler : IReconciler<TestContext, TestReport>
     {
         public Task<TestReport> ReconcileAsync(TestContext context)
         {
@@ -219,7 +219,7 @@ public class ReconcilerTests
         }
     }
 
-    private class ConflictReconciler : IReconciler<TestContext, TestReport>
+    private sealed class ConflictReconciler : IReconciler<TestContext, TestReport>
     {
         public Task<TestReport> ReconcileAsync(TestContext context)
         {
@@ -232,7 +232,7 @@ public class ReconcilerTests
         }
     }
 
-    private class PartialFailureReconciler : IReconciler<TestContext, TestReport>
+    private sealed class PartialFailureReconciler : IReconciler<TestContext, TestReport>
     {
         public Task<TestReport> ReconcileAsync(TestContext context)
         {
@@ -246,7 +246,7 @@ public class ReconcilerTests
         }
     }
 
-    private class InvalidContextReconciler : IReconciler<TestContext, TestReport>
+    private sealed class InvalidContextReconciler : IReconciler<TestContext, TestReport>
     {
         public Task<TestReport> ReconcileAsync(TestContext context)
         {
@@ -259,7 +259,7 @@ public class ReconcilerTests
         }
     }
 
-    private class CancellableReconciler : IReconciler<TestContext, TestReport>
+    private sealed class CancellableReconciler : IReconciler<TestContext, TestReport>
     {
         public Task<TestReport> ReconcileAsync(TestContext context)
         {
@@ -268,7 +268,7 @@ public class ReconcilerTests
         }
     }
 
-    private class GlobalCleanupReconciler : IReconciler<NullContext, TestReport>
+    private sealed class GlobalCleanupReconciler : IReconciler<NullContext, TestReport>
     {
         public Task<TestReport> ReconcileAsync(NullContext context)
         {

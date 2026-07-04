@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using uContract;
 
 namespace EzDdd.Entity;
@@ -149,6 +150,16 @@ public abstract class EsAggregateRoot<TId, TEvent> : AggregateRoot<TId, TEvent>
     /// <exception cref="InvalidOperationException">
     ///     Thrown when event replay violates invariants or encounters unknown event types
     /// </exception>
+    [SuppressMessage(
+        "Design",
+        "MA0017:Abstract types should not have public or internal constructors",
+        Justification = "The replay constructor is deliberately public so repositories (EsRepository) can reconstruct aggregates via reflection, matching Java ezddd's design (documented in the XML remarks above)."
+    )]
+    [SuppressMessage(
+        "Design",
+        "MA0056:Do not call overridable members in constructor",
+        Justification = "Event-sourcing replay is the designed exception: the constructor rebuilds state by replaying history through the _ReplayEvents/_When template methods under the R1-R3 invariant rules. Derived classes start from default field values, which is exactly what replay expects; consequently derived _When() implementations must not depend on fields initialized in their own constructor."
+    )]
     public EsAggregateRoot(IEnumerable<TEvent> events)
         : this()
     {
@@ -277,6 +288,16 @@ public abstract class EsAggregateRoot<TId, TEvent> : AggregateRoot<TId, TEvent>
     /// }
     /// </code>
     /// </example>
+    [SuppressMessage(
+        "Naming",
+        "CA1707:Identifiers should not contain underscores",
+        Justification = "The leading underscore marks framework-internal template methods that only subclasses may call, mirroring Java ezddd's protected API surface; renaming would break semantic parity and the published protected contract."
+    )]
+    [SuppressMessage(
+        "Naming",
+        "CA1716:Identifiers should not match keywords",
+        Justification = "The parameter name 'event' is the established domain-event vocabulary inherited from Java ezddd's public API; C# implementers use the escaped identifier @event. Renaming would break named-argument compatibility and cross-language parity."
+    )]
     protected abstract void _When(TEvent @event);
 
     /// <summary>
@@ -348,6 +369,11 @@ public abstract class EsAggregateRoot<TId, TEvent> : AggregateRoot<TId, TEvent>
     /// }
     /// </code>
     /// </example>
+    [SuppressMessage(
+        "Naming",
+        "CA1707:Identifiers should not contain underscores",
+        Justification = "The leading underscore marks framework-internal template methods that only subclasses may call, mirroring Java ezddd's protected API surface; renaming would break semantic parity and the published protected contract."
+    )]
     protected virtual void _EnsureInvariant()
     {
         // Default: no-op
@@ -369,6 +395,11 @@ public abstract class EsAggregateRoot<TId, TEvent> : AggregateRoot<TId, TEvent>
     ///         replay behavior if needed (e.g., skip certain events, apply optimizations).
     ///     </para>
     /// </remarks>
+    [SuppressMessage(
+        "Naming",
+        "CA1707:Identifiers should not contain underscores",
+        Justification = "The leading underscore marks framework-internal template methods that only subclasses may call, mirroring Java ezddd's protected API surface; renaming would break semantic parity and the published protected contract."
+    )]
     protected virtual void _ReplayEvents(IEnumerable<TEvent> events)
     {
         foreach (TEvent @event in events)

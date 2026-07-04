@@ -285,7 +285,7 @@ public class EsAggregateRootTests
     #endregion
 
     // Test events
-    private record AccountCreated(
+    private sealed record AccountCreated(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -294,7 +294,7 @@ public class EsAggregateRootTests
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent, IInternalDomainEvent.IConstructionEvent;
 
-    private record MoneyDeposited(
+    private sealed record MoneyDeposited(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -302,7 +302,7 @@ public class EsAggregateRootTests
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent;
 
-    private record MoneyWithdrawn(
+    private sealed record MoneyWithdrawn(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -310,7 +310,7 @@ public class EsAggregateRootTests
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent;
 
-    private record AccountClosed(
+    private sealed record AccountClosed(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -319,7 +319,7 @@ public class EsAggregateRootTests
     ) : IInternalDomainEvent, IInternalDomainEvent.IDestructionEvent;
 
     // Test aggregate - Bank Account with event sourcing
-    private class Account : EsAggregateRoot<Guid, IInternalDomainEvent>
+    private sealed class Account : EsAggregateRoot<Guid, IInternalDomainEvent>
     {
         // Constructor for new aggregate
         public Account(Guid id, string owner, decimal initialBalance)

@@ -11,15 +11,13 @@ public sealed class TransferMoneyServiceTests
 {
     #region Setup
 
-    private static ITransferMoneyService CreateService(
-        IRepository<BankAccount, AccountId, IInternalDomainEvent> repository
-    )
+    private static TransferMoneyService CreateService(InMemoryRepository<BankAccount, AccountId> repository)
     {
         return new TransferMoneyService(repository);
     }
 
     private static async Task<BankAccount> CreateAndSaveAccount(
-        IRepository<BankAccount, AccountId, IInternalDomainEvent> repository,
+        InMemoryRepository<BankAccount, AccountId> repository,
         string owner,
         Money initialBalance
     )

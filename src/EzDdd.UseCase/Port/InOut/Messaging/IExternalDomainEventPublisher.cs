@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace EzDdd.UseCase.Port.InOut.Messaging;
 
 /// <summary>
@@ -29,5 +31,10 @@ public interface IExternalDomainEventPublisher<in TEvent>
     /// </summary>
     /// <param name="event">The external domain event to publish.</param>
     /// <returns>A task representing the asynchronous publish operation.</returns>
+    [SuppressMessage(
+        "Naming",
+        "CA1716:Identifiers should not match keywords",
+        Justification = "The parameter name 'event' is the established domain-event vocabulary inherited from Java ezddd's public API; C# implementers use the escaped identifier @event. Renaming would break named-argument compatibility and cross-language parity."
+    )]
     Task PublishAsync(TEvent @event);
 }

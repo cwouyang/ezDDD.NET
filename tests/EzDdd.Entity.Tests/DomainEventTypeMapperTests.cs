@@ -262,14 +262,14 @@ public class DomainEventTypeMapperTests
     #endregion
 
     // Test events
-    private record TestEvent1(
+    private sealed record TestEvent1(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent;
 
-    private record TestEvent2(
+    private sealed record TestEvent2(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -277,7 +277,7 @@ public class DomainEventTypeMapperTests
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent;
 
-    private record TestEvent3(
+    private sealed record TestEvent3(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,

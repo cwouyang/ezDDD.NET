@@ -8,9 +8,9 @@ public class EventStoreDataTests
 {
     #region Test Helpers
 
-    private record TestId(string Value);
+    private sealed record TestId(string Value);
 
-    private record TestEvent(
+    private sealed record TestEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -93,7 +93,7 @@ public class EventStoreDataTests
     [Fact]
     public void GetOptimisticLockVersion_WithNoEvents_ReturnsVersion()
     {
-        var data = new EventStoreData<TestId> { Version = 5, Events = new List<IDomainEvent>() };
+        var data = new EventStoreData<TestId> { Version = 5, Events = [] };
 
         var lockVersion = data.GetOptimisticLockVersion();
 

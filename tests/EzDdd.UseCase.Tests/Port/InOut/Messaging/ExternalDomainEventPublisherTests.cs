@@ -41,7 +41,7 @@ public class ExternalDomainEventPublisherTests
         Assert.Same(publisher, derivedPublisher);
     }
 
-    private class TestPublisher : IExternalDomainEventPublisher<BaseExternalEvent>
+    private sealed class TestPublisher : IExternalDomainEventPublisher<BaseExternalEvent>
     {
         public BaseExternalEvent? LastPublishedEvent { get; private set; }
 
@@ -61,7 +61,7 @@ public class ExternalDomainEventPublisherTests
     ) : IExternalDomainEvent;
 
     // Derived external event for the contravariance test
-    private record DerivedExternalEvent(
+    private sealed record DerivedExternalEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,

@@ -58,9 +58,9 @@ public class CommandTests
         Assert.Equal(1, StatefulTestCommand.ExecutionCount);
     }
 
-    private record TestInput(string Data) : IInput;
+    private sealed record TestInput(string Data) : IInput;
 
-    private class TestOutput : CqrsOutput<TestOutput>
+    private sealed class TestOutput : CqrsOutput<TestOutput>
     {
         public string ProcessedData { get; set; } = string.Empty;
 
@@ -71,7 +71,7 @@ public class CommandTests
         }
     }
 
-    private class TestCommand : ICommand<TestInput, TestOutput>
+    private sealed class TestCommand : ICommand<TestInput, TestOutput>
     {
         public Task<TestOutput> ExecuteAsync(TestInput input)
         {
@@ -86,7 +86,7 @@ public class CommandTests
         }
     }
 
-    private class StatefulTestCommand : ICommand<TestInput, TestOutput>
+    private sealed class StatefulTestCommand : ICommand<TestInput, TestOutput>
     {
         public static int ExecutionCount { get; private set; }
 

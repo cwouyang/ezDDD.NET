@@ -128,7 +128,7 @@ public sealed class CqrsFlowWithMetadataTests
     /// <summary>
     ///     Creates metadata with correlation and causation IDs for distributed tracing.
     /// </summary>
-    private static IReadOnlyDictionary<string, string> _CreateMetadata(
+    private static ReadOnlyDictionary<string, string> _CreateMetadata(
         string correlationId,
         string? causationId = null,
         string? userId = null

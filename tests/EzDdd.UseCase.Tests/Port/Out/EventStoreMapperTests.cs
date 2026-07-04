@@ -8,12 +8,12 @@ public class EventStoreMapperTests
 {
     #region Test Helpers
 
-    private record TestId(string Value)
+    private sealed record TestId(string Value)
     {
         public override string ToString() => Value;
     }
 
-    private record TestEvent(
+    private sealed record TestEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -21,7 +21,7 @@ public class EventStoreMapperTests
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent, IInternalDomainEvent.IConstructionEvent;
 
-    private class TestAggregate : EsAggregateRoot<TestId, IInternalDomainEvent>
+    private sealed class TestAggregate : EsAggregateRoot<TestId, IInternalDomainEvent>
     {
         private string _name = string.Empty;
 

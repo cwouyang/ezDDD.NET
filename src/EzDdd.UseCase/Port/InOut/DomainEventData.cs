@@ -92,8 +92,8 @@ public record DomainEventData(Guid Id, string EventType, string ContentType, byt
         }
 
         return Id == other.Id
-            && EventType == other.EventType
-            && ContentType == other.ContentType
+            && string.Equals(EventType, other.EventType, StringComparison.Ordinal)
+            && string.Equals(ContentType, other.ContentType, StringComparison.Ordinal)
             && _JsonEquals(EventBody, other.EventBody)
             && _JsonEquals(UserMetadata, other.UserMetadata);
     }
@@ -186,11 +186,11 @@ public record DomainEventData(Guid Id, string EventType, string ContentType, byt
                 return _JsonArrayEquals(left, right);
 
             case JsonValueKind.String:
-                return left.GetString() == right.GetString();
+                return string.Equals(left.GetString(), right.GetString(), StringComparison.Ordinal);
 
             case JsonValueKind.Number:
                 // Compare as raw text to preserve precision
-                return left.GetRawText() == right.GetRawText();
+                return string.Equals(left.GetRawText(), right.GetRawText(), StringComparison.Ordinal);
 
             case JsonValueKind.True:
             case JsonValueKind.False:
@@ -217,7 +217,11 @@ public record DomainEventData(Guid Id, string EventType, string ContentType, byt
         }
 
         // Build dictionary for efficient lookup (key order independent)
-        Dictionary<string, JsonElement> rightDict = rightProperties.ToDictionary(p => p.Name, p => p.Value);
+        Dictionary<string, JsonElement> rightDict = rightProperties.ToDictionary(
+            p => p.Name,
+            p => p.Value,
+            StringComparer.Ordinal
+        );
 
         // Check all properties match
         foreach (JsonProperty leftProp in leftProperties)

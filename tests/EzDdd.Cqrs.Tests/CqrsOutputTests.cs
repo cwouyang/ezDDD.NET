@@ -218,9 +218,9 @@ public class CqrsOutputTests
 
     #region Test Helper Classes
 
-    private class TestOutput : CqrsOutput<TestOutput> { }
+    private sealed class TestOutput : CqrsOutput<TestOutput> { }
 
-    private class TestOutputWithCustomProperty : CqrsOutput<TestOutputWithCustomProperty>
+    private sealed class TestOutputWithCustomProperty : CqrsOutput<TestOutputWithCustomProperty>
     {
         public string CustomData { get; set; } = string.Empty;
         public int CustomValue { get; set; }

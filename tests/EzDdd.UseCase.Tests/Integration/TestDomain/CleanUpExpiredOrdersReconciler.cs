@@ -73,7 +73,7 @@ public class CleanUpExpiredOrdersReconciler : IReconciler<OrderCleanupContext, O
     ///     In a real system, this would use a query interface to efficiently find
     ///     orders by status and creation date.
     /// </remarks>
-    private Task<List<OrderId>> FindExpiredDraftOrdersAsync(DateTimeOffset cutoffDate)
+    private static Task<List<OrderId>> FindExpiredDraftOrdersAsync(DateTimeOffset cutoffDate)
     {
         // In a real system, this would query the database
         // For demonstration purposes, return empty list

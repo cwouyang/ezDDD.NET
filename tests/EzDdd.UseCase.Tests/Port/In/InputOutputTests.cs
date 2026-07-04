@@ -159,9 +159,9 @@ public class InputOutputTests
 
     #region Test Helper Classes
 
-    private class TestInput : IInput { }
+    private sealed class TestInput : IInput { }
 
-    private class TestOutput : IOutput
+    private sealed class TestOutput : IOutput
     {
         public string Message { get; private set; } = string.Empty;
         public ExitCode ExitCode { get; private set; }
@@ -198,7 +198,7 @@ public class InputOutputTests
         }
     }
 
-    private class TestVersionedInput : IVersionedInput
+    private sealed class TestVersionedInput : IVersionedInput
     {
         public long Version { get; set; }
     }

@@ -177,7 +177,7 @@ public class InternalDomainEventTests
     }
 
     // Construction event (R1 rule)
-    private record AggregateCreated(
+    private sealed record AggregateCreated(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -186,7 +186,7 @@ public class InternalDomainEventTests
     ) : IInternalDomainEvent, IInternalDomainEvent.IConstructionEvent;
 
     // Command event (R2 rule)
-    private record AggregateUpdated(
+    private sealed record AggregateUpdated(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -195,7 +195,7 @@ public class InternalDomainEventTests
     ) : IInternalDomainEvent;
 
     // Destruction event (R3 rule)
-    private record AggregateDeleted(
+    private sealed record AggregateDeleted(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,

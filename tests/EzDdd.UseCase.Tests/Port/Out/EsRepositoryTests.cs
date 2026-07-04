@@ -9,12 +9,12 @@ public class EsRepositoryTests
 {
     #region Test Helpers
 
-    private record TestId(string Value)
+    private sealed record TestId(string Value)
     {
         public override string ToString() => Value;
     }
 
-    private record TestEvent(
+    private sealed record TestEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -22,7 +22,7 @@ public class EsRepositoryTests
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent, IInternalDomainEvent.IConstructionEvent;
 
-    private class TestAggregate : EsAggregateRoot<TestId, IInternalDomainEvent>
+    private sealed class TestAggregate : EsAggregateRoot<TestId, IInternalDomainEvent>
     {
         private string _name = string.Empty;
         public string Name => _name;
@@ -82,9 +82,9 @@ public class EsRepositoryTests
         public override string GetCategory() => "test";
     }
 
-    private class MockRepositoryPeer : IRepositoryPeer<EventStoreData<TestId>, TestId>
+    private sealed class MockRepositoryPeer : IRepositoryPeer<EventStoreData<TestId>, TestId>
     {
-        private readonly Dictionary<TestId, EventStoreData<TestId>> _store = new();
+        private readonly Dictionary<TestId, EventStoreData<TestId>> _store = [];
         public bool ThrowOnSave { get; set; }
         public bool ThrowOnDelete { get; set; }
 

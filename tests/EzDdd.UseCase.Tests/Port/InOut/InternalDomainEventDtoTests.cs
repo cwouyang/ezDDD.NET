@@ -162,7 +162,7 @@ public class InternalDomainEventDtoTests
             BoundedContext = "sales",
             EventSimpleName = "OrderCreated",
             JsonEvent = jsonEvent,
-            Metadata = new Dictionary<string, string>(),
+            Metadata = new Dictionary<string, string>(StringComparer.Ordinal),
         };
 
         string json = JsonSerializer.Serialize(dto);
@@ -184,7 +184,7 @@ public class InternalDomainEventDtoTests
             BoundedContext = "test",
             EventSimpleName = "TestEvent",
             JsonEvent = "{}",
-            Metadata = new Dictionary<string, string>(),
+            Metadata = new Dictionary<string, string>(StringComparer.Ordinal),
         };
 
         Assert.NotNull(dto);

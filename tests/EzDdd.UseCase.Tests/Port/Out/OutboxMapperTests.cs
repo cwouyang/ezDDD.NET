@@ -183,9 +183,9 @@ public class OutboxMapperTests
 
     #region Test Domain Model
 
-    private record AccountId(string Value);
+    private sealed record AccountId(string Value);
 
-    private record AccountCreated(
+    private sealed record AccountCreated(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -194,7 +194,7 @@ public class OutboxMapperTests
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent, IInternalDomainEvent.IConstructionEvent;
 
-    private record MoneyDeposited(
+    private sealed record MoneyDeposited(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -202,7 +202,7 @@ public class OutboxMapperTests
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent;
 
-    private class BankAccount : AggregateRoot<AccountId, IInternalDomainEvent>
+    private sealed class BankAccount : AggregateRoot<AccountId, IInternalDomainEvent>
     {
         // Constructor for new aggregate
         public BankAccount(AccountId id, string owner, decimal initialBalance)
@@ -248,7 +248,7 @@ public class OutboxMapperTests
         }
     }
 
-    private class BankAccountData : IOutboxData<AccountId>
+    private sealed class BankAccountData : IOutboxData<AccountId>
     {
         public BankAccountData(
             AccountId id,
@@ -281,7 +281,7 @@ public class OutboxMapperTests
         }
     }
 
-    private class BankAccountMapper : OutboxMapper<BankAccount, BankAccountData, AccountId>
+    private sealed class BankAccountMapper : OutboxMapper<BankAccount, BankAccountData, AccountId>
     {
         public override BankAccountData ToData(BankAccount aggregate)
         {

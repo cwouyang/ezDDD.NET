@@ -9,16 +9,16 @@ public class RepositoryTests
     #region Test Fixtures
 
     // Test aggregate for repository testing
-    private record TestAggregateId(string Value);
+    private sealed record TestAggregateId(string Value);
 
-    private record TestEvent(
+    private sealed record TestEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent, IInternalDomainEvent.IConstructionEvent;
 
-    private class TestAggregate : AggregateRoot<TestAggregateId, IInternalDomainEvent>
+    private sealed class TestAggregate : AggregateRoot<TestAggregateId, IInternalDomainEvent>
     {
         public string Name { get; } = string.Empty;
 
@@ -43,9 +43,9 @@ public class RepositoryTests
 
     #region Mock Implementations
 
-    private class MockRepository : IRepository<TestAggregate, TestAggregateId, IInternalDomainEvent>
+    private sealed class MockRepository : IRepository<TestAggregate, TestAggregateId, IInternalDomainEvent>
     {
-        private readonly Dictionary<TestAggregateId, TestAggregate> _store = new();
+        private readonly Dictionary<TestAggregateId, TestAggregate> _store = [];
         public bool ThrowOnSave { get; set; }
 
         public Task<TestAggregate?> FindByIdAsync(TestAggregateId id)

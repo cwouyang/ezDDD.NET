@@ -43,12 +43,12 @@ public class UseCaseTests
     // Test Helper Classes
     // ========================================
 
-    private class TestInput : IInput
+    private sealed class TestInput : IInput
     {
         public string Value { get; set; } = string.Empty;
     }
 
-    private class TestOutput : IOutput
+    private sealed class TestOutput : IOutput
     {
         public string Result { get; set; } = string.Empty;
         public string Message { get; private set; } = string.Empty;
@@ -86,7 +86,7 @@ public class UseCaseTests
         }
     }
 
-    private class TestUseCase : IUseCase<TestInput, TestOutput>
+    private sealed class TestUseCase : IUseCase<TestInput, TestOutput>
     {
         public Task<TestOutput> ExecuteAsync(TestInput input)
         {
@@ -95,7 +95,7 @@ public class UseCaseTests
         }
     }
 
-    private class FailingUseCase : IUseCase<TestInput, TestOutput>
+    private sealed class FailingUseCase : IUseCase<TestInput, TestOutput>
     {
         public Task<TestOutput> ExecuteAsync(TestInput input)
         {
@@ -103,7 +103,7 @@ public class UseCaseTests
         }
     }
 
-    private class GenericUseCase : IUseCase<TestInput, TestOutput>
+    private sealed class GenericUseCase : IUseCase<TestInput, TestOutput>
     {
         public Task<TestOutput> ExecuteAsync(TestInput input)
         {

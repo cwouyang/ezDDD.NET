@@ -70,17 +70,17 @@ public class ProjectionTests
         Assert.NotNull(result);
     }
 
-    private record TestProjectionInput(string Id) : IProjectionInput;
+    private sealed record TestProjectionInput(string Id) : IProjectionInput;
 
-    private record TestInput(string CustomerId) : IInput;
+    private sealed record TestInput(string CustomerId) : IInput;
 
-    private record TestProjectionDto(string Id, string Name);
+    private sealed record TestProjectionDto(string Id, string Name);
 
-    private record CustomerViewModel(string CustomerId, string CustomerName);
+    private sealed record CustomerViewModel(string CustomerId, string CustomerName);
 
-    private record AccountDto(string AccountId, decimal Balance);
+    private sealed record AccountDto(string AccountId, decimal Balance);
 
-    private class TestProjection : IProjection<TestProjectionInput, TestProjectionDto>
+    private sealed class TestProjection : IProjection<TestProjectionInput, TestProjectionDto>
     {
         public Task<TestProjectionDto> QueryAsync(TestProjectionInput input)
         {
@@ -89,7 +89,7 @@ public class ProjectionTests
         }
     }
 
-    private class ViewModelProjection : IProjection<TestProjectionInput, CustomerViewModel>
+    private sealed class ViewModelProjection : IProjection<TestProjectionInput, CustomerViewModel>
     {
         public Task<CustomerViewModel> QueryAsync(TestProjectionInput input)
         {
@@ -98,7 +98,7 @@ public class ProjectionTests
         }
     }
 
-    private class DtoProjection : IProjection<TestProjectionInput, AccountDto>
+    private sealed class DtoProjection : IProjection<TestProjectionInput, AccountDto>
     {
         public Task<AccountDto> QueryAsync(TestProjectionInput input)
         {
@@ -107,7 +107,7 @@ public class ProjectionTests
         }
     }
 
-    private class QueryWithProjection(IProjection<TestProjectionInput, CustomerViewModel> projection)
+    private sealed class QueryWithProjection(IProjection<TestProjectionInput, CustomerViewModel> projection)
         : IQuery<TestInput, TestQueryOutput>
     {
         public async Task<TestQueryOutput> ExecuteAsync(TestInput input)
@@ -122,7 +122,7 @@ public class ProjectionTests
         }
     }
 
-    private class TestQueryOutput : CqrsOutput<TestQueryOutput>
+    private sealed class TestQueryOutput : CqrsOutput<TestQueryOutput>
     {
         public string CustomerInfo { get; set; } = string.Empty;
 
