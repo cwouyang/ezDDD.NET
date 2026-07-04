@@ -3,4 +3,4 @@
 # Local one-time setup: git config blame.ignoreRevsFile .git-blame-ignore-revs
 
 # CSharpier 1.2.6 baseline format — repository-wide whitespace/wrapping reformat (P2 rollout, 2026-07-04).
-ed7908f908d090c33ab0f7fb179f52868d94575c
+bac134048742b2de141dfddf00f90daf6553dbfb
