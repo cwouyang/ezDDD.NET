@@ -484,3 +484,10 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Local secrets and environment files
+appsettings.*.json
+!appsettings.json
+*.key
+**/secrets/
+.claude/settings.local.json
