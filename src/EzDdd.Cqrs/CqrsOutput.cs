@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using EzDdd.UseCase.Port.In;
 
 namespace EzDdd.Cqrs;
@@ -131,6 +132,11 @@ public class CqrsOutput<T> : IOutput
     ///     This static factory method requires that T has a parameterless constructor.
     ///     The <c>new()</c> constraint at the class level enables instantiation.
     /// </remarks>
+    [SuppressMessage(
+        "Design",
+        "CA1000:Do not declare static members on generic types",
+        Justification = "CqrsOutput<T>.Create() is the designed fluent entry point of the self-referential generic builder, matching Java ezddd's CqrsOutput.create() API; the type argument is always inferred from the concrete subclass."
+    )]
     public static T Create()
     {
         return new T();

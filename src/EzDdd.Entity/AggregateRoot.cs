@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace EzDdd.Entity;
 
 /// <summary>
@@ -210,6 +212,11 @@ public abstract class AggregateRoot<TId, TEvent> : IEntity<TId>, IDomainEventSou
     /// }
     /// </code>
     /// </example>
+    [SuppressMessage(
+        "Naming",
+        "CA1716:Identifiers should not match keywords",
+        Justification = "The parameter name 'event' is the established domain-event vocabulary inherited from Java ezddd's public API; C# callers use the escaped identifier @event. Renaming would break named-argument compatibility and cross-language parity."
+    )]
     public virtual void Apply(TEvent @event)
     {
         ArgumentNullException.ThrowIfNull(@event);
@@ -367,6 +374,11 @@ public abstract class AggregateRoot<TId, TEvent> : IEntity<TId>, IDomainEventSou
     ///         (matching Java ezddd's behavior).
     ///     </para>
     /// </remarks>
+    [SuppressMessage(
+        "Naming",
+        "CA1707:Identifiers should not contain underscores",
+        Justification = "The leading underscore marks framework-internal template methods that only subclasses may call, mirroring Java ezddd's protected API surface; renaming would break semantic parity and the published protected contract."
+    )]
     protected void _AddDomainEvent(TEvent @event)
     {
         lock (_domainEventsLock)

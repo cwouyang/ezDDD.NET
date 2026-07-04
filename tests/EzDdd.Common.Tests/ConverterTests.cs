@@ -1,5 +1,8 @@
 // ReSharper disable ConvertToLocalFunction
 
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+
 namespace EzDdd.Common.Tests;
 
 public class ConverterTests
@@ -8,7 +11,7 @@ public class ConverterTests
     public void Converter_WhenUsingLambdaExpression_ConvertsSuccessfully()
     {
         // ReSharper disable once ConvertClosureToMethodGroup
-        Converter<string, int> converter = s => int.Parse(s);
+        Converter<string, int> converter = s => int.Parse(s, CultureInfo.InvariantCulture);
 
         int result = converter("42");
 
@@ -44,9 +47,9 @@ public class ConverterTests
     [Fact]
     public void Converter_WhenUsingMultipleConverters_MaintainsIndependence()
     {
-        Converter<int, string> intToString = i => i.ToString();
+        Converter<int, string> intToString = i => i.ToString(CultureInfo.InvariantCulture);
         // ReSharper disable once ConvertClosureToMethodGroup
-        Converter<string, int> stringToInt = s => int.Parse(s);
+        Converter<string, int> stringToInt = s => int.Parse(s, CultureInfo.InvariantCulture);
 
         string str = intToString(123);
         int num = stringToInt("456");
@@ -58,9 +61,9 @@ public class ConverterTests
     [Fact]
     public void Converter_WhenChainingConversions_WorksCorrectly()
     {
-        Converter<int, string> intToString = i => i.ToString();
+        Converter<int, string> intToString = i => i.ToString(CultureInfo.InvariantCulture);
         // ReSharper disable once ConvertClosureToMethodGroup
-        Converter<string, double> stringToDouble = s => double.Parse(s);
+        Converter<string, double> stringToDouble = s => double.Parse(s, CultureInfo.InvariantCulture);
 
         string intermediate = intToString(42);
         double result = stringToDouble(intermediate);
@@ -71,7 +74,7 @@ public class ConverterTests
     [Fact]
     public void Converter_SupportsCovariance_AllowsDerivedTypeReturn()
     {
-        Converter<string, string> stringToString = s => s.ToUpper();
+        Converter<string, string> stringToString = s => s.ToUpperInvariant();
         Converter<string, object> stringToObject = stringToString;
 
         object result = stringToObject("hello");
@@ -141,20 +144,25 @@ public class ConverterTests
     // Test helper methods
     private static string _ConvertToUpper(string input)
     {
-        return input.ToUpper();
+        return input.ToUpperInvariant();
     }
 
     // Test domain classes
-    private record User(int Id, string Name);
+    private sealed record User(int Id, string Name);
 
-    private record UserDto(int Id, string Name);
+    private sealed record UserDto(int Id, string Name);
 
-    private record Order(int Id, string ProductName, int Quantity, decimal UnitPrice);
+    private sealed record Order(int Id, string ProductName, int Quantity, decimal UnitPrice);
 
-    private record OrderSummary(int OrderId, string Description, decimal TotalAmount);
+    private sealed record OrderSummary(int OrderId, string Description, decimal TotalAmount);
 
-    private class ConversionHelper
+    private sealed class ConversionHelper
     {
+        [SuppressMessage(
+            "Performance",
+            "CA1822:Mark members as static",
+            Justification = "Converter_WhenUsingInstanceMethod_WorksAsMethodGroup exercises instance-method group conversion; making this static would change the very scenario under test."
+        )]
         public string IntToString(int value)
         {
             return $"Number: {value}";

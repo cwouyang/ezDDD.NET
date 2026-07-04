@@ -31,6 +31,11 @@ namespace EzDdd.Common;
 /// </code>
 ///     </para>
 /// </remarks>
+[SuppressMessage(
+    "Naming",
+    "CA1710:Identifiers should have correct suffix",
+    Justification = "BiMap is the established bidirectional-map name shared with Java ezddd (and Guava); renaming to *Dictionary or *Collection would break cross-language parity for a published API."
+)]
 public class BiMap<TKey, TValue> : IDictionary<TKey, TValue>
     where TKey : notnull
     where TValue : notnull
@@ -44,8 +49,8 @@ public class BiMap<TKey, TValue> : IDictionary<TKey, TValue>
     /// </summary>
     public BiMap()
     {
-        _forward = new Dictionary<TKey, TValue>();
-        _reverse = new Dictionary<TValue, TKey>();
+        _forward = [];
+        _reverse = [];
     }
 
     /// <summary>
