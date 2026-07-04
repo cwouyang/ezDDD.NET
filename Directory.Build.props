@@ -32,11 +32,12 @@
 
     <!-- Documentation -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);1701;1702;CS1591</NoWarn>
+    <NoWarn>$(NoWarn);1701;1702</NoWarn>
 
     <!-- Symbols and Debugging -->
     <DebugType>embedded</DebugType>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
