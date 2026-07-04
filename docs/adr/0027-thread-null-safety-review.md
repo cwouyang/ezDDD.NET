@@ -407,7 +407,7 @@ private static readonly Lazy<BiMap<string, Type>> Mapper =
 - [Java ezddd 4.1.0 Null Safety Commits](https://gitlab.com/TeddyChen/ezddd/-/commits/master?search=null) - 3 null safety enhancement commits
 - [.NET Lazy<T> Documentation](https://learn.microsoft.com/en-us/dotnet/api/system.lazy-1) - Thread-safe lazy initialization pattern
 - [ArgumentNullException.ThrowIfNull Documentation](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception.throwifnull) - .NET 6+ null validation
-- [Phase 6 Stage S5 Handoff Document](../SESSION_HANDOFF_S4_COMPLETE.md) - Stage S4 completion and S5 planning
+- Phase 6 Stage S4 completion handoff - Stage S4 completion and S5 planning (internal working note, not retained in the repository)
 - [DOTNET_PORT.md - Java 4.1.0 Synchronization Plan](../../DOTNET_PORT.md#java-410-synchronization-plan) - Complete Phase 6 roadmap
 
 ---

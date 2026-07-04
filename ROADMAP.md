@@ -624,8 +624,6 @@ Total: 27/30 ADRs   ██████████████████░░
 
 **Decision**: Remove MessageProducer integration from Repository, implement EventStoreRelay example to match Java 4.1.0.
 
-**Handoff Document**: [SESSION_HANDOFF_REPOSITORY_MESSAGEPRODUCER_REMOVAL.md](docs/SESSION_HANDOFF_REPOSITORY_MESSAGEPRODUCER_REMOVAL.md)
-
 **Work Breakdown**:
 1. Remove eventProducer parameter from EsRepository (15 min)
 2. Remove eventProducer parameter from OutboxRepository (15 min)
@@ -642,8 +640,8 @@ Total: 27/30 ADRs   ██████████████████░░
 - [ ] Semantic parity: **100%** with Java 4.1.0
 
 **Related Documents**:
-- [OUTBOX_PATTERN_ANALYSIS.md](docs/OUTBOX_PATTERN_ANALYSIS.md) - Why Relay is required
-- [REPOSITORY_MESSAGEPRODUCER_ANALYSIS.md](docs/REPOSITORY_MESSAGEPRODUCER_ANALYSIS.md) - Design comparison
+- [ADR-0025](docs/adr/0025-messageproducer-refactoring-java-4-1-0-alignment.md) - Why Relay is required
+- [ADR-0029](docs/adr/0029-messageproducer-removal-gateway-deferral.md) - MessageProducer removal rationale and design comparison
 - Java Reference: `ezddd/ezddd-core-sample/src/.../InMemoryEventStoreRelay.java`
 
 ---
@@ -680,10 +678,6 @@ Total: 27/30 ADRs   ██████████████████░░
 - **[docs/adr/ADR_PLANNING.md](docs/adr/ADR_PLANNING.md)** - ADR roadmap (31 ADRs)
 - **[docs/adr/README.md](docs/adr/README.md)** - ADR index and workflow
 - **[docs/adr/](docs/adr/)** - Individual ADR files (ADR-0001 to ADR-0023 complete)
-
-### Phase-Specific Documents
-- **[docs/PHASE3_IMPLEMENTATION_PLAN.md](docs/PHASE3_IMPLEMENTATION_PLAN.md)** - Phase 3 plan (8 iterations)
-- **[docs/PHASE3_JAVA_ANALYSIS.md](docs/PHASE3_JAVA_ANALYSIS.md)** - Java source analysis (2,172 lines)
 
 ---
 

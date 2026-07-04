@@ -504,8 +504,8 @@ See "Alternatives Considered" section above for detailed analysis of:
 
 ### Internal Documents
 - [DOTNET_PORT.md](../../DOTNET_PORT.md) - Java 4.1.0 Synchronization Plan
-- [PHASE6_STAGE_S3_PLAN.md](../PHASE6_STAGE_S3_PLAN.md) - Stage S3 implementation plan
-- [CHECKPOINT3_REDO_GUIDE.md](../CHECKPOINT3_REDO_GUIDE.md) - Repository integration guidance
+- Stage S3 implementation plan (internal working note, superseded by this ADR)
+- Checkpoint 3 redo guide - Repository integration guidance (internal working note, not retained in the repository)
 - [ADR-0012](0012-resource-management-event-bus-producers.md) - Resource management foundation
 
 ### Design Patterns

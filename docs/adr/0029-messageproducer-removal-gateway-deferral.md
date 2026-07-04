@@ -34,8 +34,7 @@ How should ezDDD.NET align with this boundary, given that no .NET counterpart of
   The upstream 6.0 move partially invalidates that placement decision (the producer-only
   pattern itself remains upstream's design — just outside core).
 - **Repository decoupling already done**: `EsRepository`/`OutboxRepository` have no
-  `IMessageProducer` dependency (Relay pattern; see ADR-0025 and
-  `docs/SESSION_HANDOFF_REPOSITORY_MESSAGEPRODUCER_REMOVAL.md`). Core production code has
+  `IMessageProducer` dependency (Relay pattern; see ADR-0025). Core production code has
   zero usages of the interface — only tests and the `examples/EventInfrastructure/` relay
   example consume it.
 - **No .NET gateway exists**: `ezddd-gateway` has no .NET port, and creating one now would
@@ -191,8 +190,8 @@ adds release overhead without present value; it can ship post-1.0 as a non-break
   ezddd-gateway" — deletes `ezddd-usecase/.../port/inout/messaging/MessageProducer.java`
 - **Java ezddd HEAD `3aac0f5`**: core contains no message producer abstraction
 - **[PHASE7_SYNC_PLAN.md](../PHASE7_SYNC_PLAN.md)** — P.2 decision D3, iteration I3
-- [SESSION_HANDOFF_REPOSITORY_MESSAGEPRODUCER_REMOVAL.md](../SESSION_HANDOFF_REPOSITORY_MESSAGEPRODUCER_REMOVAL.md) -
-  prior decoupling of repositories from the producer port
+- Prior decoupling of repositories from the producer port was recorded in an internal
+  session handoff note (superseded by this ADR)
 
 ---
 

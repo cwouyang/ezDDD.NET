@@ -405,9 +405,9 @@ public async Task ExecuteAsync(DomainEventData eventData)
 ## References
 
 ### Analysis Documents
-- [PHASE4_JAVA_ANALYSIS.md](../PHASE4_JAVA_ANALYSIS.md) - Lines 220-250: Java Archive analysis
-- [PHASE4_API_DESIGN.md](../PHASE4_API_DESIGN.md) - Lines 857-1053: C# IArchive design and comparison
-- [PHASE4_ADR_PLANNING.md](../PHASE4_ADR_PLANNING.md) - Lines 256-392: ADR-0018 planning details
+- Phase 4 Java source analysis - Lines 220-250: Java Archive analysis (internal working note, not retained in the repository)
+- Phase 4 API design notes - Lines 857-1053: C# IArchive design and comparison (internal working note, not retained in the repository)
+- Phase 4 ADR planning notes - Lines 256-392: ADR-0018 planning details (internal working note, not retained in the repository)
 
 ### Source Code References
 - [Phase 3 IRepository Interface](../../src/EzDdd.UseCase/Port/Out/IRepository.cs) - Write-side repository pattern precedent

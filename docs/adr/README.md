@@ -70,7 +70,7 @@ NNNN-short-title.md
 - `short-title`: Kebab-case descriptive title
 - Examples:
   - `0001-target-framework.md`
-  - `0002-package-naming-structure.md`
+  - `0002-package-naming-and-structure.md`
   - `0006-event-sourcing-aggregate-design.md`
 
 ### ADR Template
@@ -147,7 +147,7 @@ CLAUDE.md
 
 ### 1. Complete Reimplementation
 
-**Status**: ✅ Accepted (See [ADR-0005](docs/adr/0005-complete-reimplementation.md))
+**Status**: ✅ Accepted (See [ADR-0005](docs/adr/0005-complete-reimplementation-approach.md))
 
 **Summary**: We will completely reimplement ezddd in .NET rather than wrap existing libraries...
 ```
@@ -166,8 +166,8 @@ CLAUDE.md
 ### Confirmed Decisions
 
 - **Target Framework**: .NET 8+ ([ADR-0001](docs/adr/0001-target-framework.md))
-- **Package Naming**: ezDDD/EzDdd convention ([ADR-0002](docs/adr/0002-package-naming-structure.md))
-- **Zero Dependencies**: Built-in .NET APIs only ([ADR-0004](docs/adr/0004-zero-dependency-principle.md))
+- **Package Naming**: ezDDD/EzDdd convention ([ADR-0002](docs/adr/0002-package-naming-and-structure.md))
+- **Zero Dependencies**: Built-in .NET APIs only ([ADR-0004](docs/adr/0004-zero-third-party-dependency-principle.md))
 ```
 
 ### Standard Workflow After Decision Confirmation

@@ -55,7 +55,7 @@ This document provides a checklist for writing and updating ADRs to ensure consi
 #### 8. References Section
 - [ ] All external links are valid
 - [ ] Links to other project documents use relative paths
-- [ ] Links to DOTNET_LIBRARY_DESIGN_CHECKLIST.md are included if applicable
+- [ ] References to the dotnet-library-design checklist (external tool) are included if applicable
 
 ---
 
@@ -299,7 +299,7 @@ When writing or reviewing ADRs, **always**:
 
 - [ADR README.md](README.md) - Main ADR documentation
 - [ADR.template.md](ADR.template.md) - ADR template
-- [DOTNET_LIBRARY_DESIGN_CHECKLIST.md](../../DOTNET_LIBRARY_DESIGN_CHECKLIST.md) - Design decisions reference
+- The dotnet-library-design checklist (external tool) - Design decisions reference
 
 ---
 

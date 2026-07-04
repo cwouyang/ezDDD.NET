@@ -158,7 +158,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
   - Proper cleanup of external resources
   - Async disposal considerations
 - **Status**: ✅ Completed
-- **Planning Docs Section**: PHASE3_IMPLEMENTATION_PLAN.md - "Messaging"
+- **Planning Docs Section**: Phase 3 implementation plan (internal working note) - "Messaging"
 - **Dependencies**: ADR-0003
 
 #### ADR-0013: Transaction Boundaries in Repository Pattern
@@ -168,7 +168,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
   - IRepositoryPeer has transaction responsibility
   - Ensures aggregates don't leak to adapters
 - **Status**: ✅ Completed
-- **Planning Docs Section**: PHASE3_IMPLEMENTATION_PLAN.md - "Repository"
+- **Planning Docs Section**: Phase 3 implementation plan (internal working note) - "Repository"
 - **Dependencies**: ADR-0003
 
 #### ADR-0014: DomainEventData Equality Semantics
@@ -178,7 +178,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
   - Ensures event history integrity
   - No equals/hashCode contract violations
 - **Status**: ✅ Completed
-- **Planning Docs Section**: PHASE3_IMPLEMENTATION_PLAN.md - "Event Mapping"
+- **Planning Docs Section**: Phase 3 implementation plan (internal working note) - "Event Mapping"
 - **Dependencies**: ADR-0008
 
 #### ADR-0015: Cross-Platform DTO Structure
@@ -188,7 +188,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
   - JSON default via System.Text.Json
   - Content-Type metadata for format detection
 - **Status**: ✅ Completed
-- **Planning Docs Section**: PHASE3_IMPLEMENTATION_PLAN.md - "Data Transfer"
+- **Planning Docs Section**: Phase 3 implementation plan (internal working note) - "Data Transfer"
 - **Dependencies**: ADR-0004
 
 #### ADR-0016: Async/Await Throughout
@@ -216,7 +216,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
   - Success/failure state management
   - Type-safe output construction
 - **Status**: ✅ Completed
-- **Planning Docs Section**: PHASE4_CQRS_KICKOFF.md - "CqrsOutput Design"
+- **Planning Docs Section**: Phase 4 CQRS kickoff plan (internal working note) - "CqrsOutput Design"
 - **Dependencies**: ADR-0003
 
 #### ADR-0018: IArchive Async Method Design
@@ -226,7 +226,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
   - Consistent with IRepository pattern
   - Supports async I/O to query databases
 - **Status**: ✅ Completed
-- **Planning Docs Section**: PHASE4_CQRS_KICKOFF.md - "IArchive Design"
+- **Planning Docs Section**: Phase 4 CQRS kickoff plan (internal working note) - "IArchive Design"
 - **Dependencies**: ADR-0016
 
 #### ADR-0019: IInquiry and IProjection Independence
@@ -236,7 +236,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
   - IProjection: Read model builders (generate views)
   - Both extend IUseCase independently
 - **Status**: ✅ Completed
-- **Planning Docs Section**: PHASE4_CQRS_KICKOFF.md - "Inquiry vs Projection"
+- **Planning Docs Section**: Phase 4 CQRS kickoff plan (internal working note) - "Inquiry vs Projection"
 - **Dependencies**: ADR-0003
 
 ---
@@ -253,7 +253,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
   - BackgroundService handles execution
   - Clear separation of concerns
 - **Status**: ✅ Completed
-- **Planning Docs Section**: PHASE4_CQRS_KICKOFF.md - "Projector Pattern"
+- **Planning Docs Section**: Phase 4 CQRS kickoff plan (internal working note) - "Projector Pattern"
 - **Dependencies**: ADR-0019
 
 #### ADR-0021: Generic Variance Annotations
@@ -263,7 +263,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
   - IArchive<TData, in TId>
   - Type safety and flexibility
 - **Status**: ✅ Completed
-- **Planning Docs Section**: PHASE4_CQRS_KICKOFF.md - "Generic Variance"
+- **Planning Docs Section**: Phase 4 CQRS kickoff plan (internal working note) - "Generic Variance"
 - **Dependencies**: ADR-0017, ADR-0018, ADR-0019
 
 #### ADR-0022: Read Model Design Patterns
@@ -273,7 +273,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
   - Clear separation from write model
   - Optimized for query performance
 - **Status**: ✅ Completed
-- **Planning Docs Section**: PHASE4_CQRS_KICKOFF.md - "Read Model Design"
+- **Planning Docs Section**: Phase 4 CQRS kickoff plan (internal working note) - "Read Model Design"
 - **Dependencies**: ADR-0001
 
 #### ADR-0023: Archive Idempotency Requirements
@@ -283,7 +283,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
   - Reliable event replay
   - Eventual consistency guarantees
 - **Status**: ✅ Completed
-- **Planning Docs Section**: PHASE4_CQRS_KICKOFF.md - "Archive Operations"
+- **Planning Docs Section**: Phase 4 CQRS kickoff plan (internal working note) - "Archive Operations"
 - **Dependencies**: ADR-0018
 
 ---
@@ -383,7 +383,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
   - **External User Value**: Zero - internal development reflection has no value to library users
   - **Conclusion**: This is internal project management documentation, not an architectural decision
 - **Where Documented Instead**:
-  - SESSION_HANDOFF documents (S0-S6) contain detailed session summaries
+  - Session handoff notes (S0-S6) contained detailed session summaries (internal working notes, since removed from the repository)
   - CHANGELOG.md documents all implementation work
   - Future retrospectives can be internal documents (not ADRs)
 - **Priority**: 📊 REVIEW (not architecture)

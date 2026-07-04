@@ -304,10 +304,10 @@ public async Task UpdateAsync_AccountCreated_SavesReadModel()
 
 ## References
 
-- **[PHASE4_JAVA_ANALYSIS.md](../PHASE4_JAVA_ANALYSIS.md)** - Projector analysis (lines 189-216)
-- **[PHASE4_API_DESIGN.md](../PHASE4_API_DESIGN.md)** - IProjector C# design
-- **[PHASE4_IMPLEMENTATION_PLAN.md](../PHASE4_IMPLEMENTATION_PLAN.md)** - Iteration 4 (IProjector) and Iteration 6 (integration tests)
-- **[PHASE4_SESSION_STATE.md](../PHASE4_SESSION_STATE.md)** - Implementation evidence (Iteration 4 and 6 complete)
+- Phase 4 Java source analysis - Projector analysis, lines 189-216 (internal working note, not retained in the repository)
+- Phase 4 API design notes - IProjector C# design (internal working note, not retained in the repository)
+- Phase 4 implementation plan - Iteration 4 (IProjector) and Iteration 6 (integration tests) (internal working note, not retained in the repository)
+- Phase 4 session notes - Implementation evidence (Iteration 4 and 6 complete; internal working notes, not retained in the repository)
 - **Microsoft Docs**: [BackgroundService](https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.hosting.backgroundservice)
 - **Microsoft Docs**: [IHostedService](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/host/hosted-services)
 - **Java ezcqrs**: [Projector.java](https://gitlab.com/TeddyChen/ezcqrs/-/blob/main/src/main/java/io/github/teddychen/ezcqrs/query/Projector.java)

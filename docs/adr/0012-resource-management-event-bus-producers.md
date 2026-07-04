@@ -298,13 +298,13 @@ When implementing external event bus adapters:
 
 ## References
 
-- [Phase 3 Final Review Report](../review/PHASE3_FINAL_REVIEW_REPORT.md) - Identified IDisposable as critical issue
-- [GROUP_7_REVIEW.md](../review/GROUP_7_REVIEW.md) - Detailed analysis of Message Bus group (Critical Issue #1)
+- Phase 3 final review report - Identified IDisposable as critical issue (internal working note, not retained in the repository)
+- Phase 3 Group 7 review - Detailed analysis of Message Bus group (Critical Issue #1) (internal working note, not retained in the repository)
 - [IMessageProducer.cs](../../src/EzDdd.UseCase/Port/InOut/Messaging/IMessageProducer.cs) - Implementation (lines 64-79)
 - [EventBusProducer.cs](../../src/EzDdd.UseCase/Port/InOut/Messaging/EventBusProducer.cs) - Implementation (lines 113-116)
 - [Java MessageProducer.java](../../../../ezddd/ezddd-usecase/src/main/java/tw/teddysoft/ezddd/usecase/port/inout/messaging/MessageProducer.java) - Java equivalent with Closeable
 - [.NET IDisposable Pattern](https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose) - Microsoft documentation
-- [PHASE3_POST_REVIEW_SESSION_STATE.md](../../PHASE3_POST_REVIEW_SESSION_STATE.md) - F.1 implementation record (lines 29-58)
+- Phase 3 post-review session notes - F.1 implementation record, lines 29-58 (internal working note, not retained in the repository)
 
 ---
 

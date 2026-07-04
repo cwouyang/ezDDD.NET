@@ -481,12 +481,12 @@ public async Task ExecuteAsync_InvalidAccount_ThrowsException()
 
 - [Async/Await Best Practices](https://learn.microsoft.com/en-us/archive/msdn-magazine/2013/march/async-await-best-practices-in-asynchronous-programming) - Stephen Cleary
 - [Task-based Asynchronous Pattern (TAP)](https://learn.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/task-based-asynchronous-pattern-tap)
-- [GROUP_2_REVIEW.md](../review/GROUP_2_REVIEW.md) - IUseCase async verification
-- [GROUP_6_REVIEW.md](../review/GROUP_6_REVIEW.md) - OutboxRepository async confirmation
+- Phase 3 Group 2 review - IUseCase async verification (internal working note, not retained in the repository)
+- Phase 3 Group 6 review - OutboxRepository async confirmation (internal working note, not retained in the repository)
 - [IReactor.cs](../../src/EzDdd.UseCase/Port/In/IReactor.cs) - Async ExecuteAsync (lines 17)
 - [Java Reactor.java](../../../../ezddd/ezddd-usecase/src/main/java/tw/teddysoft/ezddd/usecase/port/in/interactor/Reactor.java) - Sync execute() (line 16)
 - [IRepository.cs](../../src/EzDdd.UseCase/Port/Out/IRepository.cs) - Async repository APIs
-- [PHASE3_POST_REVIEW_SESSION_STATE.md](../../PHASE3_POST_REVIEW_SESSION_STATE.md) - Phase 3 completion (line 247)
+- Phase 3 post-review session notes - Phase 3 completion, line 247 (internal working note, not retained in the repository)
 
 ---
 

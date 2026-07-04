@@ -141,10 +141,6 @@ This file provides guidance to Claude Code when working on the **.NET port** of 
 - **[DOTNET_PORT.md](DOTNET_PORT.md)** - Technical planning and API design
 - **[CLAUDE.md](CLAUDE.md)** - This file (development guidance)
 
-### Phase 3 Documentation (Reference)
-- **[PHASE3_IMPLEMENTATION_PLAN.md](docs/PHASE3_IMPLEMENTATION_PLAN.md)** - Implementation plan (8 iterations)
-- **[PHASE3_JAVA_ANALYSIS.md](docs/PHASE3_JAVA_ANALYSIS.md)** - Java source analysis (2,172 lines)
-
 ### Architecture Decision Records
 - **[ADR_PLANNING.md](docs/adr/ADR_PLANNING.md)** - 28 planned ADRs roadmap
 - **[README.md](docs/adr/README.md)** - ADR index and workflow
@@ -728,11 +724,7 @@ See [DOTNET_PORT.md](DOTNET_PORT.md) "Java 4.1.0 Synchronization Plan" section (
 
 **Decision**: Remove MessageProducer integration from Repository, implement EventStoreRelay example matching Java 4.1.0.
 
-**Handoff Document**: [docs/SESSION_HANDOFF_REPOSITORY_MESSAGEPRODUCER_REMOVAL.md](docs/SESSION_HANDOFF_REPOSITORY_MESSAGEPRODUCER_REMOVAL.md)
-
-**Analysis Documents**:
-- [docs/OUTBOX_PATTERN_ANALYSIS.md](docs/OUTBOX_PATTERN_ANALYSIS.md) - Why Relay is required (9,000+ words)
-- [docs/REPOSITORY_MESSAGEPRODUCER_ANALYSIS.md](docs/REPOSITORY_MESSAGEPRODUCER_ANALYSIS.md) - Design comparison (8,000+ words)
+**Rationale**: See [ADR-0025](docs/adr/0025-messageproducer-refactoring-java-4-1-0-alignment.md) and [ADR-0029](docs/adr/0029-messageproducer-removal-gateway-deferral.md) — why the Relay pattern is required and how Repository was decoupled from MessageProducer.
 
 **Files to Modify**:
 - `src/EzDdd.UseCase/Port/Out/EsRepository.cs` (remove eventProducer)

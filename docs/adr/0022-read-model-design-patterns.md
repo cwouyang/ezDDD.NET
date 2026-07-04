@@ -376,8 +376,8 @@ public record OrderLineReadModel(
 - **C# Records**: [Microsoft Docs - Records](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/record)
 - **with-expressions**: [Microsoft Docs - with expressions](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/with-expression)
 - **Value Equality**: [Microsoft Docs - Equality comparisons](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/statements-expressions-operators/equality-comparisons)
-- **[PHASE4_IMPLEMENTATION_PLAN.md](../PHASE4_IMPLEMENTATION_PLAN.md)** - Iteration 6 integration tests (AccountSummaryReadModel)
-- **[PHASE4_SESSION_STATE.md](../PHASE4_SESSION_STATE.md)** - Implementation evidence (Iteration 6 complete)
+- Phase 4 implementation plan - Iteration 6 integration tests (AccountSummaryReadModel) (internal working note, not retained in the repository)
+- Phase 4 session notes - Implementation evidence (Iteration 6 complete; internal working notes, not retained in the repository)
 
 ---
 

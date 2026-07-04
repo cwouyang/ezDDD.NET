@@ -467,11 +467,11 @@ for (int i = 0; i < 10000; i++)
 
 ## References
 
-- [Phase 3 Final Review Report](../review/PHASE3_FINAL_REVIEW_REPORT.md) - Identified equality semantics as critical issue
-- [GROUP_4_REVIEW.md](../review/GROUP_4_REVIEW.md) - Critical Issue #1: DomainEventData Equality (lines 38-99)
+- Phase 3 final review report - Identified equality semantics as critical issue (internal working note, not retained in the repository)
+- Phase 3 Group 4 review - Critical Issue #1: DomainEventData Equality, lines 38-99 (internal working note, not retained in the repository)
 - [DomainEventData.cs](../../src/EzDdd.UseCase/Port/InOut/DomainEventData.cs) - Implementation (lines 82-257)
 - [Java DomainEventData.java](../../../../ezddd/ezddd-usecase/src/main/java/tw/teddysoft/ezddd/usecase/port/inout/domainevent/DomainEventData.java) - Java JSONObject.similar() (lines 43-63)
-- [PHASE3_POST_REVIEW_SESSION_STATE.md](../../PHASE3_POST_REVIEW_SESSION_STATE.md) - F.2 implementation record (lines 60-105)
+- Phase 3 post-review session notes - F.2 implementation record, lines 60-105 (internal working note, not retained in the repository)
 - [RFC 8259: JSON Specification](https://www.rfc-editor.org/rfc/rfc8259) - JSON object key order irrelevance
 - [System.Text.Json.JsonDocument](https://learn.microsoft.com/en-us/dotnet/api/system.text.json.jsondocument) - .NET JSON parsing API
 

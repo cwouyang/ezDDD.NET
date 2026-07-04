@@ -1402,7 +1402,6 @@ public class SqlRepositoryPeer<D, ID> : IRepositoryPeer<D, ID>
 - **DOTNET_PORT.md** - Technical design decisions and architecture
 - **ROADMAP.md** - Development progress and milestones
 - **ADR Index** (docs/adr/README.md) - Architecture Decision Records
-- **PHASE3_JAVA_ANALYSIS.md** - Detailed Java ezddd UseCase module analysis
 
 ---
 

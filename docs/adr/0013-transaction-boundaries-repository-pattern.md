@@ -411,13 +411,13 @@ When reviewing IRepository implementations:
 
 ## References
 
-- [Phase 3 Final Review Report](../review/PHASE3_FINAL_REVIEW_REPORT.md) - Identified transaction boundary enforcement as critical
-- [GROUP_3_REVIEW.md](../review/GROUP_3_REVIEW.md) - INFO #4: Transaction Boundary Documentation (lines 194-216)
+- Phase 3 final review report - Identified transaction boundary enforcement as critical (internal working note, not retained in the repository)
+- Phase 3 Group 3 review - INFO #4: Transaction Boundary Documentation, lines 194-216 (internal working note, not retained in the repository)
 - [IRepository.cs](../../src/EzDdd.UseCase/Port/Out/IRepository.cs) - "No Transaction Management" (lines 48-53)
 - [IRepositoryPeer.cs](../../src/EzDdd.UseCase/Port/Out/IRepositoryPeer.cs) - "Transaction Boundary MUST Be Here" (lines 52-119)
 - [TRANSACTION_BOUNDARY_GUIDE.md](../../docs/TRANSACTION_BOUNDARY_GUIDE.md) - Comprehensive guide (created in F.4)
 - [TransactionBoundaryTests.cs](../../tests/EzDdd.UseCase.Tests/Integration/TransactionBoundaryTests.cs) - Verification tests
-- [PHASE3_POST_REVIEW_SESSION_STATE.md](../../PHASE3_POST_REVIEW_SESSION_STATE.md) - F.4 implementation record (lines 145-194)
+- Phase 3 post-review session notes - F.4 implementation record, lines 145-194 (internal working note, not retained in the repository)
 - [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) - Robert C. Martin
 - [Transactional Outbox Pattern](https://microservices.io/patterns/data/transactional-outbox.html) - Chris Richardson
 

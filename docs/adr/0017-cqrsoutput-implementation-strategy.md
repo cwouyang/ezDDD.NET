@@ -399,9 +399,9 @@ public void FluentApi_ShouldChainCorrectly()
 ## References
 
 ### Analysis Documents
-- [PHASE4_JAVA_ANALYSIS.md](../PHASE4_JAVA_ANALYSIS.md) - Lines 256-325: Java CqrsOutput analysis
-- [PHASE4_API_DESIGN.md](../PHASE4_API_DESIGN.md) - Lines 1053-1295: C# CqrsOutput design and comparison
-- [PHASE4_ADR_PLANNING.md](../PHASE4_ADR_PLANNING.md) - Lines 96-253: ADR-0017 planning details
+- Phase 4 Java source analysis - Lines 256-325: Java CqrsOutput analysis (internal working note, not retained in the repository)
+- Phase 4 API design notes - Lines 1053-1295: C# CqrsOutput design and comparison (internal working note, not retained in the repository)
+- Phase 4 ADR planning notes - Lines 96-253: ADR-0017 planning details (internal working note, not retained in the repository)
 
 ### Source Code References
 - [Phase 3 IOutput Interface](../../src/EzDdd.UseCase/Port/In/IOutput.cs) - Phase 3 output interface that CqrsOutput must implement

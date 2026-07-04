@@ -457,9 +457,9 @@ var exists = await inquiry.QueryAsync(accountId);
 ## References
 
 ### Analysis Documents
-- [PHASE4_JAVA_ANALYSIS.md](../PHASE4_JAVA_ANALYSIS.md) - Lines 75-186: Java Inquiry and Projection analysis
-- [PHASE4_API_DESIGN.md](../PHASE4_API_DESIGN.md) - Lines 210-627: C# IInquiry and IProjection design
-- [PHASE4_ADR_PLANNING.md](../PHASE4_ADR_PLANNING.md) - Lines 395-560: ADR-0019 planning details
+- Phase 4 Java source analysis - Lines 75-186: Java Inquiry and Projection analysis (internal working note, not retained in the repository)
+- Phase 4 API design notes - Lines 210-627: C# IInquiry and IProjection design (internal working note, not retained in the repository)
+- Phase 4 ADR planning notes - Lines 395-560: ADR-0019 planning details (internal working note, not retained in the repository)
 
 ### Source Code References
 - [Phase 3 IUseCase Interface](../../src/EzDdd.UseCase/Port/In/IUseCase.cs) - Use case interface that ICommand/IQuery extend (but IInquiry/IProjection don't)

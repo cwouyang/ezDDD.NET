@@ -271,7 +271,6 @@ public class PostgresEventStore : IEventStore
 - **Transactional Outbox Pattern**: [Chris Richardson - Microservices.io](https://microservices.io/patterns/data/transactional-outbox.html)
 - **ADR-0025**: [MessageProducer Refactoring](../../docs/adr/0025-messageproducer-refactoring-java-4-1-0-alignment.md)
 - **ADR-0029**: [MessageProducer Removal from Core & Gateway Package Deferral](../../docs/adr/0029-messageproducer-removal-gateway-deferral.md)
-- **Session Handoff**: [Repository MessageProducer Removal](../../docs/SESSION_HANDOFF_REPOSITORY_MESSAGEPRODUCER_REMOVAL.md)
 
 ## FAQ
 

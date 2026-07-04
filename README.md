@@ -1179,10 +1179,6 @@ public sealed class BankAccount : EsAggregateRoot<AccountId, IInternalDomainEven
   - **Stage 6**: Phase 6 Java 4.1.0 Sync (ADR-0024 to ADR-0027)
 
 ### Phase Documentation
-- **[PHASE3_IMPLEMENTATION_PLAN.md](docs/PHASE3_IMPLEMENTATION_PLAN.md)** - Phase 3 iteration plan (8 iterations)
-- **[PHASE3_JAVA_ANALYSIS.md](docs/PHASE3_JAVA_ANALYSIS.md)** - Java ezddd source analysis (2,172 lines)
-- **[PHASE4_IMPLEMENTATION_PLAN.md](docs/PHASE4_IMPLEMENTATION_PLAN.md)** - Phase 4 iteration plan (7 iterations)
-- **[PHASE4_JAVA_ANALYSIS.md](docs/PHASE4_JAVA_ANALYSIS.md)** - Java ezcqrs source analysis (1,090 lines)
 - **[ADR_PLANNING.md](docs/adr/ADR_PLANNING.md)** - Complete ADR roadmap (28 planned ADRs)
 
 ### Related Projects

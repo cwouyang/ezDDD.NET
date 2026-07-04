@@ -3666,7 +3666,7 @@ Self-referential generic with fluent builder API. The `T` parameter ensures that
 - [USAGE_EXAMPLES.md](USAGE_EXAMPLES.md) - Practical examples for common scenarios
 - [TRANSACTION_BOUNDARY_GUIDE.md](../TRANSACTION_BOUNDARY_GUIDE.md) - Transaction management best practices
 - [Architecture Decision Records](../adr/) - Design decisions and rationale
-- [ROADMAP.md](../ROADMAP.md) - Development roadmap and progress tracking
+- [ROADMAP.md](../../ROADMAP.md) - Development roadmap and progress tracking
 - [README.md](../../README.md) - Project overview and quick start
 
 ---

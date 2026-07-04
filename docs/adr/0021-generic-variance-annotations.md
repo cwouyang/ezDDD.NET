@@ -282,7 +282,7 @@ Variance provides no benefit when:
 ## References
 
 - **C# Language Specification**: [Generic Variance](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/)
-- **[PHASE4_API_DESIGN.md](../PHASE4_API_DESIGN.md)** - Generic variance design notes
+- Phase 4 API design notes - Generic variance design notes (internal working note, not retained in the repository)
 - **Phase 3 IUseCase**: `src/EzDdd.UseCase/Port/In/IUseCase.cs` - Establishes contravariant TInput pattern
 - **[ADR-0017](0017-cqrsoutput-implementation-strategy.md)** - CqrsOutput generic constraints
 

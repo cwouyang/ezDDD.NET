@@ -340,8 +340,8 @@ public async Task TransferAsync_InsufficientBalance_ThrowsException()
 
 ## Related Decisions
 
-- **Related to**: [ADR-0003 - Module Architecture](0003-module-architecture.md) - Services belong to Use Case layer boundary
-- **Depends on**: [ADR-0003](0003-module-architecture.md) - Use Case layer must exist before Services
+- **Related to**: [ADR-0003 - Module Architecture](0003-module-architecture-dependency-chain.md) - Services belong to Use Case layer boundary
+- **Depends on**: [ADR-0003](0003-module-architecture-dependency-chain.md) - Use Case layer must exist before Services
 - **Related to**: [ADR-0017 - CqrsOutput Implementation Strategy](0017-cqrsoutput-implementation-strategy.md) - Use Cases map Service exceptions to CqrsOutput
 
 ---
@@ -404,7 +404,7 @@ All Services must have:
 - Robert C. Martin - Clean Architecture (2017), Chapter 20: "Use Cases vs Entities"
 
 ### Related ADRs
-- [ADR-0003 - Module Architecture](0003-module-architecture.md)
+- [ADR-0003 - Module Architecture](0003-module-architecture-dependency-chain.md)
 - [ADR-0017 - CqrsOutput Implementation Strategy](0017-cqrsoutput-implementation-strategy.md)
 - [ADR-0013 - Transaction Boundaries in Repository Pattern](0013-transaction-boundaries-repository-pattern.md)
 

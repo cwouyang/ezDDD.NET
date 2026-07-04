@@ -431,8 +431,8 @@ public async Task SaveAsync(AccountReadModel data)
 ## References
 
 - **Martin Fowler**: [Event Sourcing - Idempotent Receivers](https://martinfowler.com/eaaDev/EventSourcing.html)
-- **[PHASE4_IMPLEMENTATION_PLAN.md](../PHASE4_IMPLEMENTATION_PLAN.md)** - Iteration 5 (IArchive) and Iteration 6 (projector tests)
-- **[PHASE4_SESSION_STATE.md](../PHASE4_SESSION_STATE.md)** - Implementation evidence (InMemoryArchive with upsert semantics)
+- Phase 4 implementation plan - Iteration 5 (IArchive) and Iteration 6 (projector tests) (internal working note, not retained in the repository)
+- Phase 4 session notes - Implementation evidence (InMemoryArchive with upsert semantics; internal working notes, not retained in the repository)
 - **PostgreSQL Docs**: [INSERT ... ON CONFLICT](https://www.postgresql.org/docs/current/sql-insert.html#SQL-ON-CONFLICT)
 - **SQL Server Docs**: [MERGE Statement](https://learn.microsoft.com/en-us/sql/t-sql/statements/merge-transact-sql)
 

@@ -49,8 +49,8 @@ the methodology used in prior phase verifications.
 - **Java**: class deleted from `usecase.port.inout.domainevent`; `git ls-files` at
   `3aac0f5` confirms no `ExternalDomainEventDto.java` remains.
 - **.NET**: `git ls-files` confirms no `ExternalDomainEventDto.cs` exists — and none ever
-  did (the class was deferred during the original port; the contrary "100% parity" claim
-  in `COMPLETE_CLASS_BY_CLASS_VERIFICATION.md` §3.12 was wrong and has been corrected in
+  did (the class was deferred during the original port; a contrary "100% parity" claim in
+  an earlier internal class-by-class verification note was wrong and has been corrected in
   this iteration).
 
 **Result**: absent on both sides at the current baseline — the deferred-port gap closed
