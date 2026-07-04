@@ -1,0 +1,9 @@
+<Project>
+  <!-- Chain to the repository-level Directory.Build.props (nearest-file semantics stop there otherwise). -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)..'))" />
+
+  <PropertyGroup>
+    <!-- Test classes need no XML documentation; keeps CS1591 enforcement meaningful for src/. -->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+</Project>

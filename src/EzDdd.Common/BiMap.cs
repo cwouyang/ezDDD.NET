@@ -151,6 +151,18 @@ public class BiMap<TKey, TValue> : IDictionary<TKey, TValue>
 
     #region IDictionary<TKey, TValue> Implementation
 
+    /// <summary>
+    ///     Gets or sets the value associated with the specified key, maintaining the bidirectional mapping.
+    /// </summary>
+    /// <param name="key">The key of the value to get or set</param>
+    /// <returns>The value associated with the specified key</returns>
+    /// <exception cref="KeyNotFoundException">The property is retrieved and <paramref name="key" /> is not found</exception>
+    /// <remarks>
+    ///     The setter enforces the BiMap uniqueness constraint on values: if the assigned value is already
+    ///     associated with a different key, that key is removed from the map so that only the new
+    ///     key → value pair remains. Setting a new value for an existing key also removes the old
+    ///     value's reverse mapping.
+    /// </remarks>
     public TValue this[TKey key]
     {
         get
@@ -169,6 +181,11 @@ public class BiMap<TKey, TValue> : IDictionary<TKey, TValue>
         }
     }
 
+    /// <inheritdoc />
+    /// <remarks>
+    ///     Returns a snapshot copy of the keys, not a live view, so it can be enumerated safely
+    ///     while other threads modify the map.
+    /// </remarks>
     public ICollection<TKey> Keys
     {
         get
@@ -180,6 +197,11 @@ public class BiMap<TKey, TValue> : IDictionary<TKey, TValue>
         }
     }
 
+    /// <inheritdoc />
+    /// <remarks>
+    ///     Returns a snapshot copy of the values, not a live view, so it can be enumerated safely
+    ///     while other threads modify the map.
+    /// </remarks>
     public ICollection<TValue> Values
     {
         get
@@ -191,6 +213,7 @@ public class BiMap<TKey, TValue> : IDictionary<TKey, TValue>
         }
     }
 
+    /// <inheritdoc />
     public int Count
     {
         get
@@ -202,8 +225,25 @@ public class BiMap<TKey, TValue> : IDictionary<TKey, TValue>
         }
     }
 
+    /// <inheritdoc />
     public bool IsReadOnly => false;
 
+    /// <summary>
+    ///     Adds the specified key-value pair to the map, maintaining the bidirectional mapping.
+    /// </summary>
+    /// <param name="key">The key to add</param>
+    /// <param name="value">The value to associate with the key</param>
+    /// <remarks>
+    ///     <para>
+    ///         Unlike <see cref="Dictionary{TKey, TValue}.Add" />, this method does not throw when the key
+    ///         already exists; the existing entry is overwritten (equivalent to Java's <c>put</c>).
+    ///     </para>
+    ///     <para>
+    ///         BiMap enforces a uniqueness constraint on values: if <paramref name="value" /> is already
+    ///         associated with a different key, that key is removed from the map so that only the new
+    ///         key → value pair remains. See the class-level documentation for an example.
+    ///     </para>
+    /// </remarks>
     public void Add(TKey key, TValue value)
     {
         lock (_lock)
@@ -212,11 +252,20 @@ public class BiMap<TKey, TValue> : IDictionary<TKey, TValue>
         }
     }
 
+    /// <summary>
+    ///     Adds the specified key-value pair to the map, maintaining the bidirectional mapping.
+    /// </summary>
+    /// <param name="item">The key-value pair to add</param>
+    /// <remarks>
+    ///     Delegates to <see cref="Add(TKey, TValue)" />; the same overwrite and value-uniqueness
+    ///     semantics apply.
+    /// </remarks>
     public void Add(KeyValuePair<TKey, TValue> item)
     {
         Add(item.Key, item.Value);
     }
 
+    /// <inheritdoc />
     public void Clear()
     {
         lock (_lock)
@@ -226,6 +275,7 @@ public class BiMap<TKey, TValue> : IDictionary<TKey, TValue>
         }
     }
 
+    /// <inheritdoc />
     public bool Contains(KeyValuePair<TKey, TValue> item)
     {
         lock (_lock)
@@ -235,6 +285,7 @@ public class BiMap<TKey, TValue> : IDictionary<TKey, TValue>
         }
     }
 
+    /// <inheritdoc />
     public bool ContainsKey(TKey key)
     {
         lock (_lock)
@@ -243,6 +294,18 @@ public class BiMap<TKey, TValue> : IDictionary<TKey, TValue>
         }
     }
 
+    /// <summary>
+    ///     Copies the key-value pairs of the map to the specified array, starting at the specified index.
+    /// </summary>
+    /// <param name="array">The destination array</param>
+    /// <param name="arrayIndex">The zero-based index in <paramref name="array" /> at which copying begins</param>
+    /// <exception cref="ArgumentNullException"><paramref name="array" /> is null</exception>
+    /// <remarks>
+    ///     Copies from a snapshot taken under the lock. Unlike the standard
+    ///     <see cref="ICollection{T}.CopyTo" /> contract, if the destination array is too small the copy
+    ///     is truncated to the available space instead of throwing, because in concurrent scenarios the
+    ///     map may have grown between reading <see cref="Count" /> and calling this method.
+    /// </remarks>
     public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
     {
         ArgumentNullException.ThrowIfNull(array);
@@ -263,6 +326,15 @@ public class BiMap<TKey, TValue> : IDictionary<TKey, TValue>
         }
     }
 
+    /// <summary>
+    ///     Returns an enumerator that iterates over a snapshot of the key-value pairs.
+    /// </summary>
+    /// <returns>An enumerator over a snapshot of the map's key-value pairs</returns>
+    /// <remarks>
+    ///     The snapshot is taken under the lock, so enumeration does not block other threads and
+    ///     never throws due to concurrent modification; changes made after the enumerator is obtained
+    ///     are not reflected in the enumeration.
+    /// </remarks>
     public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
     {
         lock (_lock)
@@ -272,6 +344,16 @@ public class BiMap<TKey, TValue> : IDictionary<TKey, TValue>
         }
     }
 
+    /// <summary>
+    ///     Removes the entry with the specified key from the map, including its reverse mapping.
+    /// </summary>
+    /// <param name="key">The key of the entry to remove</param>
+    /// <returns><c>true</c> if the entry was found and removed; otherwise, <c>false</c></returns>
+    /// <remarks>
+    ///     Removal is bidirectional: both the forward mapping (key → value) and the reverse mapping
+    ///     (value → key) are removed, so a subsequent <see cref="GetKey" /> for the removed value
+    ///     returns null.
+    /// </remarks>
     public bool Remove(TKey key)
     {
         lock (_lock)
@@ -286,6 +368,19 @@ public class BiMap<TKey, TValue> : IDictionary<TKey, TValue>
         }
     }
 
+    /// <summary>
+    ///     Removes the entry matching both the key and the value of the specified pair, including its
+    ///     reverse mapping.
+    /// </summary>
+    /// <param name="item">The key-value pair to remove</param>
+    /// <returns>
+    ///     <c>true</c> if the key was found with the matching value and the entry was removed;
+    ///     otherwise, <c>false</c>
+    /// </returns>
+    /// <remarks>
+    ///     The entry is removed only if the key exists and its current value equals
+    ///     <c>item.Value</c>. Removal is bidirectional: both the forward and reverse mappings are removed.
+    /// </remarks>
     public bool Remove(KeyValuePair<TKey, TValue> item)
     {
         lock (_lock)
@@ -304,6 +399,7 @@ public class BiMap<TKey, TValue> : IDictionary<TKey, TValue>
         }
     }
 
+    /// <inheritdoc />
     public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
     {
         lock (_lock)
