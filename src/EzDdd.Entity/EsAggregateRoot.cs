@@ -71,23 +71,23 @@ namespace EzDdd.Entity;
 /// {
 ///     private string _owner = string.Empty;
 ///     private decimal _balance;
-/// 
+///
 ///     // Constructor for new aggregate
 ///     public Account(Guid id, string owner, decimal initialBalance)
 ///     {
 ///         var created = new AccountCreated(/* ... */);
 ///         Apply(created); // Enforces R1
 ///     }
-/// 
+///
 ///     // Constructor for event replay (REQUIRED)
 ///     public Account(IEnumerable&lt;IInternalDomainEvent&gt; events) : base(events) { }
-/// 
+///
 ///     public void Deposit(decimal amount)
 ///     {
 ///         var deposited = new MoneyDeposited(/* ... */);
 ///         Apply(deposited); // Enforces R2
 ///     }
-/// 
+///
 ///     protected override void When(IInternalDomainEvent @event)
 ///     {
 ///         switch (@event)
@@ -102,14 +102,14 @@ namespace EzDdd.Entity;
 ///                 break;
 ///         }
 ///     }
-/// 
+///
 ///     protected override void EnsureInvariant()
 ///     {
 ///         if (IsDeleted) return;
 ///         if (_balance &lt; 0)
 ///             throw new InvalidOperationException("Balance cannot be negative");
 ///     }
-/// 
+///
 ///     public override string GetCategory() =&gt; "account";
 /// }
 /// </code>
@@ -124,9 +124,7 @@ public abstract class EsAggregateRoot<TId, TEvent> : AggregateRoot<TId, TEvent>
     ///     Subclasses should call this default constructor, then apply a construction event
     ///     implementing <see cref="IInternalDomainEvent.IConstructionEvent" />.
     /// </remarks>
-    protected EsAggregateRoot()
-    {
-    }
+    protected EsAggregateRoot() { }
 
     /// <summary>
     ///     Initializes an aggregate by replaying events from history.
@@ -259,19 +257,19 @@ public abstract class EsAggregateRoot<TId, TEvent> : AggregateRoot<TId, TEvent>
     ///             _owner = e.Owner;
     ///             _balance = e.InitialBalance;
     ///             break;
-    /// 
+    ///
     ///         case MoneyDeposited e:
     ///             _balance += e.Amount;
     ///             break;
-    /// 
+    ///
     ///         case MoneyWithdrawn e:
     ///             _balance -= e.Amount;
     ///             break;
-    /// 
+    ///
     ///         case AccountClosed e:
     ///             IsDeleted = true;
     ///             break;
-    /// 
+    ///
     ///         default:
     ///             throw new InvalidOperationException(
     ///                 $"Unknown event type: {@event.GetType().Name}");
@@ -337,14 +335,14 @@ public abstract class EsAggregateRoot<TId, TEvent> : AggregateRoot<TId, TEvent>
     /// {
     ///     // Skip invariant checks for deleted aggregates
     ///     if (IsDeleted) return;
-    /// 
+    ///
     ///     // Check business rules
     ///     if (Id == Guid.Empty)
     ///         throw new InvalidOperationException("Account ID must be set");
-    /// 
+    ///
     ///     if (string.IsNullOrEmpty(_owner))
     ///         throw new InvalidOperationException("Account must have owner");
-    /// 
+    ///
     ///     if (_balance &lt; 0)
     ///         throw new InvalidOperationException("Balance cannot be negative");
     /// }

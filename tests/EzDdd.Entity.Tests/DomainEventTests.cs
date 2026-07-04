@@ -23,14 +23,7 @@ public class DomainEventTests
     public void IDomainEvent_Metadata_IsImmutable()
     {
         Dictionary<string, string> metadata = new() { ["Key1"] = "Value1" };
-        TestCommandEvent @event = new
-        (
-            Guid.NewGuid(),
-            DateTimeOffset.UtcNow,
-            "source",
-            0,
-            metadata
-        );
+        TestCommandEvent @event = new(Guid.NewGuid(), DateTimeOffset.UtcNow, "source", 0, metadata);
 
         Assert.IsAssignableFrom<IReadOnlyDictionary<string, string>>(@event.Metadata);
 
@@ -45,14 +38,7 @@ public class DomainEventTests
         // ReSharper disable once CollectionNeverUpdated.Local
         Dictionary<string, string> emptyMetadata = new();
 
-        TestCommandEvent @event = new
-        (
-            Guid.NewGuid(),
-            DateTimeOffset.UtcNow,
-            "source",
-            0,
-            emptyMetadata
-        );
+        TestCommandEvent @event = new(Guid.NewGuid(), DateTimeOffset.UtcNow, "source", 0, emptyMetadata);
 
         Assert.Empty(@event.Metadata);
     }
@@ -89,8 +75,7 @@ public class DomainEventTests
     [Fact]
     public void IDomainEvent_RecordType_IsImmutable()
     {
-        TestCommandEvent @event = new
-        (
+        TestCommandEvent @event = new(
             Guid.NewGuid(),
             DateTimeOffset.UtcNow,
             "source",
@@ -107,8 +92,7 @@ public class DomainEventTests
     [Fact]
     public void IDomainEvent_CanBeUsedAsTypeConstraint()
     {
-        TestCommandEvent @event = new
-        (
+        TestCommandEvent @event = new(
             Guid.NewGuid(),
             DateTimeOffset.UtcNow,
             "source",
@@ -122,17 +106,16 @@ public class DomainEventTests
         return;
 
         // Helper method demonstrating generic constraint
-        static Guid GetEventId<TEvent>(TEvent @event) where TEvent : IDomainEvent
+        static Guid GetEventId<TEvent>(TEvent @event)
+            where TEvent : IDomainEvent
         {
             return @event.Id;
         }
     }
 
-
     // Test implementation - Construction event
     // ReSharper disable once UnusedType.Local
-    private record TestConstructionEvent
-    (
+    private record TestConstructionEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -141,8 +124,7 @@ public class DomainEventTests
     ) : IInternalDomainEvent, IInternalDomainEvent.IConstructionEvent;
 
     // Test implementation - Command event (middle event)
-    private record TestCommandEvent
-    (
+    private record TestCommandEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -152,8 +134,7 @@ public class DomainEventTests
 
     // Test implementation - Destruction event
     // ReSharper disable once UnusedType.Local
-    private record TestDestructionEvent
-    (
+    private record TestDestructionEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,

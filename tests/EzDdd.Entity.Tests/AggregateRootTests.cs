@@ -2,7 +2,7 @@ namespace EzDdd.Entity.Tests;
 
 public class AggregateRootTests
 {
-#region Construction Tests
+    #region Construction Tests
 
     [Fact]
     public void AggregateRoot_Constructor_InitializesProperties()
@@ -27,9 +27,9 @@ public class AggregateRootTests
         Assert.Equal(0L, aggregate.Version);
     }
 
-#endregion
+    #endregion
 
-#region Event Collection Tests
+    #region Event Collection Tests
 
     [Fact]
     public void AggregateRoot_Apply_AddsEventToCollection()
@@ -111,9 +111,9 @@ public class AggregateRootTests
         Assert.Equal(0, aggregate.GetDomainEventSize());
     }
 
-#endregion
+    #endregion
 
-#region Versioning Tests
+    #region Versioning Tests
 
     [Fact]
     public void AggregateRoot_Apply_IncrementsVersion()
@@ -140,9 +140,9 @@ public class AggregateRootTests
         Assert.Equal(4, aggregate.GetDomainEventSize()); // 1 constructor + 3 updates
     }
 
-#endregion
+    #endregion
 
-#region PublishAndClear Tests
+    #region PublishAndClear Tests
 
     [Fact]
     public void AggregateRoot_ClearDomainEvents_RemovesAllEvents()
@@ -170,9 +170,9 @@ public class AggregateRootTests
         Assert.Equal(versionBeforeClear, aggregate.Version);
     }
 
-#endregion
+    #endregion
 
-#region IsDeleted Tests
+    #region IsDeleted Tests
 
     [Fact]
     public void AggregateRoot_IsDeleted_CanBeSetBySubclass()
@@ -185,9 +185,9 @@ public class AggregateRootTests
         Assert.True(aggregate.IsDeleted);
     }
 
-#endregion
+    #endregion
 
-#region Contract Tests
+    #region Contract Tests
 
     [Fact]
     public void AggregateRoot_ImplementsIEntity()
@@ -210,9 +210,9 @@ public class AggregateRootTests
         Assert.All(events, e => Assert.IsAssignableFrom<IInternalDomainEvent>(e));
     }
 
-#endregion
+    #endregion
 
-#region Thread Safety Tests
+    #region Thread Safety Tests
 
     [Fact]
     public async Task AggregateRoot_ThreadSafety_ConcurrentEventAddition()
@@ -249,16 +249,13 @@ public class AggregateRootTests
             tasks.Add(Task.Run(() => aggregate.UpdateValue(i)));
 
             // Read task
-            tasks.Add
-            (
-                Task.Run
-                (() =>
-                    {
-                        IReadOnlyList<IInternalDomainEvent> _ = aggregate.GetDomainEvents();
-                        int __ = aggregate.GetDomainEventSize();
-                        IInternalDomainEvent? ___ = aggregate.GetLastDomainEvent();
-                    }
-                )
+            tasks.Add(
+                Task.Run(() =>
+                {
+                    IReadOnlyList<IInternalDomainEvent> _ = aggregate.GetDomainEvents();
+                    int __ = aggregate.GetDomainEventSize();
+                    IInternalDomainEvent? ___ = aggregate.GetLastDomainEvent();
+                })
             );
         }
 
@@ -268,11 +265,10 @@ public class AggregateRootTests
         Assert.True(aggregate.GetDomainEventSize() > 0);
     }
 
-#endregion
+    #endregion
 
     // Test events
-    private record TestCreatedEvent
-    (
+    private record TestCreatedEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -280,8 +276,7 @@ public class AggregateRootTests
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent, IInternalDomainEvent.IConstructionEvent;
 
-    private record TestUpdatedEvent
-    (
+    private record TestUpdatedEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -289,8 +284,7 @@ public class AggregateRootTests
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent;
 
-    private record TestDeletedEvent
-    (
+    private record TestDeletedEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -306,8 +300,7 @@ public class AggregateRootTests
             Id = id;
             Name = name;
 
-            TestCreatedEvent created = new
-            (
+            TestCreatedEvent created = new(
                 Guid.NewGuid(),
                 DateTimeOffset.UtcNow,
                 id.ToString(),
@@ -326,8 +319,7 @@ public class AggregateRootTests
         {
             Value = newValue;
 
-            TestUpdatedEvent updated = new
-            (
+            TestUpdatedEvent updated = new(
                 Guid.NewGuid(),
                 DateTimeOffset.UtcNow,
                 Id.ToString(),
@@ -342,8 +334,7 @@ public class AggregateRootTests
         {
             IsDeleted = true;
 
-            TestDeletedEvent deleted = new
-            (
+            TestDeletedEvent deleted = new(
                 Guid.NewGuid(),
                 DateTimeOffset.UtcNow,
                 Id.ToString(),

@@ -94,7 +94,7 @@ public static class JsonUtil
             WriteIndented = false,
 
             // Include all fields, even if null (no ignore conditions)
-            DefaultIgnoreCondition = JsonIgnoreCondition.Never
+            DefaultIgnoreCondition = JsonIgnoreCondition.Never,
 
             // DateTime serialization: ISO-8601 format (default, not timestamps)
             // Equivalent to Jackson's WRITE_DATES_AS_TIMESTAMPS: false
@@ -189,7 +189,10 @@ public static class JsonUtil
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Failed to deserialize byte array to {typeof(T).Name}: {ex.Message}", ex);
+            throw new InvalidOperationException(
+                $"Failed to deserialize byte array to {typeof(T).Name}: {ex.Message}",
+                ex
+            );
         }
     }
 
@@ -305,7 +308,10 @@ public static class JsonUtil
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Failed to deep copy object of type {typeof(T).Name}: {ex.Message}", ex);
+            throw new InvalidOperationException(
+                $"Failed to deep copy object of type {typeof(T).Name}: {ex.Message}",
+                ex
+            );
         }
     }
 }

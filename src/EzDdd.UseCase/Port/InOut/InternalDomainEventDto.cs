@@ -73,7 +73,7 @@ namespace EzDdd.UseCase.Port.InOut;
 ///     new Dictionary&lt;string, string&gt; { ["userId"] = "user-1" },
 ///     500m
 /// );
-/// 
+///
 /// var eventData = new { aggregateId = "account-123", amount = domainEvent.Amount };
 /// var dto = new InternalDomainEventDto
 /// {
@@ -84,7 +84,7 @@ namespace EzDdd.UseCase.Port.InOut;
 ///     JsonEvent = JsonSerializer.Serialize(eventData),
 ///     Metadata = domainEvent.Metadata
 /// };
-/// 
+///
 /// // Serialize to JSON for REST API
 /// var json = JsonSerializer.Serialize(dto);
 /// </code>

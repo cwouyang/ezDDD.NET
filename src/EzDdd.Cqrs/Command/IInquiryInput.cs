@@ -21,7 +21,7 @@ namespace EzDdd.Cqrs.Command;
 ///         <b>Example</b>:
 ///         <code>
 ///         public record CheckAccountExistsInput(AccountId AccountId) : IInquiryInput;
-/// 
+///
 ///         public class CheckAccountExistsInquiry
 ///             : IInquiry&lt;CheckAccountExistsInput, bool&gt;
 ///         {

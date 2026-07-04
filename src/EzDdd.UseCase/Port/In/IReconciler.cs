@@ -43,7 +43,5 @@ public sealed class NullContext
     /// <summary>
     ///     Prevents external instantiation. Use <see cref="Instance" /> instead.
     /// </summary>
-    private NullContext()
-    {
-    }
+    private NullContext() { }
 }

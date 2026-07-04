@@ -5,7 +5,7 @@ namespace EzDdd.UseCase.Tests.Port.Out;
 
 public class OutboxMapperTests
 {
-#region Mapper Creation Tests
+    #region Mapper Creation Tests
 
     [Fact]
     public void OutboxMapper_CanCreateConcreteImplementation()
@@ -16,9 +16,9 @@ public class OutboxMapperTests
         Assert.IsAssignableFrom<OutboxMapper<BankAccount, BankAccountData, AccountId>>(mapper);
     }
 
-#endregion
+    #endregion
 
-#region ToData Conversion Tests
+    #region ToData Conversion Tests
 
     [Fact]
     public void ToData_CopiesId()
@@ -83,24 +83,16 @@ public class OutboxMapperTests
         Assert.Equal(3000.00m, data.Balance);
     }
 
-#endregion
+    #endregion
 
-#region ToDomain Conversion Tests
+    #region ToDomain Conversion Tests
 
     [Fact]
     public void ToDomain_ReconstructsId()
     {
         BankAccountMapper mapper = new();
         AccountId accountId = new("acc-303");
-        BankAccountData data = new
-        (
-            accountId,
-            2,
-            Array.Empty<IDomainEvent>(),
-            "account-acc-303",
-            "Eve",
-            1500.00m
-        );
+        BankAccountData data = new(accountId, 2, Array.Empty<IDomainEvent>(), "account-acc-303", "Eve", 1500.00m);
 
         BankAccount account = mapper.ToDomain(data);
 
@@ -112,15 +104,7 @@ public class OutboxMapperTests
     {
         BankAccountMapper mapper = new();
         AccountId accountId = new("acc-404");
-        BankAccountData data = new
-        (
-            accountId,
-            5,
-            Array.Empty<IDomainEvent>(),
-            "account-acc-404",
-            "Frank",
-            4500.00m
-        );
+        BankAccountData data = new(accountId, 5, Array.Empty<IDomainEvent>(), "account-acc-404", "Frank", 4500.00m);
 
         BankAccount account = mapper.ToDomain(data);
 
@@ -132,15 +116,7 @@ public class OutboxMapperTests
     {
         BankAccountMapper mapper = new();
         AccountId accountId = new("acc-505");
-        BankAccountData data = new
-        (
-            accountId,
-            3,
-            Array.Empty<IDomainEvent>(),
-            "account-acc-505",
-            "Grace",
-            6000.00m
-        );
+        BankAccountData data = new(accountId, 3, Array.Empty<IDomainEvent>(), "account-acc-505", "Grace", 6000.00m);
 
         BankAccount account = mapper.ToDomain(data);
 
@@ -148,9 +124,9 @@ public class OutboxMapperTests
         Assert.Equal(6000.00m, account.Balance);
     }
 
-#endregion
+    #endregion
 
-#region Roundtrip Tests
+    #region Roundtrip Tests
 
     [Fact]
     public void Roundtrip_PreservesIdentity()
@@ -169,9 +145,9 @@ public class OutboxMapperTests
         Assert.Equal(originalAccount.Balance, reconstructedAccount.Balance);
     }
 
-#endregion
+    #endregion
 
-#region Complex Scenario Tests
+    #region Complex Scenario Tests
 
     [Fact]
     public void ToData_WithMultipleDeposits_PreservesAllEvents()
@@ -203,14 +179,13 @@ public class OutboxMapperTests
         Assert.Equal(2, data.Version); // 0 + 1 (first deposit) + 1 (second deposit)
     }
 
-#endregion
+    #endregion
 
-#region Test Domain Model
+    #region Test Domain Model
 
     private record AccountId(string Value);
 
-    private record AccountCreated
-    (
+    private record AccountCreated(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -219,8 +194,7 @@ public class OutboxMapperTests
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent, IInternalDomainEvent.IConstructionEvent;
 
-    private record MoneyDeposited
-    (
+    private record MoneyDeposited(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -237,8 +211,7 @@ public class OutboxMapperTests
             Owner = owner;
             Balance = initialBalance;
 
-            AccountCreated @event = new
-            (
+            AccountCreated @event = new(
                 Guid.NewGuid(),
                 DateTimeOffset.UtcNow,
                 id.Value,
@@ -263,8 +236,7 @@ public class OutboxMapperTests
 
         public void Deposit(decimal amount)
         {
-            MoneyDeposited @event = new
-            (
+            MoneyDeposited @event = new(
                 Guid.NewGuid(),
                 DateTimeOffset.UtcNow,
                 Id.Value,
@@ -278,8 +250,7 @@ public class OutboxMapperTests
 
     private class BankAccountData : IOutboxData<AccountId>
     {
-        public BankAccountData
-        (
+        public BankAccountData(
             AccountId id,
             long version,
             IReadOnlyList<IDomainEvent> events,
@@ -314,8 +285,7 @@ public class OutboxMapperTests
     {
         public override BankAccountData ToData(BankAccount aggregate)
         {
-            return new BankAccountData
-            (
+            return new BankAccountData(
                 aggregate.Id,
                 aggregate.Version,
                 aggregate.GetDomainEvents(),
@@ -327,15 +297,9 @@ public class OutboxMapperTests
 
         public override BankAccount ToDomain(BankAccountData data)
         {
-            return new BankAccount
-            (
-                data.Id,
-                data.Owner,
-                data.Balance,
-                data.Version
-            );
+            return new BankAccount(data.Id, data.Owner, data.Balance, data.Version);
         }
     }
 
-#endregion
+    #endregion
 }

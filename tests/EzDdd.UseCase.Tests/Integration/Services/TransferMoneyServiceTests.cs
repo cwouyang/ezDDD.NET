@@ -12,7 +12,8 @@ public sealed class TransferMoneyServiceTests
     #region Setup
 
     private static ITransferMoneyService CreateService(
-        IRepository<BankAccount, AccountId, IInternalDomainEvent> repository)
+        IRepository<BankAccount, AccountId, IInternalDomainEvent> repository
+    )
     {
         return new TransferMoneyService(repository);
     }
@@ -20,12 +21,10 @@ public sealed class TransferMoneyServiceTests
     private static async Task<BankAccount> CreateAndSaveAccount(
         IRepository<BankAccount, AccountId, IInternalDomainEvent> repository,
         string owner,
-        Money initialBalance)
+        Money initialBalance
+    )
     {
-        var account = new BankAccount(
-            new AccountId(Guid.NewGuid().ToString()),
-            owner,
-            initialBalance);
+        var account = new BankAccount(new AccountId(Guid.NewGuid().ToString()), owner, initialBalance);
 
         await repository.SaveAsync(account);
         return account;
@@ -136,8 +135,9 @@ public sealed class TransferMoneyServiceTests
         var transferAmount = new Money(200, "USD");
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InsufficientBalanceException>(
-            () => service.TransferAsync(fromAccount.Id, toAccount.Id, transferAmount));
+        var exception = await Assert.ThrowsAsync<InsufficientBalanceException>(() =>
+            service.TransferAsync(fromAccount.Id, toAccount.Id, transferAmount)
+        );
 
         Assert.Equal(fromAccount.Id, exception.AccountId);
         Assert.Equal(new Money(100, "USD"), exception.CurrentBalance);
@@ -156,8 +156,9 @@ public sealed class TransferMoneyServiceTests
         var transferAmount = new Money(0, "USD");
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidTransferAmountException>(
-            () => service.TransferAsync(fromAccount.Id, toAccount.Id, transferAmount));
+        await Assert.ThrowsAsync<InvalidTransferAmountException>(() =>
+            service.TransferAsync(fromAccount.Id, toAccount.Id, transferAmount)
+        );
     }
 
     [Fact]
@@ -172,8 +173,9 @@ public sealed class TransferMoneyServiceTests
         var transferAmount = new Money(-100, "USD");
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidTransferAmountException>(
-            () => service.TransferAsync(fromAccount.Id, toAccount.Id, transferAmount));
+        await Assert.ThrowsAsync<InvalidTransferAmountException>(() =>
+            service.TransferAsync(fromAccount.Id, toAccount.Id, transferAmount)
+        );
     }
 
     [Fact]
@@ -188,8 +190,9 @@ public sealed class TransferMoneyServiceTests
         var transferAmount = new Money(15000, "USD"); // Exceeds $10,000 limit
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<TransferLimitExceededException>(
-            () => service.TransferAsync(fromAccount.Id, toAccount.Id, transferAmount));
+        var exception = await Assert.ThrowsAsync<TransferLimitExceededException>(() =>
+            service.TransferAsync(fromAccount.Id, toAccount.Id, transferAmount)
+        );
 
         Assert.Equal(new Money(15000, "USD"), exception.RequestedAmount);
         Assert.Equal(new Money(10000, "USD"), exception.MaxLimit);
@@ -211,8 +214,9 @@ public sealed class TransferMoneyServiceTests
         var transferAmount = new Money(100, "USD");
 
         // Act & Assert
-        await Assert.ThrowsAsync<AccountClosedException>(
-            () => service.TransferAsync(fromAccount.Id, toAccount.Id, transferAmount));
+        await Assert.ThrowsAsync<AccountClosedException>(() =>
+            service.TransferAsync(fromAccount.Id, toAccount.Id, transferAmount)
+        );
     }
 
     [Fact]
@@ -231,8 +235,9 @@ public sealed class TransferMoneyServiceTests
         var transferAmount = new Money(100, "USD");
 
         // Act & Assert
-        await Assert.ThrowsAsync<AccountClosedException>(
-            () => service.TransferAsync(fromAccount.Id, toAccount.Id, transferAmount));
+        await Assert.ThrowsAsync<AccountClosedException>(() =>
+            service.TransferAsync(fromAccount.Id, toAccount.Id, transferAmount)
+        );
     }
 
     #endregion
@@ -251,8 +256,9 @@ public sealed class TransferMoneyServiceTests
         var transferAmount = new Money(100, "USD");
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<AccountNotFoundException>(
-            () => service.TransferAsync(nonExistentAccountId, toAccount.Id, transferAmount));
+        var exception = await Assert.ThrowsAsync<AccountNotFoundException>(() =>
+            service.TransferAsync(nonExistentAccountId, toAccount.Id, transferAmount)
+        );
 
         Assert.Equal(nonExistentAccountId, exception.AccountId);
     }
@@ -269,8 +275,9 @@ public sealed class TransferMoneyServiceTests
         var transferAmount = new Money(100, "USD");
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<AccountNotFoundException>(
-            () => service.TransferAsync(fromAccount.Id, nonExistentAccountId, transferAmount));
+        var exception = await Assert.ThrowsAsync<AccountNotFoundException>(() =>
+            service.TransferAsync(fromAccount.Id, nonExistentAccountId, transferAmount)
+        );
 
         Assert.Equal(nonExistentAccountId, exception.AccountId);
     }
@@ -290,8 +297,9 @@ public sealed class TransferMoneyServiceTests
         var transferAmount = new Money(100, "USD");
 
         // Act & Assert
-        await Assert.ThrowsAsync<SameAccountTransferException>(
-            () => service.TransferAsync(account.Id, account.Id, transferAmount));
+        await Assert.ThrowsAsync<SameAccountTransferException>(() =>
+            service.TransferAsync(account.Id, account.Id, transferAmount)
+        );
     }
 
     [Fact]

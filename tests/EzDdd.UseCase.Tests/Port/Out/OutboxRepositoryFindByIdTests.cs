@@ -42,7 +42,7 @@ public class OutboxRepositoryFindByIdTests
         return new OutboxRepository<TestAggregate, TestOutboxData, string>(peer, new TestOutboxMapper());
     }
 
-#region Test Infrastructure
+    #region Test Infrastructure
 
     private class TestAggregate : AggregateRoot<string, IInternalDomainEvent>
     {
@@ -109,5 +109,5 @@ public class OutboxRepositoryFindByIdTests
         }
     }
 
-#endregion
+    #endregion
 }

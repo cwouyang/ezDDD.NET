@@ -1,5 +1,4 @@
 using System.Text.Json;
-
 using EzDdd.Entity;
 using EzDdd.UseCase.Port.InOut;
 
@@ -7,7 +6,7 @@ namespace EzDdd.UseCase.Tests.Port.InOut;
 
 public class DomainEventMapperTests
 {
-#region Setup
+    #region Setup
 
     public DomainEventMapperTests()
     {
@@ -17,15 +16,14 @@ public class DomainEventMapperTests
         DomainEventTypeMapper.Register<TestMoneyDeposited>("TestMoneyDeposited");
     }
 
-#endregion
+    #endregion
 
-#region ToData Conversion Tests (Domain → Data)
+    #region ToData Conversion Tests (Domain → Data)
 
     [Fact]
     public void ToData_ShouldConvertDomainEventToDomainEventData()
     {
-        TestAccountCreated @event = new
-        (
+        TestAccountCreated @event = new(
             Guid.NewGuid(),
             DateTimeOffset.UtcNow,
             "account-123",
@@ -47,8 +45,7 @@ public class DomainEventMapperTests
     [Fact]
     public void ToData_ShouldSerializeEventBodyCorrectly()
     {
-        TestMoneyDeposited @event = new
-        (
+        TestMoneyDeposited @event = new(
             Guid.NewGuid(),
             DateTimeOffset.UtcNow,
             "account-123",
@@ -70,8 +67,7 @@ public class DomainEventMapperTests
     {
         Dictionary<string, string> metadata = new() { ["userId"] = "user-1", ["correlationId"] = "corr-123" };
 
-        TestAccountCreated @event = new
-        (
+        TestAccountCreated @event = new(
             Guid.NewGuid(),
             DateTimeOffset.UtcNow,
             "account-123",
@@ -81,7 +77,9 @@ public class DomainEventMapperTests
         );
 
         DomainEventData data = DomainEventMapper.ToData(@event);
-        Dictionary<string, string>? deserializedMetadata = JsonSerializer.Deserialize<Dictionary<string, string>>(data.UserMetadata);
+        Dictionary<string, string>? deserializedMetadata = JsonSerializer.Deserialize<Dictionary<string, string>>(
+            data.UserMetadata
+        );
 
         Assert.NotNull(deserializedMetadata);
         Assert.Equal(2, deserializedMetadata.Count);
@@ -92,8 +90,7 @@ public class DomainEventMapperTests
     [Fact]
     public void ToData_WithEmptyMetadata_ShouldWork()
     {
-        TestMoneyDeposited @event = new
-        (
+        TestMoneyDeposited @event = new(
             Guid.NewGuid(),
             DateTimeOffset.UtcNow,
             "account-123",
@@ -110,8 +107,7 @@ public class DomainEventMapperTests
     [Fact]
     public void ToData_WithComplexNestedObject_ShouldSerializeCorrectly()
     {
-        TestAccountCreated @event = new
-        (
+        TestAccountCreated @event = new(
             Guid.NewGuid(),
             DateTimeOffset.UtcNow,
             "account-789",
@@ -140,15 +136,14 @@ public class DomainEventMapperTests
         Assert.Empty(dataList);
     }
 
-#endregion
+    #endregion
 
-#region ToDomain Conversion Tests (Data → Domain)
+    #region ToDomain Conversion Tests (Data → Domain)
 
     [Fact]
     public void ToDomain_ShouldConvertDomainEventDataToDomainEvent()
     {
-        TestMoneyDeposited originalEvent = new
-        (
+        TestMoneyDeposited originalEvent = new(
             Guid.NewGuid(),
             DateTimeOffset.UtcNow,
             "account-123",
@@ -178,17 +173,16 @@ public class DomainEventMapperTests
         Assert.Empty(events);
     }
 
-#endregion
+    #endregion
 
-#region Batch Conversion Tests
+    #region Batch Conversion Tests
 
     [Fact]
     public void ToData_BatchConversion_ShouldConvertMultipleEvents()
     {
         List<IInternalDomainEvent> events =
         [
-            new TestAccountCreated
-            (
+            new TestAccountCreated(
                 Guid.NewGuid(),
                 DateTimeOffset.UtcNow,
                 "account-1",
@@ -196,24 +190,20 @@ public class DomainEventMapperTests
                 "Alice",
                 1000m
             ),
-
-            new TestMoneyDeposited
-            (
+            new TestMoneyDeposited(
                 Guid.NewGuid(),
                 DateTimeOffset.UtcNow,
                 "account-1",
                 new Dictionary<string, string>(),
                 500m
             ),
-
-            new TestMoneyDeposited
-            (
+            new TestMoneyDeposited(
                 Guid.NewGuid(),
                 DateTimeOffset.UtcNow,
                 "account-1",
                 new Dictionary<string, string>(),
                 300m
-            )
+            ),
         ];
 
         IReadOnlyList<DomainEventData> dataList = DomainEventMapper.ToData(events);
@@ -230,28 +220,27 @@ public class DomainEventMapperTests
     {
         List<IInternalDomainEvent> originalEvents =
         [
-            new TestMoneyDeposited
-            (
+            new TestMoneyDeposited(
                 Guid.NewGuid(),
                 DateTimeOffset.UtcNow,
                 "account-1",
                 new Dictionary<string, string>(),
                 100m
             ),
-
-            new TestMoneyDeposited
-            (
+            new TestMoneyDeposited(
                 Guid.NewGuid(),
                 DateTimeOffset.UtcNow,
                 "account-1",
                 new Dictionary<string, string>(),
                 200m
-            )
+            ),
         ];
 
         IReadOnlyList<DomainEventData> dataList = DomainEventMapper.ToData(originalEvents);
 
-        IReadOnlyList<TestMoneyDeposited> reconstructedEvents = DomainEventMapper.ToDomain<TestMoneyDeposited>(dataList);
+        IReadOnlyList<TestMoneyDeposited> reconstructedEvents = DomainEventMapper.ToDomain<TestMoneyDeposited>(
+            dataList
+        );
 
         Assert.NotNull(reconstructedEvents);
         Assert.Equal(2, reconstructedEvents.Count);
@@ -259,15 +248,14 @@ public class DomainEventMapperTests
         Assert.Equal(200m, reconstructedEvents[1].Amount);
     }
 
-#endregion
+    #endregion
 
-#region Round-Trip Tests
+    #region Round-Trip Tests
 
     [Fact]
     public void RoundTrip_ShouldPreserveEventData()
     {
-        TestAccountCreated originalEvent = new
-        (
+        TestAccountCreated originalEvent = new(
             Guid.NewGuid(),
             DateTimeOffset.UtcNow,
             "account-456",
@@ -286,13 +274,12 @@ public class DomainEventMapperTests
         Assert.Equal(originalEvent.Metadata["key"], reconstructedEvent.Metadata["key"]);
     }
 
-#endregion
+    #endregion
 
-#region Test Event Definitions
+    #region Test Event Definitions
 
     // Test internal domain event
-    private record TestAccountCreated
-    (
+    private record TestAccountCreated(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -301,8 +288,7 @@ public class DomainEventMapperTests
         decimal InitialBalance
     ) : IInternalDomainEvent, IInternalDomainEvent.IConstructionEvent;
 
-    private record TestMoneyDeposited
-    (
+    private record TestMoneyDeposited(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -310,5 +296,5 @@ public class DomainEventMapperTests
         decimal Amount
     ) : IInternalDomainEvent;
 
-#endregion
+    #endregion
 }

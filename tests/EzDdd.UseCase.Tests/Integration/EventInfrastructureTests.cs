@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using System.Text.Json;
-
 using EzDdd.Entity;
 using EzDdd.UseCase.Port.InOut;
 using EzDdd.UseCase.Port.Out;
@@ -25,14 +24,16 @@ public sealed class EventInfrastructureTests
         AccountId accountId = new("acc-001");
         Dictionary<string, string> metadata = new() { ["TransactionId"] = "tx-12345", ["IpAddress"] = "192.168.1.1" };
 
-        AccountCreated originalEvent = new
-        (
+        AccountCreated originalEvent = new(
             Guid.NewGuid(),
             DateTimeOffset.UtcNow,
             accountId,
             "John Doe",
             new Money(1000m)
-        ) { Metadata = new ReadOnlyDictionary<string, string>(metadata) };
+        )
+        {
+            Metadata = new ReadOnlyDictionary<string, string>(metadata),
+        };
 
         DomainEventData eventData = DomainEventMapper.ToData(originalEvent);
 
@@ -59,8 +60,7 @@ public sealed class EventInfrastructureTests
     [Fact]
     public void ExternalDomainEvent_IsProperlyDistinguishedFromInternal()
     {
-        AccountCreated internalEvent = new
-        (
+        AccountCreated internalEvent = new(
             Guid.NewGuid(),
             DateTimeOffset.UtcNow,
             new AccountId("acc-001"),
@@ -68,13 +68,7 @@ public sealed class EventInfrastructureTests
             new Money(1000m)
         );
 
-        PaymentReceived externalEvent = new
-        (
-            Guid.NewGuid(),
-            DateTimeOffset.UtcNow,
-            "payment-001",
-            500m
-        );
+        PaymentReceived externalEvent = new(Guid.NewGuid(), DateTimeOffset.UtcNow, "payment-001", 500m);
 
         Assert.IsAssignableFrom<IInternalDomainEvent>(internalEvent);
         Assert.IsNotAssignableFrom<IExternalDomainEvent>(internalEvent);
@@ -92,16 +86,16 @@ public sealed class EventInfrastructureTests
     {
         Dictionary<string, string> metadata = new()
         {
-            ["User"] = "admin@example.com", ["SessionId"] = "sess-99999", ["Platform"] = "Windows", ["Browser"] = "Chrome"
+            ["User"] = "admin@example.com",
+            ["SessionId"] = "sess-99999",
+            ["Platform"] = "Windows",
+            ["Browser"] = "Chrome",
         };
 
-        MoneyDeposited @event = new
-        (
-            Guid.NewGuid(),
-            DateTimeOffset.UtcNow,
-            new AccountId("acc-002"),
-            new Money(250m)
-        ) { Metadata = new ReadOnlyDictionary<string, string>(metadata) };
+        MoneyDeposited @event = new(Guid.NewGuid(), DateTimeOffset.UtcNow, new AccountId("acc-002"), new Money(250m))
+        {
+            Metadata = new ReadOnlyDictionary<string, string>(metadata),
+        };
 
         DomainEventData eventData = DomainEventMapper.ToData(@event);
 
@@ -128,16 +122,23 @@ public sealed class EventInfrastructureTests
     {
         Dictionary<string, string> metadata = new() { ["Channel"] = "Web" };
 
-        AccountCreated @event = new
-        (
+        AccountCreated @event = new(
             Guid.NewGuid(),
             DateTimeOffset.UtcNow,
             new AccountId("acc-003"),
             "Jane Doe",
             new Money(5000m)
-        ) { Metadata = new ReadOnlyDictionary<string, string>(metadata) };
+        )
+        {
+            Metadata = new ReadOnlyDictionary<string, string>(metadata),
+        };
 
-        var eventData = new { AccountId = @event.AccountId.Value, @event.Owner, InitialBalance = @event.InitialBalance.Amount };
+        var eventData = new
+        {
+            AccountId = @event.AccountId.Value,
+            @event.Owner,
+            InitialBalance = @event.InitialBalance.Amount,
+        };
         string jsonEvent = JsonSerializer.Serialize(eventData);
 
         InternalDomainEventDto dto = new()
@@ -147,7 +148,7 @@ public sealed class EventInfrastructureTests
             BoundedContext = "banking", // Bounded context for event routing
             EventSimpleName = DomainEventTypeMapper.GetTypeName(@event),
             JsonEvent = jsonEvent,
-            Metadata = @event.Metadata.ToDictionary(kv => kv.Key, kv => kv.Value) // String-to-string dictionary
+            Metadata = @event.Metadata.ToDictionary(kv => kv.Key, kv => kv.Value), // String-to-string dictionary
         };
 
         Assert.Equal(@event.Id, dto.Id);
@@ -191,7 +192,10 @@ public sealed class EventInfrastructureTests
         List<IInternalDomainEvent> events = account.GetDomainEvents().ToList();
         EventStoreData<AccountId> eventStoreData = new()
         {
-            Id = accountId, StreamName = $"{account.GetCategory()}-{accountId.Value}", Events = events, Version = account.Version
+            Id = accountId,
+            StreamName = $"{account.GetCategory()}-{accountId.Value}",
+            Events = events,
+            Version = account.Version,
         };
 
         Assert.Equal(accountId, eventStoreData.Id);
@@ -227,13 +231,8 @@ public sealed class EventInfrastructureTests
     }
 
     // Test domain: External domain event example
-    private sealed record PaymentReceived
-    (
-        Guid Id,
-        DateTimeOffset OccurredOn,
-        string PaymentId,
-        decimal Amount
-    ) : IExternalDomainEvent
+    private sealed record PaymentReceived(Guid Id, DateTimeOffset OccurredOn, string PaymentId, decimal Amount)
+        : IExternalDomainEvent
     {
         public string Source => "PaymentService";
 

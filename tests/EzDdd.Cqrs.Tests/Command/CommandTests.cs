@@ -75,11 +75,12 @@ public class CommandTests
     {
         public Task<TestOutput> ExecuteAsync(TestInput input)
         {
-            TestOutput output = TestOutput.Create()
-                                          .SetId("test-id")
-                                          .SetMessage("Command executed successfully")
-                                          .SetProcessedData(input.Data)
-                                          .Succeed();
+            TestOutput output = TestOutput
+                .Create()
+                .SetId("test-id")
+                .SetMessage("Command executed successfully")
+                .SetProcessedData(input.Data)
+                .Succeed();
 
             return Task.FromResult(output);
         }
@@ -93,9 +94,7 @@ public class CommandTests
         {
             ExecutionCount++;
 
-            TestOutput output = TestOutput.Create()
-                                          .SetProcessedData($"Executed {ExecutionCount} times")
-                                          .Succeed();
+            TestOutput output = TestOutput.Create().SetProcessedData($"Executed {ExecutionCount} times").Succeed();
 
             return Task.FromResult(output);
         }

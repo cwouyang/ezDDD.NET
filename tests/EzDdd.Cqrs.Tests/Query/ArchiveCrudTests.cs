@@ -4,7 +4,7 @@ namespace EzDdd.Cqrs.Tests.Query;
 
 public class ArchiveCrudTests
 {
-#region Thread Safety Tests
+    #region Thread Safety Tests
 
     [Fact]
     public async Task ConcurrentOperations_ShouldBeThreadSafe()
@@ -15,15 +15,12 @@ public class ArchiveCrudTests
         for (int i = 0; i < 100; i++)
         {
             int id = i;
-            tasks.Add
-            (
-                Task.Run
-                (async () =>
-                    {
-                        TestReadModel item = new($"item-{id}", $"Data {id}", id);
-                        await archive.SaveAsync(item);
-                    }
-                )
+            tasks.Add(
+                Task.Run(async () =>
+                {
+                    TestReadModel item = new($"item-{id}", $"Data {id}", id);
+                    await archive.SaveAsync(item);
+                })
             );
         }
 
@@ -38,11 +35,11 @@ public class ArchiveCrudTests
         }
     }
 
-#endregion
+    #endregion
 
     private record TestReadModel(string Id, string Data, int IntId = 0);
 
-#region FindByIdAsync Tests
+    #region FindByIdAsync Tests
 
     [Fact]
     public async Task FindByIdAsync_WhenItemExists_ShouldReturnItem()
@@ -68,9 +65,9 @@ public class ArchiveCrudTests
         Assert.Null(result);
     }
 
-#endregion
+    #endregion
 
-#region SaveAsync Tests
+    #region SaveAsync Tests
 
     [Fact]
     public async Task SaveAsync_WhenNewItem_ShouldInsertItem()
@@ -125,9 +122,9 @@ public class ArchiveCrudTests
         await Assert.ThrowsAsync<ArgumentNullException>(() => archive.SaveAsync(null!));
     }
 
-#endregion
+    #endregion
 
-#region DeleteAsync Tests
+    #region DeleteAsync Tests
 
     [Fact]
     public async Task DeleteAsync_WhenItemExists_ShouldRemoveItem()
@@ -178,9 +175,9 @@ public class ArchiveCrudTests
         await Assert.ThrowsAsync<ArgumentNullException>(() => archive.DeleteAsync(null!));
     }
 
-#endregion
+    #endregion
 
-#region Complete CRUD Flow Tests
+    #region Complete CRUD Flow Tests
 
     [Fact]
     public async Task CompleteCrudFlow_ShouldWorkCorrectly()
@@ -218,10 +215,7 @@ public class ArchiveCrudTests
     {
         InMemoryArchive<TestReadModel, string> archive = new(x => x.Id);
 
-        TestReadModel[] items =
-        [
-            new("id-1", "Data 1"), new("id-2", "Data 2"), new("id-3", "Data 3")
-        ];
+        TestReadModel[] items = [new("id-1", "Data 1"), new("id-2", "Data 2"), new("id-3", "Data 3")];
 
         foreach (TestReadModel item in items)
         {
@@ -235,5 +229,5 @@ public class ArchiveCrudTests
         Assert.Equal("Data 2", retrieved.Data);
     }
 
-#endregion
+    #endregion
 }

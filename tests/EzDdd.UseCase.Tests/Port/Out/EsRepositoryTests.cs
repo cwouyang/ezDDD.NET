@@ -1,22 +1,20 @@
 using EzDdd.Entity;
 using EzDdd.UseCase.Exceptions;
 using EzDdd.UseCase.Port.Out;
-
 using Xunit;
 
 namespace EzDdd.UseCase.Tests.Port.Out;
 
 public class EsRepositoryTests
 {
-#region Test Helpers
+    #region Test Helpers
 
     private record TestId(string Value)
     {
         public override string ToString() => Value;
     }
 
-    private record TestEvent
-    (
+    private record TestEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -29,11 +27,11 @@ public class EsRepositoryTests
         private string _name = string.Empty;
         public string Name => _name;
 
-        public TestAggregate(TestId id, string name) : base()
+        public TestAggregate(TestId id, string name)
+            : base()
         {
             Id = id;
-            var @event = new TestEvent
-            (
+            var @event = new TestEvent(
                 Guid.NewGuid(),
                 DateTimeOffset.UtcNow,
                 id.Value,
@@ -44,14 +42,12 @@ public class EsRepositoryTests
             _name = name;
         }
 
-        public TestAggregate(IEnumerable<IInternalDomainEvent> events) : base(events)
-        {
-        }
+        public TestAggregate(IEnumerable<IInternalDomainEvent> events)
+            : base(events) { }
 
         public void DoSomething(string action)
         {
-            var @event = new TestEvent
-            (
+            var @event = new TestEvent(
                 Guid.NewGuid(),
                 DateTimeOffset.UtcNow,
                 Id.Value,
@@ -121,9 +117,9 @@ public class EsRepositoryTests
         }
     }
 
-#endregion
+    #endregion
 
-#region FindByIdAsync Tests
+    #region FindByIdAsync Tests
 
     [Fact]
     public async Task FindByIdAsync_WithExistingAggregate_ReturnsReconstructedAggregate()
@@ -171,9 +167,9 @@ public class EsRepositoryTests
         Assert.Empty(loaded.GetDomainEvents()); // Events cleared after replay
     }
 
-#endregion
+    #endregion
 
-#region SaveAsync Tests
+    #region SaveAsync Tests
 
     [Fact]
     public async Task SaveAsync_WithValidAggregate_DelegatesToPeer()
@@ -213,10 +209,7 @@ public class EsRepositoryTests
         var id = new TestId("test-error");
         var aggregate = new TestAggregate(id, "TestName");
 
-        var exception = await Assert.ThrowsAsync<RepositorySaveException>
-        (() =>
-             repository.SaveAsync(aggregate)
-        );
+        var exception = await Assert.ThrowsAsync<RepositorySaveException>(() => repository.SaveAsync(aggregate));
 
         Assert.Contains("Failed to save aggregate", exception.Message);
         Assert.IsType<RepositoryPeerSaveException>(exception.InnerException);
@@ -243,9 +236,9 @@ public class EsRepositoryTests
         Assert.Equal(originalEventCount, aggregate.GetDomainEvents().Count); // Events NOT cleared
     }
 
-#endregion
+    #endregion
 
-#region DeleteAsync Tests
+    #region DeleteAsync Tests
 
     [Fact]
     public async Task DeleteAsync_DelegatesToPeer()
@@ -270,15 +263,12 @@ public class EsRepositoryTests
         var id = new TestId("test-delete-error");
         var aggregate = new TestAggregate(id, "TestName");
 
-        await Assert.ThrowsAsync<InvalidOperationException>
-        (() =>
-             repository.DeleteAsync(aggregate)
-        );
+        await Assert.ThrowsAsync<InvalidOperationException>(() => repository.DeleteAsync(aggregate));
     }
 
-#endregion
+    #endregion
 
-#region Reflection and Constructor Caching Tests
+    #region Reflection and Constructor Caching Tests
 
     [Fact]
     public async Task FindByIdAsync_UsesReflectionToInstantiateAggregate()
@@ -317,9 +307,9 @@ public class EsRepositoryTests
         Assert.Equal(id2, loaded2.Id);
     }
 
-#endregion
+    #endregion
 
-#region IRepository Interface Implementation Tests
+    #region IRepository Interface Implementation Tests
 
     [Fact]
     public void EsRepository_ImplementsIRepositoryInterface()
@@ -330,5 +320,5 @@ public class EsRepositoryTests
         Assert.IsAssignableFrom<IRepository<TestAggregate, TestId, IInternalDomainEvent>>(repository);
     }
 
-#endregion
+    #endregion
 }

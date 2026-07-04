@@ -4,7 +4,7 @@ using EzDdd.UseCase.Exceptions;
 
 public class RepositorySaveExceptionTests
 {
-#region Constructor Tests
+    #region Constructor Tests
 
     [Fact]
     public void Constructor_NoArgs_CreatesException()
@@ -48,9 +48,9 @@ public class RepositorySaveExceptionTests
         Assert.Same(innerException, exception.InnerException);
     }
 
-#endregion
+    #endregion
 
-#region Optimistic Locking Tests
+    #region Optimistic Locking Tests
 
     [Fact]
     public void OptimisticLockingFailure_Constant_HasCorrectValue()
@@ -66,9 +66,9 @@ public class RepositorySaveExceptionTests
         Assert.Equal("Optimistic locking failure", exception.Message);
     }
 
-#endregion
+    #endregion
 
-#region Type Hierarchy Tests
+    #region Type Hierarchy Tests
 
     [Fact]
     public void ExceptionCanBeCaughtAsBaseException()
@@ -79,5 +79,5 @@ public class RepositorySaveExceptionTests
         Assert.IsType<RepositorySaveException>(exception);
     }
 
-#endregion
+    #endregion
 }

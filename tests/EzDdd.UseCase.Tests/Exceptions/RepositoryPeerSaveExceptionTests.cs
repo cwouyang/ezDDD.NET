@@ -4,7 +4,7 @@ using EzDdd.UseCase.Exceptions;
 
 public class RepositoryPeerSaveExceptionTests
 {
-#region Constructor Tests
+    #region Constructor Tests
 
     [Fact]
     public void Constructor_NoArgs_CreatesException()
@@ -48,9 +48,9 @@ public class RepositoryPeerSaveExceptionTests
         Assert.Same(innerException, exception.InnerException);
     }
 
-#endregion
+    #endregion
 
-#region Type Hierarchy Tests
+    #region Type Hierarchy Tests
 
     [Fact]
     public void ExceptionCanBeCaughtAsBaseException()
@@ -61,17 +61,16 @@ public class RepositoryPeerSaveExceptionTests
         Assert.IsType<RepositoryPeerSaveException>(exception);
     }
 
-#endregion
+    #endregion
 
-#region Exception Translation Tests
+    #region Exception Translation Tests
 
     [Fact]
     public void ExceptionTranslation_PeerToRepository_WorksCorrectly()
     {
         var peerException = new RepositoryPeerSaveException("Database error");
 
-        var repositoryException = new RepositorySaveException
-        (
+        var repositoryException = new RepositorySaveException(
             RepositorySaveException.OptimisticLockingFailure,
             peerException
         );
@@ -81,5 +80,5 @@ public class RepositoryPeerSaveExceptionTests
         Assert.IsType<RepositoryPeerSaveException>(repositoryException.InnerException);
     }
 
-#endregion
+    #endregion
 }

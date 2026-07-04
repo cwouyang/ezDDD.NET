@@ -107,16 +107,18 @@ public class ProjectionTests
         }
     }
 
-    private class QueryWithProjection(IProjection<TestProjectionInput, CustomerViewModel> projection) : IQuery<TestInput, TestQueryOutput>
+    private class QueryWithProjection(IProjection<TestProjectionInput, CustomerViewModel> projection)
+        : IQuery<TestInput, TestQueryOutput>
     {
         public async Task<TestQueryOutput> ExecuteAsync(TestInput input)
         {
             TestProjectionInput projectionInput = new(input.CustomerId);
             CustomerViewModel viewModel = await projection.QueryAsync(projectionInput);
 
-            return TestQueryOutput.Create()
-                                  .SetCustomerInfo($"{viewModel.CustomerId}: {viewModel.CustomerName}")
-                                  .Succeed();
+            return TestQueryOutput
+                .Create()
+                .SetCustomerInfo($"{viewModel.CustomerId}: {viewModel.CustomerName}")
+                .Succeed();
         }
     }
 

@@ -22,8 +22,5 @@ public interface ITransferMoneyService
     /// <exception cref="InvalidTransferAmountException">When amount is zero or negative</exception>
     /// <exception cref="AccountClosedException">When either account is closed</exception>
     /// <exception cref="SameAccountTransferException">When attempting to transfer to the same account</exception>
-    Task<TransferConfirmation> TransferAsync(
-        AccountId fromAccountId,
-        AccountId toAccountId,
-        Money amount);
+    Task<TransferConfirmation> TransferAsync(AccountId fromAccountId, AccountId toAccountId, Money amount);
 }

@@ -37,11 +37,11 @@ namespace EzDdd.Entity;
 ///     public Guid Id { get; private set; }
 ///     public string CustomerName { get; private set; }
 ///     public decimal TotalAmount { get; private set; }
-/// 
+///
 ///     // Entity equality based on ID
 ///     public override bool Equals(object? obj) =&gt;
 ///         obj is Order other &amp;&amp; Id == other.Id;
-/// 
+///
 ///     public override int GetHashCode() =&gt; Id.GetHashCode();
 /// }
 /// </code>

@@ -11,22 +11,13 @@ public sealed class BankAccount : EsAggregateRoot<AccountId, IInternalDomainEven
     public BankAccount(AccountId id, string owner, Money initialBalance)
     {
         Id = id;
-        AccountCreated @event = new
-        (
-            Guid.NewGuid(),
-            DateTimeOffset.UtcNow,
-            id,
-            owner,
-            initialBalance
-        );
+        AccountCreated @event = new(Guid.NewGuid(), DateTimeOffset.UtcNow, id, owner, initialBalance);
         Apply(@event);
     }
 
     // Constructor for event replay
     public BankAccount(IEnumerable<IInternalDomainEvent> events)
-        : base(events)
-    {
-    }
+        : base(events) { }
 
     // Properties for testing
     public string Owner { get; private set; } = string.Empty;
@@ -42,13 +33,7 @@ public sealed class BankAccount : EsAggregateRoot<AccountId, IInternalDomainEven
             throw new InvalidOperationException("Deposit amount must be positive");
         }
 
-        MoneyDeposited @event = new
-        (
-            Guid.NewGuid(),
-            DateTimeOffset.UtcNow,
-            Id,
-            amount
-        );
+        MoneyDeposited @event = new(Guid.NewGuid(), DateTimeOffset.UtcNow, Id, amount);
         Apply(@event);
     }
 
@@ -59,13 +44,7 @@ public sealed class BankAccount : EsAggregateRoot<AccountId, IInternalDomainEven
             throw new InvalidOperationException("Withdrawal amount must be positive");
         }
 
-        MoneyWithdrawn @event = new
-        (
-            Guid.NewGuid(),
-            DateTimeOffset.UtcNow,
-            Id,
-            amount
-        );
+        MoneyWithdrawn @event = new(Guid.NewGuid(), DateTimeOffset.UtcNow, Id, amount);
         Apply(@event);
     }
 
@@ -76,13 +55,7 @@ public sealed class BankAccount : EsAggregateRoot<AccountId, IInternalDomainEven
             throw new InvalidOperationException("Account is already closed");
         }
 
-        AccountClosed @event = new
-        (
-            Guid.NewGuid(),
-            DateTimeOffset.UtcNow,
-            Id,
-            reason
-        );
+        AccountClosed @event = new(Guid.NewGuid(), DateTimeOffset.UtcNow, Id, reason);
         Apply(@event);
     }
 

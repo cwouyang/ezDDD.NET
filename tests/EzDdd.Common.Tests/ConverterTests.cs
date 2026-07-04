@@ -103,8 +103,7 @@ public class ConverterTests
     [Fact]
     public void Converter_WhenPerformingComplexTransformation_TransformsAllProperties()
     {
-        Converter<Order, OrderSummary> converter = order => new OrderSummary
-        (
+        Converter<Order, OrderSummary> converter = order => new OrderSummary(
             order.Id,
             $"{order.ProductName} (x{order.Quantity})",
             order.Quantity * order.UnitPrice

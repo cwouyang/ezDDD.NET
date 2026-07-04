@@ -60,18 +60,15 @@ public class RepositorySaveException : Exception
     /// <summary>
     ///     Initializes a new instance of the <see cref="RepositorySaveException" /> class.
     /// </summary>
-    public RepositorySaveException()
-    {
-    }
+    public RepositorySaveException() { }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="RepositorySaveException" /> class
     ///     with a specified error message.
     /// </summary>
     /// <param name="message">The error message that explains the reason for the exception.</param>
-    public RepositorySaveException(string message) : base(message)
-    {
-    }
+    public RepositorySaveException(string message)
+        : base(message) { }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="RepositorySaveException" /> class
@@ -82,9 +79,7 @@ public class RepositorySaveException : Exception
     ///     The inner exception's message is used as this exception's message.
     /// </param>
     public RepositorySaveException(Exception innerException)
-        : base(innerException.Message, innerException)
-    {
-    }
+        : base(innerException.Message, innerException) { }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="RepositorySaveException" /> class
@@ -95,7 +90,5 @@ public class RepositorySaveException : Exception
     ///     The exception that is the cause of the current exception, or null if no inner exception is specified.
     /// </param>
     public RepositorySaveException(string message, Exception innerException)
-        : base(message, innerException)
-    {
-    }
+        : base(message, innerException) { }
 }

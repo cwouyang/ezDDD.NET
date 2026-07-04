@@ -42,7 +42,7 @@ namespace EzDdd.UseCase.Port.InOut;
 /// // Create event data
 /// var eventJson = JsonSerializer.SerializeToUtf8Bytes(new { Amount = 100 });
 /// var metadataJson = JsonSerializer.SerializeToUtf8Bytes(new { User = "admin" });
-/// 
+///
 /// var data = new DomainEventData(
 ///     Guid.NewGuid(),
 ///     "MoneyDeposited",
@@ -50,21 +50,14 @@ namespace EzDdd.UseCase.Port.InOut;
 ///     eventJson,
 ///     metadataJson
 /// );
-/// 
+///
 /// // JSON-aware equality: key order doesn't matter
 /// var data1 = new DomainEventData(..., UTF8("{\"a\":1,\"b\":2}"), ...);
 /// var data2 = new DomainEventData(..., UTF8("{\"b\":2,\"a\":1}"), ...);
 /// Assert.Equal(data1, data2); // true (same JSON content)
 /// </code>
 /// </example>
-public record DomainEventData
-(
-    Guid Id,
-    string EventType,
-    string ContentType,
-    byte[] EventBody,
-    byte[] UserMetadata
-)
+public record DomainEventData(Guid Id, string EventType, string ContentType, byte[] EventBody, byte[] UserMetadata)
 {
     /// <summary>
     ///     Custom equality comparison that uses JSON-aware semantic comparison for JSON content.
@@ -98,11 +91,11 @@ public record DomainEventData
             return false;
         }
 
-        return Id == other.Id &&
-               EventType == other.EventType &&
-               ContentType == other.ContentType &&
-               _JsonEquals(EventBody, other.EventBody) &&
-               _JsonEquals(UserMetadata, other.UserMetadata);
+        return Id == other.Id
+            && EventType == other.EventType
+            && ContentType == other.ContentType
+            && _JsonEquals(EventBody, other.EventBody)
+            && _JsonEquals(UserMetadata, other.UserMetadata);
     }
 
     /// <summary>

@@ -25,7 +25,7 @@ namespace EzDdd.Cqrs.Query;
 ///             AccountId AccountId,
 ///             bool IncludeTransactionHistory
 ///         ) : IProjectionInput;
-/// 
+///
 ///         public class AccountSummaryProjection
 ///             : IProjection&lt;GetAccountSummaryProjectionInput, AccountSummaryViewModel&gt;
 ///         {

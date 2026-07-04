@@ -58,7 +58,7 @@ namespace EzDdd.UseCase.Port.Out;
 ///             aggregate.Balance     // State field
 ///         );
 ///     }
-/// 
+///
 ///     public override BankAccount ToDomain(BankAccountData data)
 ///     {
 ///         return new BankAccount(

@@ -1,5 +1,4 @@
 using System.Text.Json;
-
 using EzDdd.UseCase.Port.InOut;
 
 namespace EzDdd.UseCase.Tests.Port.InOut;
@@ -14,7 +13,7 @@ public class DomainEventDataBuilderTests
     /// </summary>
     private record TestPayload(int Amount, string Currency);
 
-#region Factory Methods Tests
+    #region Factory Methods Tests
 
     [Fact]
     public void Json_ShouldCreateBuilderWithJsonPayload()
@@ -63,9 +62,9 @@ public class DomainEventDataBuilderTests
         Assert.Equal("application/octet-stream", result.ContentType);
     }
 
-#endregion
+    #endregion
 
-#region Fluent API Tests
+    #region Fluent API Tests
 
     [Fact]
     public void EventId_ShouldSetCustomEventId()
@@ -73,9 +72,9 @@ public class DomainEventDataBuilderTests
         Guid customEventId = Guid.NewGuid();
 
         DomainEventData result = DomainEventDataBuilder
-                                 .Json("TestEvent", new { Value = "test" })
-                                 .EventId(customEventId)
-                                 .Build();
+            .Json("TestEvent", new { Value = "test" })
+            .EventId(customEventId)
+            .Build();
 
         Assert.Equal(customEventId, result.Id);
     }
@@ -86,11 +85,13 @@ public class DomainEventDataBuilderTests
         Dictionary<string, string> metadata = new() { ["CorrelationId"] = "123", ["UserId"] = "user@example.com" };
 
         DomainEventData result = DomainEventDataBuilder
-                                 .Json("TestEvent", new { Value = "test" })
-                                 .MetadataAsJson(metadata)
-                                 .Build();
+            .Json("TestEvent", new { Value = "test" })
+            .MetadataAsJson(metadata)
+            .Build();
 
-        Dictionary<string, string>? deserializedMetadata = JsonSerializer.Deserialize<Dictionary<string, string>>(result.UserMetadata);
+        Dictionary<string, string>? deserializedMetadata = JsonSerializer.Deserialize<Dictionary<string, string>>(
+            result.UserMetadata
+        );
         Assert.NotNull(deserializedMetadata);
         Assert.Equal("123", deserializedMetadata["CorrelationId"]);
         Assert.Equal("user@example.com", deserializedMetadata["UserId"]);
@@ -102,23 +103,21 @@ public class DomainEventDataBuilderTests
         byte[] metadataBytes = "{\"key\":\"value\"}"u8.ToArray();
 
         DomainEventData result = DomainEventDataBuilder
-                                 .Json("TestEvent", new { Value = "test" })
-                                 .MetadataAsBytes(metadataBytes)
-                                 .Build();
+            .Json("TestEvent", new { Value = "test" })
+            .MetadataAsBytes(metadataBytes)
+            .Build();
 
         Assert.Equal(metadataBytes, result.UserMetadata);
     }
 
-#endregion
+    #endregion
 
-#region Build Method Tests
+    #region Build Method Tests
 
     [Fact]
     public void Build_ShouldAutoGenerateEventIdIfNotSet()
     {
-        DomainEventData result = DomainEventDataBuilder
-                                 .Json("TestEvent", new { Value = "test" })
-                                 .Build();
+        DomainEventData result = DomainEventDataBuilder.Json("TestEvent", new { Value = "test" }).Build();
 
         Assert.NotEqual(Guid.Empty, result.Id);
     }
@@ -126,9 +125,7 @@ public class DomainEventDataBuilderTests
     [Fact]
     public void Build_ShouldUseEmptyJsonForMetadataIfNotSet()
     {
-        DomainEventData result = DomainEventDataBuilder
-                                 .Json("TestEvent", new { Value = "test" })
-                                 .Build();
+        DomainEventData result = DomainEventDataBuilder.Json("TestEvent", new { Value = "test" }).Build();
 
         Assert.Equal("{}"u8.ToArray(), result.UserMetadata);
     }
@@ -136,13 +133,9 @@ public class DomainEventDataBuilderTests
     [Fact]
     public void Build_ShouldGenerateUniqueEventIdsForMultipleCalls()
     {
-        DomainEventData result1 = DomainEventDataBuilder
-                                  .Json("TestEvent", new { Value = "test1" })
-                                  .Build();
+        DomainEventData result1 = DomainEventDataBuilder.Json("TestEvent", new { Value = "test1" }).Build();
 
-        DomainEventData result2 = DomainEventDataBuilder
-                                  .Json("TestEvent", new { Value = "test2" })
-                                  .Build();
+        DomainEventData result2 = DomainEventDataBuilder.Json("TestEvent", new { Value = "test2" }).Build();
 
         // Each build should generate unique event IDs
         Assert.NotEqual(Guid.Empty, result1.Id);
@@ -158,10 +151,10 @@ public class DomainEventDataBuilderTests
         Dictionary<string, object> metadata = new() { ["TraceId"] = "trace-123" };
 
         DomainEventData result = DomainEventDataBuilder
-                                 .Json("PaymentReceived", payload)
-                                 .EventId(customEventId)
-                                 .MetadataAsJson(metadata)
-                                 .Build();
+            .Json("PaymentReceived", payload)
+            .EventId(customEventId)
+            .MetadataAsJson(metadata)
+            .Build();
 
         Assert.Equal(customEventId, result.Id);
         Assert.Equal("PaymentReceived", result.EventType);
@@ -175,9 +168,9 @@ public class DomainEventDataBuilderTests
         Assert.Equal("EUR", deserializedPayload.Currency);
     }
 
-#endregion
+    #endregion
 
-#region Integration Tests
+    #region Integration Tests
 
     [Fact]
     public void Builder_ShouldSupportFullFluentChain()
@@ -187,17 +180,19 @@ public class DomainEventDataBuilderTests
         Dictionary<string, string> metadata = new() { ["CorrelationId"] = "corr-456", ["UserId"] = "user-789" };
 
         DomainEventData result = DomainEventDataBuilder
-                                 .Json("OrderCreated", payload)
-                                 .EventId(eventId)
-                                 .MetadataAsJson(metadata)
-                                 .Build();
+            .Json("OrderCreated", payload)
+            .EventId(eventId)
+            .MetadataAsJson(metadata)
+            .Build();
 
         Assert.Equal(eventId, result.Id);
         Assert.Equal("OrderCreated", result.EventType);
         Assert.Equal("application/json", result.ContentType);
         Assert.NotEmpty(result.EventBody);
 
-        Dictionary<string, string>? deserializedMetadata = JsonSerializer.Deserialize<Dictionary<string, string>>(result.UserMetadata);
+        Dictionary<string, string>? deserializedMetadata = JsonSerializer.Deserialize<Dictionary<string, string>>(
+            result.UserMetadata
+        );
         Assert.NotNull(deserializedMetadata);
         Assert.Equal("corr-456", deserializedMetadata["CorrelationId"]);
         Assert.Equal("user-789", deserializedMetadata["UserId"]);
@@ -212,14 +207,13 @@ public class DomainEventDataBuilderTests
 
         // Act - using builder
         DomainEventData builderResult = DomainEventDataBuilder
-                                        .Json("TestEvent", payload)
-                                        .EventId(eventId)
-                                        .MetadataAsJson(metadata)
-                                        .Build();
+            .Json("TestEvent", payload)
+            .EventId(eventId)
+            .MetadataAsJson(metadata)
+            .Build();
 
         // Act - using direct construction (old way)
-        DomainEventData directResult = new
-        (
+        DomainEventData directResult = new(
             eventId,
             "TestEvent",
             "application/json",
@@ -237,9 +231,9 @@ public class DomainEventDataBuilderTests
         Assert.Equal(directResult, builderResult);
     }
 
-#endregion
+    #endregion
 
-#region Null Safety Tests
+    #region Null Safety Tests
 
     [Fact]
     public void Json_ShouldThrowArgumentNullExceptionWhenEventTypeIsNull()
@@ -247,10 +241,7 @@ public class DomainEventDataBuilderTests
         string? nullEventType = null;
         var payload = new { Value = "test" };
 
-        Assert.Throws<ArgumentNullException>
-        (() =>
-             DomainEventDataBuilder.Json(nullEventType!, payload)
-        );
+        Assert.Throws<ArgumentNullException>(() => DomainEventDataBuilder.Json(nullEventType!, payload));
     }
 
     [Fact]
@@ -258,10 +249,7 @@ public class DomainEventDataBuilderTests
     {
         TestPayload? nullPayload = null;
 
-        Assert.Throws<ArgumentNullException>
-        (() =>
-             DomainEventDataBuilder.Json("TestEvent", nullPayload!)
-        );
+        Assert.Throws<ArgumentNullException>(() => DomainEventDataBuilder.Json("TestEvent", nullPayload!));
     }
 
     [Fact]
@@ -270,10 +258,7 @@ public class DomainEventDataBuilderTests
         string? nullEventType = null;
         byte[] payload = [0x01, 0x02];
 
-        Assert.Throws<ArgumentNullException>
-        (() =>
-             DomainEventDataBuilder.Binary(nullEventType!, payload)
-        );
+        Assert.Throws<ArgumentNullException>(() => DomainEventDataBuilder.Binary(nullEventType!, payload));
     }
 
     [Fact]
@@ -281,10 +266,7 @@ public class DomainEventDataBuilderTests
     {
         byte[]? nullPayload = null;
 
-        Assert.Throws<ArgumentNullException>
-        (() =>
-             DomainEventDataBuilder.Binary("TestEvent", nullPayload!)
-        );
+        Assert.Throws<ArgumentNullException>(() => DomainEventDataBuilder.Binary("TestEvent", nullPayload!));
     }
 
     [Fact]
@@ -293,10 +275,7 @@ public class DomainEventDataBuilderTests
         DomainEventDataBuilder builder = DomainEventDataBuilder.Json("TestEvent", new { Value = "test" });
         Dictionary<string, string>? nullMetadata = null;
 
-        Assert.Throws<ArgumentNullException>
-        (() =>
-             builder.MetadataAsJson(nullMetadata!)
-        );
+        Assert.Throws<ArgumentNullException>(() => builder.MetadataAsJson(nullMetadata!));
     }
 
     [Fact]
@@ -305,11 +284,8 @@ public class DomainEventDataBuilderTests
         DomainEventDataBuilder builder = DomainEventDataBuilder.Json("TestEvent", new { Value = "test" });
         byte[]? nullMetadata = null;
 
-        Assert.Throws<ArgumentNullException>
-        (() =>
-             builder.MetadataAsBytes(nullMetadata!)
-        );
+        Assert.Throws<ArgumentNullException>(() => builder.MetadataAsBytes(nullMetadata!));
     }
 
-#endregion
+    #endregion
 }

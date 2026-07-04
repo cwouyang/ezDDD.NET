@@ -41,10 +41,10 @@ namespace EzDdd.UseCase.Port.Out;
 /// // Saving an aggregate (uses ToData)
 /// var aggregate = new BankAccount(accountId, "John Doe", 1000m);
 /// aggregate.Deposit(500m);
-/// 
+///
 /// var data = EventStoreMapper.ToData(aggregate);
 /// await eventStorePeer.SaveAsync(data);
-/// 
+///
 /// // Loading an aggregate (does NOT use ToDomain - uses constructor instead)
 /// var storedData = await eventStorePeer.FindByIdAsync(accountId);
 /// var reconstructed = new BankAccount(storedData.Events); // Event replay constructor
@@ -89,7 +89,7 @@ public static class EventStoreMapper
     /// var account = new BankAccount(accountId, "Jane Doe", 500m);
     /// account.Deposit(200m);
     /// account.Withdraw(100m);
-    /// 
+    ///
     /// var data = EventStoreMapper.ToData(account);
     /// // data.Events contains: [AccountCreated, MoneyDeposited, MoneyWithdrawn]
     /// // data.StreamName is "account-{accountId}"
@@ -105,7 +105,7 @@ public static class EventStoreMapper
             Id = aggregate.Id,
             Version = aggregate.Version,
             Events = aggregate.GetDomainEvents().ToList(), // Defensive copy
-            StreamName = aggregate.GetStreamName()
+            StreamName = aggregate.GetStreamName(),
         };
     }
 
@@ -131,7 +131,7 @@ public static class EventStoreMapper
     ///     <code>
     /// // ❌ WRONG: Attempting to use mapper (will throw)
     /// var aggregate = EventStoreMapper.ToDomain&lt;BankAccount, AccountId&gt;(data);
-    /// 
+    ///
     /// // ✅ CORRECT: Use event replay constructor
     /// var aggregate = new BankAccount(data.Events);
     /// </code>
@@ -160,10 +160,9 @@ public static class EventStoreMapper
     public static T ToDomain<T, TId>(EventStoreData<TId> data)
         where T : EsAggregateRoot<TId, IInternalDomainEvent>
     {
-        throw new NotSupportedException
-        (
-            "Event sourcing aggregates are reconstructed from events, not from EventStoreData. " +
-            "Use the aggregate's event replay constructor instead: new T(data.Events)"
+        throw new NotSupportedException(
+            "Event sourcing aggregates are reconstructed from events, not from EventStoreData. "
+                + "Use the aggregate's event replay constructor instead: new T(data.Events)"
         );
     }
 }

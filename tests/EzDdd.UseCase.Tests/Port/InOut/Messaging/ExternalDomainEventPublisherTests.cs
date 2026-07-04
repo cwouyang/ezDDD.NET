@@ -17,8 +17,7 @@ public class ExternalDomainEventPublisherTests
     public async Task PublishAsync_WhenCalled_PublishesEvent()
     {
         TestPublisher publisher = new();
-        BaseExternalEvent externalEvent = new
-        (
+        BaseExternalEvent externalEvent = new(
             Guid.NewGuid(),
             DateTimeOffset.UtcNow,
             "customer-123",
@@ -54,8 +53,7 @@ public class ExternalDomainEventPublisherTests
     }
 
     // Base external event for publisher tests
-    private record BaseExternalEvent
-    (
+    private record BaseExternalEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -63,8 +61,7 @@ public class ExternalDomainEventPublisherTests
     ) : IExternalDomainEvent;
 
     // Derived external event for the contravariance test
-    private record DerivedExternalEvent
-    (
+    private record DerivedExternalEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,

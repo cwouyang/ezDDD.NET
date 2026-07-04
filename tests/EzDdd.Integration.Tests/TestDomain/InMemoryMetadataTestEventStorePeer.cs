@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-
 using EzDdd.Entity;
 using EzDdd.UseCase.Exceptions;
 using EzDdd.UseCase.Port.Out;
@@ -30,8 +29,7 @@ public sealed class InMemoryMetadataTestEventStorePeer : IRepositoryPeer<EventSt
         {
             if (existing.Version != data.Version - 1)
             {
-                throw new RepositoryPeerSaveException
-                (
+                throw new RepositoryPeerSaveException(
                     $"Optimistic lock failure: expected version {existing.Version}, but got {data.Version - 1}",
                     new InvalidOperationException("Version mismatch")
                 );
@@ -43,7 +41,10 @@ public sealed class InMemoryMetadataTestEventStorePeer : IRepositoryPeer<EventSt
 
             _storage[data.Id.Value] = new EventStoreData<MetadataTestId>
             {
-                Id = data.Id, Version = data.Version, Events = allEvents, StreamName = data.StreamName
+                Id = data.Id,
+                Version = data.Version,
+                Events = allEvents,
+                StreamName = data.StreamName,
             };
         }
         else

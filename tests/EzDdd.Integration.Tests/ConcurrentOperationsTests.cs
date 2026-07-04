@@ -31,7 +31,7 @@ namespace EzDdd.Integration.Tests;
 /// </remarks>
 public sealed class ConcurrentOperationsTests
 {
-#region DomainEventTypeMapper Concurrent Registration Tests
+    #region DomainEventTypeMapper Concurrent Registration Tests
 
     [Fact]
     public async Task DomainEventTypeMapper_ConcurrentRegistration_ShouldBeThreadSafe()
@@ -44,31 +44,28 @@ public sealed class ConcurrentOperationsTests
         for (int t = 0; t < threadCount; t++)
         {
             int threadId = t;
-            tasks.Add
-            (
-                Task.Run
-                (() =>
+            tasks.Add(
+                Task.Run(() =>
+                {
+                    for (int i = 0; i < registrationsPerThread; i++)
                     {
-                        for (int i = 0; i < registrationsPerThread; i++)
-                        {
-                            // Each thread registers unique event types
-                            string eventTypeName = $"ConcurrentEvent_T{threadId:D2}_E{i:D2}";
+                        // Each thread registers unique event types
+                        string eventTypeName = $"ConcurrentEvent_T{threadId:D2}_E{i:D2}";
 
-                            // Create a unique event type dynamically
-                            // For testing, we'll just register the same type multiple times
-                            // (The mapper should handle duplicate registrations gracefully)
-                            try
-                            {
-                                DomainEventTypeMapper.Register<AggregateCreated>(eventTypeName);
-                            }
-                            catch
-                            {
-                                // Duplicate registration may throw - that's acceptable
-                                // We're testing thread safety, not duplicate handling
-                            }
+                        // Create a unique event type dynamically
+                        // For testing, we'll just register the same type multiple times
+                        // (The mapper should handle duplicate registrations gracefully)
+                        try
+                        {
+                            DomainEventTypeMapper.Register<AggregateCreated>(eventTypeName);
+                        }
+                        catch
+                        {
+                            // Duplicate registration may throw - that's acceptable
+                            // We're testing thread safety, not duplicate handling
                         }
                     }
-                )
+                })
             );
         }
 
@@ -77,9 +74,9 @@ public sealed class ConcurrentOperationsTests
         Assert.Equal(threadCount, tasks.Count);
     }
 
-#endregion
+    #endregion
 
-#region Mixed Concurrent Operations Tests
+    #region Mixed Concurrent Operations Tests
 
     [Fact]
     public async Task MixedOperations_ConcurrentSaveAndLoad_ShouldMaintainConsistency()
@@ -104,45 +101,39 @@ public sealed class ConcurrentOperationsTests
         for (int i = 0; i < updateCount / 2; i++)
         {
             int updateId = i;
-            tasks.Add
-            (
-                Task.Run
-                (async () =>
+            tasks.Add(
+                Task.Run(async () =>
+                {
+                    try
                     {
-                        try
+                        // Load current state
+                        MetadataTestAggregate? agg = await repository.FindByIdAsync(sharedId);
+                        if (agg != null && !agg.IsClosed)
                         {
-                            // Load current state
-                            MetadataTestAggregate? agg = await repository.FindByIdAsync(sharedId);
-                            if (agg != null && !agg.IsClosed)
-                            {
-                                // Update value
-                                agg.UpdateValue((updateId + 1) * 100);
-                                await repository.SaveAsync(agg);
-                            }
-                        }
-                        catch (RepositorySaveException)
-                        {
-                            // Expected: Optimistic locking conflict due to concurrent updates
-                            // Some updates will fail - this is correct behavior
+                            // Update value
+                            agg.UpdateValue((updateId + 1) * 100);
+                            await repository.SaveAsync(agg);
                         }
                     }
-                )
+                    catch (RepositorySaveException)
+                    {
+                        // Expected: Optimistic locking conflict due to concurrent updates
+                        // Some updates will fail - this is correct behavior
+                    }
+                })
             );
         }
 
         // Other half performs reads
         for (int i = 0; i < updateCount / 2; i++)
         {
-            tasks.Add
-            (
-                Task.Run
-                (async () =>
-                    {
-                        MetadataTestAggregate? agg = await repository.FindByIdAsync(sharedId);
-                        Assert.NotNull(agg);
-                        // Just verify we can read
-                    }
-                )
+            tasks.Add(
+                Task.Run(async () =>
+                {
+                    MetadataTestAggregate? agg = await repository.FindByIdAsync(sharedId);
+                    Assert.NotNull(agg);
+                    // Just verify we can read
+                })
             );
         }
 
@@ -158,9 +149,9 @@ public sealed class ConcurrentOperationsTests
         Assert.True(finalAgg.Value >= 0);
     }
 
-#endregion
+    #endregion
 
-#region Repository Concurrent Operations Tests
+    #region Repository Concurrent Operations Tests
 
     [Fact]
     public async Task Repository_ConcurrentSaves_ShouldHandleCorrectly()
@@ -177,20 +168,16 @@ public sealed class ConcurrentOperationsTests
         for (int i = 0; i < concurrentAggregates; i++)
         {
             int aggId = i;
-            tasks.Add
-            (
-                Task.Run
-                (async () =>
-                    {
-                        MetadataTestAggregate agg = new
-                        (
-                            new MetadataTestId($"CONCURRENT-AGG-{aggId:D3}"),
-                            $"Aggregate {aggId}",
-                            aggId * 100
-                        );
-                        await repository.SaveAsync(agg);
-                    }
-                )
+            tasks.Add(
+                Task.Run(async () =>
+                {
+                    MetadataTestAggregate agg = new(
+                        new MetadataTestId($"CONCURRENT-AGG-{aggId:D3}"),
+                        $"Aggregate {aggId}",
+                        aggId * 100
+                    );
+                    await repository.SaveAsync(agg);
+                })
             );
         }
 
@@ -212,12 +199,7 @@ public sealed class ConcurrentOperationsTests
         const int aggregateCount = 10;
         for (int i = 0; i < aggregateCount; i++)
         {
-            MetadataTestAggregate agg = new
-            (
-                new MetadataTestId($"AGG-LOAD-{i:D3}"),
-                $"Aggregate {i}",
-                i * 10
-            );
+            MetadataTestAggregate agg = new(new MetadataTestId($"AGG-LOAD-{i:D3}"), $"Aggregate {i}", i * 10);
             await repository.SaveAsync(agg);
         }
 
@@ -243,5 +225,5 @@ public sealed class ConcurrentOperationsTests
         }
     }
 
-#endregion
+    #endregion
 }

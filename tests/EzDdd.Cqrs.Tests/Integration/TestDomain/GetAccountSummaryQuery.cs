@@ -36,14 +36,15 @@ public sealed class GetAccountSummaryQuery : IQuery<GetAccountSummaryInput, GetA
             throw new UseCaseFailureException($"Account not found: {input.AccountId}");
         }
 
-        return GetAccountSummaryOutput.Create()
-                                      .SetAccountId(readModel.AccountId.Value)
-                                      .SetOwner(readModel.Owner)
-                                      .SetBalance(readModel.Balance)
-                                      .SetCreatedOn(readModel.CreatedOn)
-                                      .SetLastTransactionDate(readModel.LastTransactionDate)
-                                      .SetTransactionCount(readModel.TransactionCount)
-                                      .Succeed()
-                                      .SetMessage("Account summary retrieved successfully");
+        return GetAccountSummaryOutput
+            .Create()
+            .SetAccountId(readModel.AccountId.Value)
+            .SetOwner(readModel.Owner)
+            .SetBalance(readModel.Balance)
+            .SetCreatedOn(readModel.CreatedOn)
+            .SetLastTransactionDate(readModel.LastTransactionDate)
+            .SetTransactionCount(readModel.TransactionCount)
+            .Succeed()
+            .SetMessage("Account summary retrieved successfully");
     }
 }

@@ -43,22 +43,22 @@ namespace EzDdd.Cqrs.Command;
 ///             string AccountNumber,
 ///             Money InitialBalance
 ///         ) : IInput;
-/// 
+///
 ///         public class CreateAccountOutput : CqrsOutput&lt;CreateAccountOutput&gt;
 ///         {
 ///             public string AccountNumber { get; set; } = string.Empty;
 ///         }
-/// 
+///
 ///         public class CreateAccountCommand
 ///             : ICommand&lt;CreateAccountInput, CreateAccountOutput&gt;
 ///         {
 ///             private readonly IRepository&lt;BankAccount, AccountId&gt; _repository;
-/// 
+///
 ///             public CreateAccountCommand(IRepository&lt;BankAccount, AccountId&gt; repository)
 ///             {
 ///                 _repository = repository;
 ///             }
-/// 
+///
 ///             public async Task&lt;CreateAccountOutput&gt; ExecuteAsync(CreateAccountInput input)
 ///             {
 ///                 var account = BankAccount.Create(
@@ -66,9 +66,9 @@ namespace EzDdd.Cqrs.Command;
 ///                     input.AccountNumber,
 ///                     input.InitialBalance
 ///                 );
-/// 
+///
 ///                 await _repository.SaveAsync(account);
-/// 
+///
 ///                 return CreateAccountOutput.Create()
 ///                     .SetId(input.AccountId.Value)
 ///                     .SetAccountNumber(input.AccountNumber)

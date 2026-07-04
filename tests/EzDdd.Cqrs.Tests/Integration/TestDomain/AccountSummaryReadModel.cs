@@ -13,8 +13,7 @@ namespace EzDdd.Cqrs.Tests.Integration.TestDomain;
 /// <param name="CreatedOn">When the account was created.</param>
 /// <param name="LastTransactionDate">When the last transaction occurred.</param>
 /// <param name="TransactionCount">Total number of transactions (deposits + withdrawals).</param>
-public sealed record AccountSummaryReadModel
-(
+public sealed record AccountSummaryReadModel(
     AccountId AccountId,
     string Owner,
     decimal Balance,

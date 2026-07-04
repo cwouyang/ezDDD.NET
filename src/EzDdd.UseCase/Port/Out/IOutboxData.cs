@@ -36,7 +36,7 @@ namespace EzDdd.UseCase.Port.Out;
 ///     public long Version { get; set; }
 ///     public List&lt;IDomainEvent&gt; Events { get; set; }
 ///     public string StreamName { get; set; }
-/// 
+///
 ///     // State fields (specific to BankAccount aggregate)
 ///     public string Owner { get; set; }
 ///     public decimal Balance { get; set; }

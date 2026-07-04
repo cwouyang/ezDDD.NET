@@ -54,9 +54,5 @@ public class ProjectionInputTests
 
     private record TestProjectionInput(string Id) : IProjectionInput;
 
-    private record ComplexProjectionInput
-    (
-        string Id,
-        bool IncludeDetails
-    ) : IProjectionInput;
+    private record ComplexProjectionInput(string Id, bool IncludeDetails) : IProjectionInput;
 }

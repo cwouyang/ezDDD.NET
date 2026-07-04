@@ -7,8 +7,7 @@ public class InternalDomainEventTests
     [Fact]
     public void IInternalDomainEvent_ExtendsIDomainEvent()
     {
-        AggregateUpdated @event = new
-        (
+        AggregateUpdated @event = new(
             Guid.NewGuid(),
             DateTimeOffset.UtcNow,
             "source",
@@ -23,12 +22,12 @@ public class InternalDomainEventTests
     [Fact]
     public void IInternalDomainEvent_IsMarkerInterface_HasNoAdditionalMembers()
     {
-        IEnumerable<MethodInfo> internalMethods = typeof(IInternalDomainEvent).GetMethods()
-                                                                              .Where(m => !m.IsSpecialName); // Exclude property getters
-        IEnumerable<PropertyInfo> internalProperties = typeof(IInternalDomainEvent).GetProperties()
-                                                                                   .Where
-                                                                                   (p => p.DeclaringType == typeof(IInternalDomainEvent)
-                                                                                   ); // Only declared in IInternalDomainEvent
+        IEnumerable<MethodInfo> internalMethods = typeof(IInternalDomainEvent)
+            .GetMethods()
+            .Where(m => !m.IsSpecialName); // Exclude property getters
+        IEnumerable<PropertyInfo> internalProperties = typeof(IInternalDomainEvent)
+            .GetProperties()
+            .Where(p => p.DeclaringType == typeof(IInternalDomainEvent)); // Only declared in IInternalDomainEvent
 
         // No additional members beyond IDomainEvent
         Assert.Empty(internalMethods);
@@ -38,8 +37,7 @@ public class InternalDomainEventTests
     [Fact]
     public void ConstructionEvent_ImplementsIConstructionEvent()
     {
-        AggregateCreated @event = new
-        (
+        AggregateCreated @event = new(
             Guid.NewGuid(),
             DateTimeOffset.UtcNow,
             "aggregate-123",
@@ -56,8 +54,7 @@ public class InternalDomainEventTests
     [Fact]
     public void CommandEvent_DoesNotImplementLifecycleMarkers()
     {
-        AggregateUpdated @event = new
-        (
+        AggregateUpdated @event = new(
             Guid.NewGuid(),
             DateTimeOffset.UtcNow,
             "aggregate-123",
@@ -74,8 +71,7 @@ public class InternalDomainEventTests
     [Fact]
     public void DestructionEvent_ImplementsIDestructionEvent()
     {
-        AggregateDeleted @event = new
-        (
+        AggregateDeleted @event = new(
             Guid.NewGuid(),
             DateTimeOffset.UtcNow,
             "aggregate-123",
@@ -107,17 +103,26 @@ public class InternalDomainEventTests
     [Fact]
     public void IInternalDomainEvent_PatternMatching_WorksWithSwitchExpression()
     {
-        AggregateCreated constructionEvent = new
-        (
-            Guid.NewGuid(), DateTimeOffset.UtcNow, "agg-1", "Test", new Dictionary<string, string>()
+        AggregateCreated constructionEvent = new(
+            Guid.NewGuid(),
+            DateTimeOffset.UtcNow,
+            "agg-1",
+            "Test",
+            new Dictionary<string, string>()
         );
-        AggregateUpdated commandEvent = new
-        (
-            Guid.NewGuid(), DateTimeOffset.UtcNow, "agg-1", "Updated", new Dictionary<string, string>()
+        AggregateUpdated commandEvent = new(
+            Guid.NewGuid(),
+            DateTimeOffset.UtcNow,
+            "agg-1",
+            "Updated",
+            new Dictionary<string, string>()
         );
-        AggregateDeleted destructionEvent = new
-        (
-            Guid.NewGuid(), DateTimeOffset.UtcNow, "agg-1", "Deleted", new Dictionary<string, string>()
+        AggregateDeleted destructionEvent = new(
+            Guid.NewGuid(),
+            DateTimeOffset.UtcNow,
+            "agg-1",
+            "Deleted",
+            new Dictionary<string, string>()
         );
 
         string constructionResult = ClassifyEvent(constructionEvent);
@@ -130,20 +135,19 @@ public class InternalDomainEventTests
         return;
 
         // Helper methods for pattern matching test
-        static string ClassifyEvent(IInternalDomainEvent @event)
-            => @event switch
+        static string ClassifyEvent(IInternalDomainEvent @event) =>
+            @event switch
             {
                 IInternalDomainEvent.IConstructionEvent => "Construction",
                 IInternalDomainEvent.IDestructionEvent => "Destruction",
-                _ => "Command"
+                _ => "Command",
             };
     }
 
     [Fact]
     public void IInternalDomainEvent_TypeConstraint_WorksWithGenericMethods()
     {
-        AggregateUpdated @event = new
-        (
+        AggregateUpdated @event = new(
             Guid.NewGuid(),
             DateTimeOffset.UtcNow,
             "source",
@@ -156,8 +160,8 @@ public class InternalDomainEventTests
         Assert.Equal(@event.Source, source);
         return;
 
-        static string GetEventSource<TEvent>(TEvent @event) where TEvent : IInternalDomainEvent
-            => @event.Source;
+        static string GetEventSource<TEvent>(TEvent @event)
+            where TEvent : IInternalDomainEvent => @event.Source;
     }
 
     [Fact]
@@ -173,8 +177,7 @@ public class InternalDomainEventTests
     }
 
     // Construction event (R1 rule)
-    private record AggregateCreated
-    (
+    private record AggregateCreated(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -183,8 +186,7 @@ public class InternalDomainEventTests
     ) : IInternalDomainEvent, IInternalDomainEvent.IConstructionEvent;
 
     // Command event (R2 rule)
-    private record AggregateUpdated
-    (
+    private record AggregateUpdated(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -193,8 +195,7 @@ public class InternalDomainEventTests
     ) : IInternalDomainEvent;
 
     // Destruction event (R3 rule)
-    private record AggregateDeleted
-    (
+    private record AggregateDeleted(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,

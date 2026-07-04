@@ -37,25 +37,25 @@ namespace EzDdd.Entity;
 ///     <code>
 /// // Recommended: Record-based value object (structural equality + immutability)
 /// public record Money(decimal Amount, string Currency) : IValueObject;
-/// 
+///
 /// // Usage:
 /// var money1 = new Money(100m, "USD");
 /// var money2 = new Money(100m, "USD");
 /// Assert.Equal(money1, money2); // true - structural equality
-/// 
+///
 /// // Alternative: Class-based value object (manual equality)
 /// public class Email : IValueObject
 /// {
 ///     public string Value { get; }
-/// 
+///
 ///     public Email(string value)
 ///     {
 ///         Value = value;
 ///     }
-/// 
+///
 ///     public override bool Equals(object? obj) =&gt;
 ///         obj is Email other &amp;&amp; Value == other.Value;
-/// 
+///
 ///     public override int GetHashCode() =&gt; Value.GetHashCode();
 /// }
 /// </code>

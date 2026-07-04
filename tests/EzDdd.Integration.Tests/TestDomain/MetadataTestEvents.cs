@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-
 using EzDdd.Entity;
 
 namespace EzDdd.Integration.Tests.TestDomain;
@@ -7,8 +6,7 @@ namespace EzDdd.Integration.Tests.TestDomain;
 /// <summary>
 ///     Aggregate created event with metadata support (construction event).
 /// </summary>
-public sealed record AggregateCreated
-(
+public sealed record AggregateCreated(
     Guid Id,
     DateTimeOffset OccurredOn,
     MetadataTestId AggregateId,
@@ -28,8 +26,7 @@ public sealed record AggregateCreated
 /// <summary>
 ///     Value updated event with metadata support.
 /// </summary>
-public sealed record ValueUpdated
-(
+public sealed record ValueUpdated(
     Guid Id,
     DateTimeOffset OccurredOn,
     MetadataTestId AggregateId,
@@ -49,13 +46,9 @@ public sealed record ValueUpdated
 /// <summary>
 ///     Aggregate closed event with metadata support (destruction event).
 /// </summary>
-public sealed record AggregateClosed
-(
-    Guid Id,
-    DateTimeOffset OccurredOn,
-    MetadataTestId AggregateId,
-    string Reason
-) : IInternalDomainEvent, IInternalDomainEvent.IDestructionEvent
+public sealed record AggregateClosed(Guid Id, DateTimeOffset OccurredOn, MetadataTestId AggregateId, string Reason)
+    : IInternalDomainEvent,
+        IInternalDomainEvent.IDestructionEvent
 {
     public string Source => AggregateId.Value;
 

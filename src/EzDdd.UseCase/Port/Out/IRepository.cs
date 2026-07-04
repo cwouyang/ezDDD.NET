@@ -63,17 +63,17 @@ namespace EzDdd.UseCase.Port.Out;
 /// public class DepositMoneyCommand : ICommand&lt;DepositInput, DepositOutput&gt;
 /// {
 ///     private readonly IRepository&lt;BankAccount, AccountId&gt; _repository;
-/// 
+///
 ///     public async Task&lt;DepositOutput&gt; ExecuteAsync(DepositInput input)
 ///     {
 ///         // 1. Load aggregate from repository
 ///         var account = await _repository.FindByIdAsync(input.AccountId);
 ///         if (account == null)
 ///             return new DepositOutput { ExitCode = ExitCode.ResourceNotFoundFailure };
-/// 
+///
 ///         // 2. Execute domain logic
 ///         account.Deposit(input.Amount);
-/// 
+///
 ///         // 3. Save aggregate (may throw RepositorySaveException)
 ///         try
 ///         {
@@ -84,7 +84,7 @@ namespace EzDdd.UseCase.Port.Out;
 ///         {
 ///             return new DepositOutput { ExitCode = ExitCode.ConflictFailure };
 ///         }
-/// 
+///
 ///         return new DepositOutput { ExitCode = ExitCode.Success };
 ///     }
 /// }
@@ -251,7 +251,7 @@ public interface IRepository<TAggregate, in TId, TEvent>
     /// {
     ///     // Perform domain logic for deletion (e.g., check balances)
     ///     account.Close();
-    /// 
+    ///
     ///     // Delete aggregate
     ///     await _repository.DeleteAsync(account);
     /// }

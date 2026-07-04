@@ -18,10 +18,7 @@ public sealed class TransferMoneyService : ITransferMoneyService
         _repository = repository;
     }
 
-    public async Task<TransferConfirmation> TransferAsync(
-        AccountId fromAccountId,
-        AccountId toAccountId,
-        Money amount)
+    public async Task<TransferConfirmation> TransferAsync(AccountId fromAccountId, AccountId toAccountId, Money amount)
     {
         // 1. Validate inputs (fail fast)
         ValidateTransferAmount(amount);
@@ -61,7 +58,8 @@ public sealed class TransferMoneyService : ITransferMoneyService
             FromAccountId: fromAccountId,
             ToAccountId: toAccountId,
             Amount: amount,
-            Timestamp: DateTimeOffset.UtcNow);
+            Timestamp: DateTimeOffset.UtcNow
+        );
     }
 
     #region Private Validation Methods

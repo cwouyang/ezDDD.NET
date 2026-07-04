@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-
 using EzDdd.Entity;
 
 namespace EzDdd.Examples.EventInfrastructure;
@@ -77,15 +76,15 @@ public class InMemoryEventStore : IEventStore
     /// </remarks>
     public Task<IReadOnlyList<IInternalDomainEvent>> GetEventsAfterAsync(
         int afterIndex,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         // Convert queue to list (thread-safe snapshot)
         List<IInternalDomainEvent> allEvents = _events.ToList();
 
         // Return events after the specified index
-        IReadOnlyList<IInternalDomainEvent> result = afterIndex < 0
-            ? allEvents.AsReadOnly()
-            : allEvents.Skip(afterIndex + 1).ToList().AsReadOnly();
+        IReadOnlyList<IInternalDomainEvent> result =
+            afterIndex < 0 ? allEvents.AsReadOnly() : allEvents.Skip(afterIndex + 1).ToList().AsReadOnly();
 
         return Task.FromResult(result);
     }

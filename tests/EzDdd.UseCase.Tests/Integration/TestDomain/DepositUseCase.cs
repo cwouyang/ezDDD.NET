@@ -9,11 +9,7 @@ namespace EzDdd.UseCase.Tests.Integration.TestDomain;
 ///     Input for depositing money into an account.
 ///     Implements IVersionedInput for optimistic locking.
 /// </summary>
-public sealed record DepositInput
-(
-    AccountId AccountId,
-    Money Amount
-) : IVersionedInput
+public sealed record DepositInput(AccountId AccountId, Money Amount) : IVersionedInput
 {
     public long Version { get; set; }
 }
@@ -65,8 +61,8 @@ public sealed class DepositOutput : IOutput
 ///     Use case for depositing money into a bank account.
 ///     Validates version for optimistic locking.
 /// </summary>
-public sealed class DepositUseCase
-    (IRepository<BankAccount, AccountId, IInternalDomainEvent> repository) : IUseCase<DepositInput, DepositOutput>
+public sealed class DepositUseCase(IRepository<BankAccount, AccountId, IInternalDomainEvent> repository)
+    : IUseCase<DepositInput, DepositOutput>
 {
     public async Task<DepositOutput> ExecuteAsync(DepositInput input)
     {
@@ -76,17 +72,13 @@ public sealed class DepositUseCase
             BankAccount? account = await repository.FindByIdAsync(input.AccountId);
             if (account is null)
             {
-                throw new UseCaseFailureException
-                (
-                    $"Account not found: {input.AccountId.Value}"
-                );
+                throw new UseCaseFailureException($"Account not found: {input.AccountId.Value}");
             }
 
             // Validate version (optimistic locking)
             if (account.Version != input.Version)
             {
-                throw new UseCaseFailureException
-                (
+                throw new UseCaseFailureException(
                     $"Version mismatch: expected {input.Version}, actual {account.Version}"
                 );
             }
@@ -105,11 +97,7 @@ public sealed class DepositUseCase
         catch (InvalidOperationException ex)
         {
             // Business rule violation
-            throw new UseCaseFailureException
-            (
-                $"Failed to deposit: {ex.Message}",
-                ex
-            );
+            throw new UseCaseFailureException($"Failed to deposit: {ex.Message}", ex);
         }
         // RepositorySaveException propagates to caller
     }

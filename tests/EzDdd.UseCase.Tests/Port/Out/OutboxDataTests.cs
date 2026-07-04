@@ -5,7 +5,7 @@ namespace EzDdd.UseCase.Tests.Port.Out;
 
 public class OutboxDataTests
 {
-#region Interface Characteristics Tests
+    #region Interface Characteristics Tests
 
     [Fact]
     public void IOutboxData_ExtendsIStoreData()
@@ -23,16 +23,15 @@ public class OutboxDataTests
         Assert.True(type.IsInterface);
     }
 
-#endregion
+    #endregion
 
-#region Implementation Tests
+    #region Implementation Tests
 
     [Fact]
     public void IOutboxData_CanBeImplemented()
     {
         AccountId accountId = new("acc-123");
-        AccountCreated @event = new
-        (
+        AccountCreated @event = new(
             Guid.NewGuid(),
             DateTimeOffset.UtcNow,
             "acc-123",
@@ -41,15 +40,7 @@ public class OutboxDataTests
         );
         IReadOnlyList<IDomainEvent> events = new List<IDomainEvent> { @event };
 
-        BankAccountData data = new
-        (
-            accountId,
-            1,
-            events,
-            "account-acc-123",
-            "John Doe",
-            1000.00m
-        );
+        BankAccountData data = new(accountId, 1, events, "account-acc-123", "John Doe", 1000.00m);
 
         Assert.NotNull(data);
         Assert.Equal(accountId, data.Id);
@@ -60,9 +51,9 @@ public class OutboxDataTests
         Assert.Equal(1000.00m, data.Balance);
     }
 
-#endregion
+    #endregion
 
-#region Inherited Property Tests
+    #region Inherited Property Tests
 
     [Fact]
     public void IOutboxData_InheritsIdProperty()
@@ -90,8 +81,7 @@ public class OutboxDataTests
     public void IOutboxData_InheritsEventsProperty()
     {
         AccountId accountId = new("acc-101");
-        AccountCreated @event = new
-        (
+        AccountCreated @event = new(
             Guid.NewGuid(),
             DateTimeOffset.UtcNow,
             "acc-101",
@@ -130,9 +120,9 @@ public class OutboxDataTests
         Assert.Equal(3, lockVersion);
     }
 
-#endregion
+    #endregion
 
-#region State Field Tests
+    #region State Field Tests
 
     [Fact]
     public void IOutboxData_CanStoreStateFields()
@@ -152,15 +142,7 @@ public class OutboxDataTests
     {
         AccountId accountId = new("acc-505");
 
-        BankAccountData data = new
-        (
-            accountId,
-            2,
-            [],
-            "account-acc-505",
-            "Grace",
-            4500.00m
-        );
+        BankAccountData data = new(accountId, 2, [], "account-acc-505", "Grace", 4500.00m);
 
         Assert.Equal(accountId, data.Id);
         Assert.Equal(2, data.Version);
@@ -169,14 +151,13 @@ public class OutboxDataTests
         Assert.Equal(4500.00m, data.Balance);
     }
 
-#endregion
+    #endregion
 
-#region Test Data Structures
+    #region Test Data Structures
 
     private record AccountId(string Value);
 
-    private record AccountCreated
-    (
+    private record AccountCreated(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -186,8 +167,14 @@ public class OutboxDataTests
 
     private class BankAccountData : IOutboxData<AccountId>
     {
-        public BankAccountData
-            (AccountId id, long version, IReadOnlyList<IDomainEvent> events, string streamName, string owner, decimal balance)
+        public BankAccountData(
+            AccountId id,
+            long version,
+            IReadOnlyList<IDomainEvent> events,
+            string streamName,
+            string owner,
+            decimal balance
+        )
         {
             Id = id;
             Version = version;
@@ -211,5 +198,5 @@ public class OutboxDataTests
         }
     }
 
-#endregion
+    #endregion
 }

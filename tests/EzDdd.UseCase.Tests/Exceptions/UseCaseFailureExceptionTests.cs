@@ -51,13 +51,11 @@ public class UseCaseFailureExceptionTests
     [Fact]
     public async Task UseCaseFailureException_CanBeThrownAsync()
     {
-        UseCaseFailureException exception = await Assert.ThrowsAsync<UseCaseFailureException>
-        (async () =>
-            {
-                await Task.Yield();
-                throw new UseCaseFailureException("Async test exception");
-            }
-        );
+        UseCaseFailureException exception = await Assert.ThrowsAsync<UseCaseFailureException>(async () =>
+        {
+            await Task.Yield();
+            throw new UseCaseFailureException("Async test exception");
+        });
 
         Assert.Equal("Async test exception", exception.Message);
     }

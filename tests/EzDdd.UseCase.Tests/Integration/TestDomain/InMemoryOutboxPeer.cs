@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-
 using EzDdd.UseCase.Exceptions;
 using EzDdd.UseCase.Port.Out;
 
@@ -32,8 +31,7 @@ public sealed class InMemoryOutboxPeer : IRepositoryPeer<OrderData, OrderId>
 
             if (expectedVersion != data.Version)
             {
-                throw new RepositoryPeerSaveException
-                (
+                throw new RepositoryPeerSaveException(
                     $"Optimistic lock failure: expected version {expectedVersion}, but got {data.Version}",
                     new InvalidOperationException("Version mismatch")
                 );

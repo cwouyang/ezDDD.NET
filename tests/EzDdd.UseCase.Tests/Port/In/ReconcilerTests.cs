@@ -4,7 +4,7 @@ namespace EzDdd.UseCase.Tests.Port.In;
 
 public class ReconcilerTests
 {
-#region Basic Reconciliation Tests
+    #region Basic Reconciliation Tests
 
     [Fact]
     public async Task ReconcileAsync_WithValidContext_ReturnsReport()
@@ -43,9 +43,9 @@ public class ReconcilerTests
         Assert.True(report.WasAsync);
     }
 
-#endregion
+    #endregion
 
-#region Reconciliation Logic Tests
+    #region Reconciliation Logic Tests
 
     [Fact]
     public async Task ReconcileAsync_WithMultipleItems_ReconcilesAll()
@@ -96,18 +96,16 @@ public class ReconcilerTests
         Assert.Equal(3, report.ErrorCount); // 3 failed
     }
 
-#endregion
+    #endregion
 
-#region Edge Cases and Validation Tests
+    #region Edge Cases and Validation Tests
 
     [Fact]
     public async Task ReconcileAsync_WithNullContextParameter_ThrowsArgumentNullException()
     {
         TestReconciler reconciler = new();
 
-        await Assert.ThrowsAsync<ArgumentNullException>
-        (async () => await reconciler.ReconcileAsync(null!)
-        );
+        await Assert.ThrowsAsync<ArgumentNullException>(async () => await reconciler.ReconcileAsync(null!));
     }
 
     [Fact]
@@ -116,9 +114,7 @@ public class ReconcilerTests
         InvalidContextReconciler reconciler = new();
         TestContext context = new(-1); // Invalid count
 
-        await Assert.ThrowsAsync<InvalidOperationException>
-        (async () => await reconciler.ReconcileAsync(context)
-        );
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await reconciler.ReconcileAsync(context));
     }
 
     [Fact]
@@ -127,14 +123,12 @@ public class ReconcilerTests
         CancellableReconciler reconciler = new();
         TestContext context = new(100);
 
-        await Assert.ThrowsAsync<OperationCanceledException>
-        (async () => await reconciler.ReconcileAsync(context)
-        );
+        await Assert.ThrowsAsync<OperationCanceledException>(async () => await reconciler.ReconcileAsync(context));
     }
 
-#endregion
+    #endregion
 
-#region NullContext Tests
+    #region NullContext Tests
 
     [Fact]
     public void NullContext_Instance_IsSingleton()
@@ -156,14 +150,13 @@ public class ReconcilerTests
         Assert.True(report.WasGlobalCleanup);
     }
 
-#endregion
+    #endregion
 
-#region Test Helper Classes
+    #region Test Helper Classes
 
     private record TestContext(int ItemCount);
 
-    private record TestReport
-    (
+    private record TestReport(
         int ProcessedCount,
         int ReconciledCount = 0,
         int ErrorCount = 0,
@@ -177,12 +170,7 @@ public class ReconcilerTests
         {
             ArgumentNullException.ThrowIfNull(context);
 
-            TestReport report = new
-            (
-                context.ItemCount,
-                0,
-                0
-            );
+            TestReport report = new(context.ItemCount, 0, 0);
 
             return Task.FromResult(report);
         }
@@ -203,11 +191,7 @@ public class ReconcilerTests
         {
             await Task.Delay(10); // Simulate async work
 
-            TestReport report = new
-            (
-                context.ItemCount,
-                WasAsync: true
-            );
+            TestReport report = new(context.ItemCount, WasAsync: true);
 
             return report;
         }
@@ -218,11 +202,7 @@ public class ReconcilerTests
         public Task<TestReport> ReconcileAsync(TestContext context)
         {
             // All items reconciled
-            TestReport report = new
-            (
-                context.ItemCount,
-                context.ItemCount
-            );
+            TestReport report = new(context.ItemCount, context.ItemCount);
 
             return Task.FromResult(report);
         }
@@ -233,11 +213,7 @@ public class ReconcilerTests
         public Task<TestReport> ReconcileAsync(TestContext context)
         {
             // All items checked, but no changes needed
-            TestReport report = new
-            (
-                context.ItemCount,
-                0
-            );
+            TestReport report = new(context.ItemCount, 0);
 
             return Task.FromResult(report);
         }
@@ -250,11 +226,7 @@ public class ReconcilerTests
             // Simulate conflict resolution (every 3rd item has conflict)
             int conflicts = context.ItemCount / 3;
 
-            TestReport report = new
-            (
-                context.ItemCount,
-                conflicts
-            );
+            TestReport report = new(context.ItemCount, conflicts);
 
             return Task.FromResult(report);
         }
@@ -268,12 +240,7 @@ public class ReconcilerTests
             int errors = context.ItemCount * 3 / 10;
             int succeeded = context.ItemCount - errors;
 
-            TestReport report = new
-            (
-                context.ItemCount,
-                succeeded,
-                errors
-            );
+            TestReport report = new(context.ItemCount, succeeded, errors);
 
             return Task.FromResult(report);
         }
@@ -306,15 +273,11 @@ public class ReconcilerTests
         public Task<TestReport> ReconcileAsync(NullContext context)
         {
             // Global cleanup without specific context
-            TestReport report = new
-            (
-                0,
-                WasGlobalCleanup: true
-            );
+            TestReport report = new(0, WasGlobalCleanup: true);
 
             return Task.FromResult(report);
         }
     }
 
-#endregion
+    #endregion
 }

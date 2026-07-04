@@ -8,12 +8,7 @@ namespace EzDdd.UseCase.Tests.Integration.TestDomain;
 /// <summary>
 ///     Input for creating a new bank account.
 /// </summary>
-public sealed record CreateAccountInput
-(
-    AccountId AccountId,
-    string Owner,
-    Money InitialBalance
-) : IInput;
+public sealed record CreateAccountInput(AccountId AccountId, string Owner, Money InitialBalance) : IInput;
 
 /// <summary>
 ///     Output for account creation.
@@ -61,20 +56,15 @@ public sealed class CreateAccountOutput : IOutput
 /// <summary>
 ///     Use case for creating a new bank account.
 /// </summary>
-public sealed class CreateAccountUseCase
-    (IRepository<BankAccount, AccountId, IInternalDomainEvent> repository) : IUseCase<CreateAccountInput, CreateAccountOutput>
+public sealed class CreateAccountUseCase(IRepository<BankAccount, AccountId, IInternalDomainEvent> repository)
+    : IUseCase<CreateAccountInput, CreateAccountOutput>
 {
     public async Task<CreateAccountOutput> ExecuteAsync(CreateAccountInput input)
     {
         try
         {
             // Create new account aggregate
-            BankAccount account = new
-            (
-                input.AccountId,
-                input.Owner,
-                input.InitialBalance
-            );
+            BankAccount account = new(input.AccountId, input.Owner, input.InitialBalance);
 
             // Save to repository
             await repository.SaveAsync(account);
@@ -87,11 +77,7 @@ public sealed class CreateAccountUseCase
         catch (InvalidOperationException ex)
         {
             // Business rule violation
-            throw new UseCaseFailureException
-            (
-                $"Failed to create account: {ex.Message}",
-                ex
-            );
+            throw new UseCaseFailureException($"Failed to create account: {ex.Message}", ex);
         }
         // RepositorySaveException propagates to caller
     }

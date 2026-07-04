@@ -21,11 +21,10 @@ public sealed class AccountNotFoundException : Exception
 /// </summary>
 public sealed class InsufficientBalanceException : Exception
 {
-    public InsufficientBalanceException(
-        AccountId accountId,
-        Money currentBalance,
-        Money requestedAmount)
-        : base($"Insufficient balance in account {accountId.Value}. Current: {currentBalance}, Requested: {requestedAmount}")
+    public InsufficientBalanceException(AccountId accountId, Money currentBalance, Money requestedAmount)
+        : base(
+            $"Insufficient balance in account {accountId.Value}. Current: {currentBalance}, Requested: {requestedAmount}"
+        )
     {
         AccountId = accountId;
         CurrentBalance = currentBalance;

@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-
 using EzDdd.Entity;
 using EzDdd.Integration.Tests.TestDomain;
 using EzDdd.UseCase.Port.InOut;
@@ -40,7 +39,7 @@ namespace EzDdd.Integration.Tests;
 /// </remarks>
 public sealed class CqrsFlowWithMetadataTests
 {
-#region Event Replay with Metadata Tests
+    #region Event Replay with Metadata Tests
 
     [Fact]
     public async Task EventReplay_ShouldPreserveMetadata()
@@ -75,9 +74,9 @@ public sealed class CqrsFlowWithMetadataTests
         Assert.Equal(correlationId, updatedEvent.Metadata["CorrelationId"]);
     }
 
-#endregion
+    #endregion
 
-#region Test Infrastructure Setup
+    #region Test Infrastructure Setup
 
     /// <summary>
     ///     Creates the CQRS infrastructure with metadata tracking support.
@@ -129,8 +128,7 @@ public sealed class CqrsFlowWithMetadataTests
     /// <summary>
     ///     Creates metadata with correlation and causation IDs for distributed tracing.
     /// </summary>
-    private static IReadOnlyDictionary<string, string> _CreateMetadata
-    (
+    private static IReadOnlyDictionary<string, string> _CreateMetadata(
         string correlationId,
         string? causationId = null,
         string? userId = null
@@ -151,9 +149,9 @@ public sealed class CqrsFlowWithMetadataTests
         return new ReadOnlyDictionary<string, string>(metadata);
     }
 
-#endregion
+    #endregion
 
-#region Metadata Creation and Propagation Tests
+    #region Metadata Creation and Propagation Tests
 
     [Fact]
     public async Task CreateAggregate_WithMetadata_ShouldPreserveMetadataInPublishedEvents()
@@ -193,7 +191,11 @@ public sealed class CqrsFlowWithMetadataTests
         await infra.SaveAndPublishAsync(aggregate);
 
         // Act 2: Update value with causation ID linking to creation
-        IReadOnlyDictionary<string, string> updateMetadata = _CreateMetadata(correlationId, creationEventId, "bob@example.com");
+        IReadOnlyDictionary<string, string> updateMetadata = _CreateMetadata(
+            correlationId,
+            creationEventId,
+            "bob@example.com"
+        );
         aggregate.UpdateValue(75, updateMetadata);
         await infra.SaveAndPublishAsync(aggregate);
 
@@ -226,12 +228,11 @@ public sealed class CqrsFlowWithMetadataTests
             ["UserEmail"] = "test@example.com",
             ["RequestPath"] = "/api/test?filter=active&sort=name",
             ["SpecialChars"] = "hello \"world\" with 'quotes' and \\ backslash",
-            ["Unicode"] = "你好世界 🚀 Ñoño"
+            ["Unicode"] = "你好世界 🚀 Ñoño",
         };
 
         // Act: Create aggregate with complex metadata
-        MetadataTestAggregate aggregate = new
-        (
+        MetadataTestAggregate aggregate = new(
             id,
             "Complex Metadata Test",
             123,
@@ -241,10 +242,7 @@ public sealed class CqrsFlowWithMetadataTests
 
         // Assert: Special characters should survive serialization round-trip
         Assert.Single(infra.PublishedEvents);
-        AggregateCreated deserialized = DomainEventMapper.ToDomain<AggregateCreated>
-        (
-            infra.PublishedEvents.First()
-        );
+        AggregateCreated deserialized = DomainEventMapper.ToDomain<AggregateCreated>(infra.PublishedEvents.First());
 
         Assert.Equal(complexMetadata["UserEmail"], deserialized.Metadata["UserEmail"]);
         Assert.Equal(complexMetadata["RequestPath"], deserialized.Metadata["RequestPath"]);
@@ -252,9 +250,9 @@ public sealed class CqrsFlowWithMetadataTests
         Assert.Equal(complexMetadata["Unicode"], deserialized.Metadata["Unicode"]);
     }
 
-#endregion
+    #endregion
 
-#region Idempotency Detection Tests
+    #region Idempotency Detection Tests
 
     [Fact]
     public async Task DuplicateCorrelationId_ShouldBeDetectable()
@@ -263,8 +261,7 @@ public sealed class CqrsFlowWithMetadataTests
         string sharedCorrelationId = Guid.NewGuid().ToString();
 
         // Act: Process same operation twice with same CorrelationId
-        MetadataTestAggregate agg1 = new
-        (
+        MetadataTestAggregate agg1 = new(
             new MetadataTestId("AGG-IDEM-001"),
             "First",
             100,
@@ -272,8 +269,7 @@ public sealed class CqrsFlowWithMetadataTests
         );
         await infra.SaveAndPublishAsync(agg1);
 
-        MetadataTestAggregate agg2 = new
-        (
+        MetadataTestAggregate agg2 = new(
             new MetadataTestId("AGG-IDEM-002"),
             "Second",
             200,
@@ -315,9 +311,9 @@ public sealed class CqrsFlowWithMetadataTests
         Assert.Contains(correlationId, processedCorrelationIds);
     }
 
-#endregion
+    #endregion
 
-#region Complete Lifecycle Tests
+    #region Complete Lifecycle Tests
 
     [Fact]
     public async Task CompleteLifecycle_WithMetadata_ShouldPreserveMetadataThroughAllOperations()
@@ -328,8 +324,7 @@ public sealed class CqrsFlowWithMetadataTests
         const string userId = "integration-test-user";
 
         // Act 1: Create aggregate
-        MetadataTestAggregate aggregate = new
-        (
+        MetadataTestAggregate aggregate = new(
             id,
             "Complete Lifecycle Test",
             1000,
@@ -382,8 +377,7 @@ public sealed class CqrsFlowWithMetadataTests
 
         // Assert: Event should be published with empty metadata
         Assert.Single(infra.PublishedEvents);
-        AggregateCreated deserializedEvent = DomainEventMapper.ToDomain<AggregateCreated>
-        (
+        AggregateCreated deserializedEvent = DomainEventMapper.ToDomain<AggregateCreated>(
             infra.PublishedEvents.First()
         );
 
@@ -391,5 +385,5 @@ public sealed class CqrsFlowWithMetadataTests
         Assert.Empty(deserializedEvent.Metadata);
     }
 
-#endregion
+    #endregion
 }

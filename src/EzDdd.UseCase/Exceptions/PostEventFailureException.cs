@@ -50,9 +50,7 @@ public class PostEventFailureException : Exception
     ///     Initializes a new instance of the <see cref="PostEventFailureException" /> class.
     /// </summary>
     public PostEventFailureException()
-        : base("Failed to post message to message producer.")
-    {
-    }
+        : base("Failed to post message to message producer.") { }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="PostEventFailureException" /> class
@@ -60,9 +58,7 @@ public class PostEventFailureException : Exception
     /// </summary>
     /// <param name="message">The error message that explains the reason for the exception.</param>
     public PostEventFailureException(string message)
-        : base(message)
-    {
-    }
+        : base(message) { }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="PostEventFailureException" /> class
@@ -74,7 +70,5 @@ public class PostEventFailureException : Exception
     ///     (typically from the message broker client).
     /// </param>
     public PostEventFailureException(string message, Exception innerException)
-        : base(message, innerException)
-    {
-    }
+        : base(message, innerException) { }
 }

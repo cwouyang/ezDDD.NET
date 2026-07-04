@@ -11,7 +11,8 @@ public sealed record TransferConfirmation(
     AccountId FromAccountId,
     AccountId ToAccountId,
     Money Amount,
-    DateTimeOffset Timestamp);
+    DateTimeOffset Timestamp
+);
 
 /// <summary>
 /// Transfer status enumeration.
@@ -19,5 +20,5 @@ public sealed record TransferConfirmation(
 public enum TransferStatus
 {
     Success,
-    Failed
+    Failed,
 }

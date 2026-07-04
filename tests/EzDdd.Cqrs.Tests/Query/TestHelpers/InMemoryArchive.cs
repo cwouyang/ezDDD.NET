@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-
 using EzDdd.Cqrs.Query;
 
 namespace EzDdd.Cqrs.Tests.Query.TestHelpers;

@@ -2,7 +2,7 @@ namespace EzDdd.Common.Tests;
 
 public class BiMapTests
 {
-#region Add and Construction Tests
+    #region Add and Construction Tests
 
     [Fact]
     public void Add_AndGet_WorksBidirectionally()
@@ -56,9 +56,9 @@ public class BiMapTests
         Assert.Empty(biMap);
     }
 
-#endregion
+    #endregion
 
-#region TryGetValue and GetKey Tests
+    #region TryGetValue and GetKey Tests
 
     [Fact]
     public void TryGetValue_WhenKeyExists_ReturnsTrue()
@@ -115,9 +115,9 @@ public class BiMapTests
         Assert.Null(key);
     }
 
-#endregion
+    #endregion
 
-#region Remove Tests
+    #region Remove Tests
 
     [Fact]
     public void Remove_RemovesBidirectionally()
@@ -147,9 +147,9 @@ public class BiMapTests
         Assert.Empty(biMap);
     }
 
-#endregion
+    #endregion
 
-#region Contains Tests
+    #region Contains Tests
 
     [Fact]
     public void Contains_WhenUsingKeyValuePair_ReturnsCorrectResult()
@@ -161,14 +161,19 @@ public class BiMapTests
         Assert.DoesNotContain(new KeyValuePair<string, int>("other", 42), biMap);
     }
 
-#endregion
+    #endregion
 
-#region Clear Tests
+    #region Clear Tests
 
     [Fact]
     public void Clear_RemovesAllMappings()
     {
-        BiMap<string, int> biMap = new() { { "one", 1 }, { "two", 2 }, { "three", 3 } };
+        BiMap<string, int> biMap = new()
+        {
+            { "one", 1 },
+            { "two", 2 },
+            { "three", 3 },
+        };
 
         biMap.Clear();
 
@@ -177,14 +182,19 @@ public class BiMapTests
         Assert.Null(biMap.GetKey(1));
     }
 
-#endregion
+    #endregion
 
-#region Properties Tests
+    #region Properties Tests
 
     [Fact]
     public void GetEnumerator_ReturnsAllEntries()
     {
-        BiMap<string, int> biMap = new() { { "one", 1 }, { "two", 2 }, { "three", 3 } };
+        BiMap<string, int> biMap = new()
+        {
+            { "one", 1 },
+            { "two", 2 },
+            { "three", 3 },
+        };
 
         List<KeyValuePair<string, int>> entries = biMap.ToList();
 
@@ -218,9 +228,9 @@ public class BiMapTests
         Assert.Contains(2, values);
     }
 
-#endregion
+    #endregion
 
-#region CopyTo Tests
+    #region CopyTo Tests
 
     [Fact]
     public void CopyTo_CopiesAllEntriesToArray()
@@ -235,15 +245,20 @@ public class BiMapTests
         Assert.Contains(new KeyValuePair<string, int>("two", 2), array);
     }
 
-#endregion
+    #endregion
 
-#region PutAll Tests
+    #region PutAll Tests
 
     [Fact]
     public void PutAll_WhenAddingMultipleEntries_AddsAllBidirectionally()
     {
         BiMap<string, int> biMap = new() { { "existing", 0 } };
-        Dictionary<string, int> toAdd = new() { { "one", 1 }, { "two", 2 }, { "three", 3 } };
+        Dictionary<string, int> toAdd = new()
+        {
+            { "one", 1 },
+            { "two", 2 },
+            { "three", 3 },
+        };
 
         biMap.PutAll(toAdd);
 
@@ -282,9 +297,9 @@ public class BiMapTests
         Assert.Equal("newKey", biMap.GetKey(100));
     }
 
-#endregion
+    #endregion
 
-#region PutIfAbsent Tests
+    #region PutIfAbsent Tests
 
     [Fact]
     public void PutIfAbsent_WhenKeyDoesNotExist_AddsAndReturnsValue()
@@ -311,9 +326,9 @@ public class BiMapTests
         Assert.Null(biMap.GetKey(200));
     }
 
-#endregion
+    #endregion
 
-#region TryReplace Tests
+    #region TryReplace Tests
 
     [Fact]
     public void TryReplace_WhenKeyExists_ReplacesAndReturnsTrueWithOldValue()
@@ -358,9 +373,9 @@ public class BiMapTests
         Assert.Equal(200, biMap["key2"]);
     }
 
-#endregion
+    #endregion
 
-#region Replace Tests
+    #region Replace Tests
 
     [Fact]
     public void ReplaceConditional_WhenOldValueMatches_ReplacesAndReturnsTrue()
@@ -400,9 +415,9 @@ public class BiMapTests
         Assert.False(biMap.ContainsKey("missing"));
     }
 
-#endregion
+    #endregion
 
-#region Thread Safety Tests
+    #region Thread Safety Tests
 
     [Fact]
     public async Task ConcurrentAdds_MaintainConsistency()
@@ -411,20 +426,19 @@ public class BiMapTests
         const int threadCount = 100;
         const int operationsPerThread = 100;
 
-        IEnumerable<Task> tasks = Enumerable.Range(0, threadCount).Select
-        (threadId =>
-             Task.Run
-             (() =>
-                 {
-                     for (int j = 0; j < operationsPerThread; j++)
-                     {
-                         string key = $"thread{threadId}_key{j}";
-                         int value = (threadId * 1000) + j;
-                         biMap.Add(key, value);
-                     }
-                 }
-             )
-        );
+        IEnumerable<Task> tasks = Enumerable
+            .Range(0, threadCount)
+            .Select(threadId =>
+                Task.Run(() =>
+                {
+                    for (int j = 0; j < operationsPerThread; j++)
+                    {
+                        string key = $"thread{threadId}_key{j}";
+                        int value = (threadId * 1000) + j;
+                        biMap.Add(key, value);
+                    }
+                })
+            );
 
         await Task.WhenAll(tasks);
 
@@ -458,21 +472,20 @@ public class BiMapTests
         const int threadCount = 10;
         int removeCount = 0;
 
-        IEnumerable<Task> tasks = Enumerable.Range(0, threadCount).Select
-        (threadId =>
-             Task.Run
-             (() =>
-                 {
-                     for (int j = threadId; j < entryCount; j += threadCount)
-                     {
-                         if (biMap.Remove($"key{j}"))
-                         {
-                             Interlocked.Increment(ref removeCount);
-                         }
-                     }
-                 }
-             )
-        );
+        IEnumerable<Task> tasks = Enumerable
+            .Range(0, threadCount)
+            .Select(threadId =>
+                Task.Run(() =>
+                {
+                    for (int j = threadId; j < entryCount; j += threadCount)
+                    {
+                        if (biMap.Remove($"key{j}"))
+                        {
+                            Interlocked.Increment(ref removeCount);
+                        }
+                    }
+                })
+            );
 
         await Task.WhenAll(tasks);
 
@@ -492,15 +505,13 @@ public class BiMapTests
         BiMap<string, int> biMap = new();
         const int operationCount = 10000;
 
-        IEnumerable<Task> addTasks = Enumerable.Range(0, operationCount).Select
-        (i =>
-             Task.Run(() => biMap.Add($"key{i}", i))
-        );
+        IEnumerable<Task> addTasks = Enumerable
+            .Range(0, operationCount)
+            .Select(i => Task.Run(() => biMap.Add($"key{i}", i)));
 
-        IEnumerable<Task<bool>> removeTasks = Enumerable.Range(0, operationCount).Select
-        (i =>
-             Task.Run(() => biMap.Remove($"key{i}"))
-        );
+        IEnumerable<Task<bool>> removeTasks = Enumerable
+            .Range(0, operationCount)
+            .Select(i => Task.Run(() => biMap.Remove($"key{i}")));
 
         await Task.WhenAll(addTasks.Concat(removeTasks));
 
@@ -516,31 +527,30 @@ public class BiMapTests
     {
         const int threadCount = 10;
 
-        IEnumerable<Task> tasks = Enumerable.Range(0, threadCount).Select
-        (_ =>
-             Task.Run
-             (() =>
-                 {
-                     BiMap<string, int> biMap = new();
+        IEnumerable<Task> tasks = Enumerable
+            .Range(0, threadCount)
+            .Select(_ =>
+                Task.Run(() =>
+                {
+                    BiMap<string, int> biMap = new();
 
-                     // Add initial data
-                     for (int i = 0; i < 100; i++)
-                     {
-                         biMap.Add($"key{i}", i);
-                     }
+                    // Add initial data
+                    for (int i = 0; i < 100; i++)
+                    {
+                        biMap.Add($"key{i}", i);
+                    }
 
-                     biMap.Clear();
+                    biMap.Clear();
 
-                     Assert.Empty(biMap);
+                    Assert.Empty(biMap);
 
-                     // Verify no stale reverse mappings
-                     for (int i = 0; i < 100; i++)
-                     {
-                         Assert.Null(biMap.GetKey(i));
-                     }
-                 }
-             )
-        );
+                    // Verify no stale reverse mappings
+                    for (int i = 0; i < 100; i++)
+                    {
+                        Assert.Null(biMap.GetKey(i));
+                    }
+                })
+            );
 
         await Task.WhenAll(tasks);
     }
@@ -553,26 +563,24 @@ public class BiMapTests
         const int readCount = 1000;
         int successfulReads = 0;
 
-        IEnumerable<Task> writeTasks = Enumerable.Range(0, writeCount).Select
-        (i =>
-             Task.Run(() => biMap.Add($"key{i}", i))
-        );
+        IEnumerable<Task> writeTasks = Enumerable
+            .Range(0, writeCount)
+            .Select(i => Task.Run(() => biMap.Add($"key{i}", i)));
 
-        IEnumerable<Task> readTasks = Enumerable.Range(0, readCount).Select
-        (i =>
-             Task.Run
-             (() =>
-                 {
-                     if (biMap.TryGetValue($"key{i}", out int value) && value == i)
-                     {
-                         if (biMap.TryGetKey(value, out string? key) && key == $"key{i}")
-                         {
-                             Interlocked.Increment(ref successfulReads);
-                         }
-                     }
-                 }
-             )
-        );
+        IEnumerable<Task> readTasks = Enumerable
+            .Range(0, readCount)
+            .Select(i =>
+                Task.Run(() =>
+                {
+                    if (biMap.TryGetValue($"key{i}", out int value) && value == i)
+                    {
+                        if (biMap.TryGetKey(value, out string? key) && key == $"key{i}")
+                        {
+                            Interlocked.Increment(ref successfulReads);
+                        }
+                    }
+                })
+            );
 
         await Task.WhenAll(writeTasks.Concat(readTasks));
 
@@ -593,18 +601,17 @@ public class BiMapTests
         const int threadCount = 100;
 
         // Multiple threads try to update the same keys with different values
-        IEnumerable<Task> tasks = Enumerable.Range(0, threadCount).Select
-        (value =>
-             Task.Run
-             (() =>
-                 {
-                     for (int key = 0; key < 10; key++)
-                     {
-                         biMap[$"key{key}"] = value;
-                     }
-                 }
-             )
-        );
+        IEnumerable<Task> tasks = Enumerable
+            .Range(0, threadCount)
+            .Select(value =>
+                Task.Run(() =>
+                {
+                    for (int key = 0; key < 10; key++)
+                    {
+                        biMap[$"key{key}"] = value;
+                    }
+                })
+            );
 
         await Task.WhenAll(tasks);
 
@@ -632,29 +639,25 @@ public class BiMapTests
             biMap.Add($"key{i}", i);
         }
 
-        Task enumerationTask = Task.Run
-        (() =>
+        Task enumerationTask = Task.Run(() =>
+        {
+            for (int i = 0; i < 100; i++)
             {
-                for (int i = 0; i < 100; i++)
-                {
-                    List<KeyValuePair<string, int>> snapshot = biMap.ToList();
-                    Assert.NotEmpty(snapshot);
-                }
+                List<KeyValuePair<string, int>> snapshot = biMap.ToList();
+                Assert.NotEmpty(snapshot);
             }
-        );
+        });
 
-        Task modificationTask = Task.Run
-        (() =>
+        Task modificationTask = Task.Run(() =>
+        {
+            for (int i = 100; i < 200; i++)
             {
-                for (int i = 100; i < 200; i++)
-                {
-                    biMap.Add($"key{i}", i);
-                }
+                biMap.Add($"key{i}", i);
             }
-        );
+        });
 
         await Task.WhenAll(enumerationTask, modificationTask);
     }
 
-#endregion
+    #endregion
 }

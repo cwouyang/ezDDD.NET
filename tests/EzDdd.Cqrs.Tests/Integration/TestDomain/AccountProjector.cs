@@ -79,7 +79,9 @@ public sealed class AccountProjector : IProjector<DomainEventData>
         {
             // In test scenarios: rethrow to make failures visible in test results
             // In production: log error and continue processing (don't crash projector)
-            await Console.Error.WriteLineAsync($"Error processing event {eventData.Id} (type: {eventData.EventType}): {ex.Message}");
+            await Console.Error.WriteLineAsync(
+                $"Error processing event {eventData.Id} (type: {eventData.EventType}): {ex.Message}"
+            );
             throw; // Rethrow for test observability
         }
     }
@@ -89,8 +91,7 @@ public sealed class AccountProjector : IProjector<DomainEventData>
     /// </summary>
     private async Task _HandleAccountCreatedAsync(AccountCreated @event)
     {
-        AccountSummaryReadModel readModel = new
-        (
+        AccountSummaryReadModel readModel = new(
             @event.AccountId,
             @event.Owner,
             @event.InitialBalance.Amount,
@@ -117,7 +118,7 @@ public sealed class AccountProjector : IProjector<DomainEventData>
         {
             Balance = existing.Balance + @event.Amount.Amount,
             LastTransactionDate = @event.OccurredOn,
-            TransactionCount = existing.TransactionCount + 1
+            TransactionCount = existing.TransactionCount + 1,
         };
 
         await _archive.SaveAsync(updated);
@@ -138,7 +139,7 @@ public sealed class AccountProjector : IProjector<DomainEventData>
         {
             Balance = existing.Balance - @event.Amount.Amount,
             LastTransactionDate = @event.OccurredOn,
-            TransactionCount = existing.TransactionCount + 1
+            TransactionCount = existing.TransactionCount + 1,
         };
 
         await _archive.SaveAsync(updated);
@@ -169,7 +170,7 @@ public sealed class AccountProjector : IProjector<DomainEventData>
             "MoneyDeposited" => DomainEventMapper.ToDomain<MoneyDeposited>(eventData),
             "MoneyWithdrawn" => DomainEventMapper.ToDomain<MoneyWithdrawn>(eventData),
             "AccountClosed" => DomainEventMapper.ToDomain<AccountClosed>(eventData),
-            _ => throw new InvalidOperationException($"Unknown event type: {eventData.EventType}")
+            _ => throw new InvalidOperationException($"Unknown event type: {eventData.EventType}"),
         };
     }
 }

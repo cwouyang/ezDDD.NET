@@ -83,48 +83,48 @@ namespace EzDdd.Cqrs.Query;
 ///             int TransactionCount,
 ///             DateTimeOffset LastTransactionDate
 ///         );
-/// 
+///
 ///         // Archive implementation (example: in-memory)
 ///         public class InMemoryAccountArchive : IArchive&lt;AccountSummaryReadModel, AccountId&gt;
 ///         {
 ///             private readonly ConcurrentDictionary&lt;AccountId, AccountSummaryReadModel&gt; _store = new();
-/// 
+///
 ///             public async Task&lt;AccountSummaryReadModel?&gt; FindByIdAsync(AccountId id)
 ///             {
 ///                 await Task.CompletedTask;
 ///                 _store.TryGetValue(id, out var readModel);
 ///                 return readModel;
 ///             }
-/// 
+///
 ///             public async Task SaveAsync(AccountSummaryReadModel data)
 ///             {
 ///                 await Task.CompletedTask;
 ///                 _store[data.AccountId] = data;
 ///             }
-/// 
+///
 ///             public async Task DeleteAsync(AccountSummaryReadModel data)
 ///             {
 ///                 await Task.CompletedTask;
 ///                 _store.TryRemove(data.AccountId, out _);
 ///             }
 ///         }
-/// 
+///
 ///         // Usage in query
 ///         public class GetAccountSummaryQuery
 ///             : IQuery&lt;GetAccountSummaryInput, GetAccountSummaryOutput&gt;
 ///         {
 ///             private readonly IArchive&lt;AccountSummaryReadModel, AccountId&gt; _archive;
-/// 
+///
 ///             public async Task&lt;GetAccountSummaryOutput&gt; ExecuteAsync(
 ///                 GetAccountSummaryInput input)
 ///             {
 ///                 var readModel = await _archive.FindByIdAsync(input.AccountId);
-/// 
+///
 ///                 if (readModel == null)
 ///                 {
 ///                     throw new UseCaseFailureException("Account not found");
 ///                 }
-/// 
+///
 ///                 return GetAccountSummaryOutput.Create()
 ///                     .SetAccountNumber(readModel.AccountNumber)
 ///                     .SetCustomerName(readModel.CustomerName)

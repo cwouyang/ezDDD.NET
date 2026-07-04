@@ -23,10 +23,10 @@ namespace EzDdd.Common;
 /// // Lambda implementation
 /// Converter&lt;string, int&gt; stringToInt = s =&gt; int.Parse(s);
 /// int result = stringToInt("42");
-/// 
+///
 /// // Method reference
 /// Converter&lt;string, int&gt; parser = int.Parse;
-/// 
+///
 /// // Multi-line lambda
 /// Converter&lt;User, UserDto&gt; converter = user =&gt;
 /// {

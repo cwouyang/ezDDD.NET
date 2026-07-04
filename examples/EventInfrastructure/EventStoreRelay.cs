@@ -116,7 +116,8 @@ public class EventStoreRelay : BackgroundService
         IEventStore eventStore,
         IMessageProducer<DomainEventData> messageProducer,
         ILogger<EventStoreRelay> logger,
-        int pollingIntervalMs = 100)
+        int pollingIntervalMs = 100
+    )
     {
         ArgumentNullException.ThrowIfNull(eventStore);
         ArgumentNullException.ThrowIfNull(messageProducer);
@@ -127,7 +128,8 @@ public class EventStoreRelay : BackgroundService
             throw new ArgumentOutOfRangeException(
                 nameof(pollingIntervalMs),
                 pollingIntervalMs,
-                "Polling interval must be greater than 0");
+                "Polling interval must be greater than 0"
+            );
         }
 
         _eventStore = eventStore;
@@ -170,24 +172,25 @@ public class EventStoreRelay : BackgroundService
     /// </remarks>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation(
-            "EventStoreRelay started with polling interval {Interval}ms",
-            _pollingIntervalMs);
+        _logger.LogInformation("EventStoreRelay started with polling interval {Interval}ms", _pollingIntervalMs);
 
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
                 // Get events after current index
-                IReadOnlyList<IInternalDomainEvent> newEvents =
-                    await _eventStore.GetEventsAfterAsync(_currentIndex, stoppingToken);
+                IReadOnlyList<IInternalDomainEvent> newEvents = await _eventStore.GetEventsAfterAsync(
+                    _currentIndex,
+                    stoppingToken
+                );
 
                 if (newEvents.Count > 0)
                 {
                     _logger.LogDebug(
                         "Polling event store: found {Count} new events after index {Index}",
                         newEvents.Count,
-                        _currentIndex);
+                        _currentIndex
+                    );
 
                     foreach (IInternalDomainEvent domainEvent in newEvents)
                     {
@@ -206,7 +209,8 @@ public class EventStoreRelay : BackgroundService
                                 "Published event {EventType} with ID {EventId} (index: {Index})",
                                 eventData.EventType,
                                 eventData.EventId,
-                                _currentIndex);
+                                _currentIndex
+                            );
                         }
                         catch (Exception publishEx)
                         {
@@ -215,7 +219,8 @@ public class EventStoreRelay : BackgroundService
                                 publishEx,
                                 "Failed to publish event {EventType} at index {Index}, will retry on next poll",
                                 domainEvent.GetType().Name,
-                                _currentIndex + 1);
+                                _currentIndex + 1
+                            );
 
                             // Don't increment currentIndex - will retry this event next time
                             break; // Stop processing this batch, retry from this event
@@ -238,15 +243,14 @@ public class EventStoreRelay : BackgroundService
                 _logger.LogError(
                     ex,
                     "EventStoreRelay encountered error at index {Index}, will retry on next poll",
-                    _currentIndex);
+                    _currentIndex
+                );
 
                 await Task.Delay(_pollingIntervalMs, stoppingToken);
             }
         }
 
-        _logger.LogInformation(
-            "EventStoreRelay stopped (published {Count} events total)",
-            _currentIndex + 1);
+        _logger.LogInformation("EventStoreRelay stopped (published {Count} events total)", _currentIndex + 1);
     }
 
     /// <summary>

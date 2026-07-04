@@ -21,7 +21,8 @@ namespace EzDdd.UseCase.Port.InOut.Messaging;
 ///     </para>
 /// </remarks>
 /// <typeparam name="TEvent">The type of external domain event this publisher publishes.</typeparam>
-public interface IExternalDomainEventPublisher<in TEvent> where TEvent : IExternalDomainEvent
+public interface IExternalDomainEventPublisher<in TEvent>
+    where TEvent : IExternalDomainEvent
 {
     /// <summary>
     ///     Publishes the given external domain event to an external system asynchronously.

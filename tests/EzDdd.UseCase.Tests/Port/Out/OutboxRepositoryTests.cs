@@ -6,7 +6,7 @@ namespace EzDdd.UseCase.Tests.Port.Out;
 
 public class OutboxRepositoryTests
 {
-#region Repository Instantiation Tests
+    #region Repository Instantiation Tests
 
     [Fact]
     public void OutboxRepository_CanBeInstantiated()
@@ -20,9 +20,9 @@ public class OutboxRepositoryTests
         Assert.IsAssignableFrom<IRepository<BankAccount, AccountId, IInternalDomainEvent>>(repository);
     }
 
-#endregion
+    #endregion
 
-#region Query Tests
+    #region Query Tests
 
     [Fact]
     public async Task FindByIdAsync_WhenNotFound_ReturnsNull()
@@ -56,9 +56,9 @@ public class OutboxRepositoryTests
         Assert.Equal(1000.00m, result.Balance);
     }
 
-#endregion
+    #endregion
 
-#region Save Tests
+    #region Save Tests
 
     [Fact]
     public async Task SaveAsync_PersistsAggregate()
@@ -105,8 +105,8 @@ public class OutboxRepositoryTests
         AccountId accountId = new("acc-101");
         BankAccount account = new(accountId, "Charlie", 750.00m);
 
-        RepositorySaveException exception = await Assert.ThrowsAsync<RepositorySaveException>
-        (async () => await repository.SaveAsync(account)
+        RepositorySaveException exception = await Assert.ThrowsAsync<RepositorySaveException>(async () =>
+            await repository.SaveAsync(account)
         );
 
         Assert.NotNull(exception.InnerException);
@@ -178,9 +178,9 @@ public class OutboxRepositoryTests
         Assert.Equal(2, loaded.Version); // 0 (AccountCreated) + 1 (Deposit 1) + 1 (Deposit 2) = 2
     }
 
-#endregion
+    #endregion
 
-#region Delete Tests
+    #region Delete Tests
 
     [Fact]
     public async Task DeleteAsync_RemovesAggregate()
@@ -199,9 +199,9 @@ public class OutboxRepositoryTests
         Assert.Null(result);
     }
 
-#endregion
+    #endregion
 
-#region Integration Tests
+    #region Integration Tests
 
     [Fact]
     public async Task FindByIdAsync_UsesMapper()
@@ -249,14 +249,13 @@ public class OutboxRepositoryTests
         Assert.Equal(1750.00m, final.Balance); // 1000 + 500 + 250
     }
 
-#endregion
+    #endregion
 
-#region Test Infrastructure
+    #region Test Infrastructure
 
     private record AccountId(string Value);
 
-    private record AccountCreated
-    (
+    private record AccountCreated(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -265,8 +264,7 @@ public class OutboxRepositoryTests
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent, IInternalDomainEvent.IConstructionEvent;
 
-    private record MoneyDeposited
-    (
+    private record MoneyDeposited(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -282,8 +280,7 @@ public class OutboxRepositoryTests
             Owner = owner;
             Balance = initialBalance;
 
-            AccountCreated @event = new
-            (
+            AccountCreated @event = new(
                 Guid.NewGuid(),
                 DateTimeOffset.UtcNow,
                 id.Value,
@@ -307,8 +304,7 @@ public class OutboxRepositoryTests
 
         public void Deposit(decimal amount)
         {
-            MoneyDeposited @event = new
-            (
+            MoneyDeposited @event = new(
                 Guid.NewGuid(),
                 DateTimeOffset.UtcNow,
                 Id.Value,
@@ -322,8 +318,7 @@ public class OutboxRepositoryTests
 
     private class BankAccountData : IOutboxData<AccountId>
     {
-        public BankAccountData
-        (
+        public BankAccountData(
             AccountId id,
             long version,
             IReadOnlyList<IDomainEvent> events,
@@ -357,8 +352,7 @@ public class OutboxRepositoryTests
     {
         public override BankAccountData ToData(BankAccount aggregate)
         {
-            return new BankAccountData
-            (
+            return new BankAccountData(
                 aggregate.Id,
                 aggregate.Version,
                 aggregate.GetDomainEvents(),
@@ -370,13 +364,7 @@ public class OutboxRepositoryTests
 
         public override BankAccount ToDomain(BankAccountData data)
         {
-            return new BankAccount
-            (
-                data.Id,
-                data.Owner,
-                data.Balance,
-                data.Version
-            );
+            return new BankAccount(data.Id, data.Owner, data.Balance, data.Version);
         }
     }
 
@@ -410,5 +398,5 @@ public class OutboxRepositoryTests
         }
     }
 
-#endregion
+    #endregion
 }

@@ -8,8 +8,7 @@ public class ExternalDomainEventTests
     [Fact]
     public void ExternalDomainEvent_ShouldExtendIDomainEvent()
     {
-        TestExternalEvent externalEvent = new
-        (
+        TestExternalEvent externalEvent = new(
             Guid.NewGuid(),
             DateTimeOffset.UtcNow,
             "customer-123",
@@ -23,8 +22,7 @@ public class ExternalDomainEventTests
     [Fact]
     public void ExternalDomainEvent_ShouldBeDistinguishableFromInternalDomainEvent()
     {
-        TestExternalEvent externalEvent = new
-        (
+        TestExternalEvent externalEvent = new(
             Guid.NewGuid(),
             DateTimeOffset.UtcNow,
             "customer-123",
@@ -32,8 +30,7 @@ public class ExternalDomainEventTests
             "customer-123"
         );
 
-        TestInternalEvent internalEvent = new
-        (
+        TestInternalEvent internalEvent = new(
             Guid.NewGuid(),
             DateTimeOffset.UtcNow,
             "account-456",
@@ -49,8 +46,7 @@ public class ExternalDomainEventTests
     [Fact]
     public void ExternalDomainEvent_ShouldSupportTypeChecking()
     {
-        TestExternalEvent externalEvent = new
-        (
+        TestExternalEvent externalEvent = new(
             Guid.NewGuid(),
             DateTimeOffset.UtcNow,
             "customer-123",
@@ -63,14 +59,12 @@ public class ExternalDomainEventTests
         Assert.True(domainEvent is IExternalDomainEvent);
         Assert.False(domainEvent is IInternalDomainEvent);
 
-        bool isExternal = domainEvent.GetType().GetInterfaces()
-                                     .Any(i => i == typeof(IExternalDomainEvent));
+        bool isExternal = domainEvent.GetType().GetInterfaces().Any(i => i == typeof(IExternalDomainEvent));
         Assert.True(isExternal);
     }
 
     // Test event for external domain event
-    private record TestExternalEvent
-    (
+    private record TestExternalEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -79,8 +73,7 @@ public class ExternalDomainEventTests
     ) : IExternalDomainEvent;
 
     // Test event for internal domain event (for comparison)
-    private record TestInternalEvent
-    (
+    private record TestInternalEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,

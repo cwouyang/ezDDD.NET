@@ -31,13 +31,14 @@ namespace EzDdd.Entity;
 /// {
 ///     // Event sourcing implementation...
 /// }
-/// 
+///
 /// // Usage: polymorphic event source
 /// IDomainEventSource&lt;IInternalDomainEvent&gt; eventSource = aggregateRoot;
 /// IReadOnlyList&lt;IInternalDomainEvent&gt; events = eventSource.GetDomainEvents();
 /// </code>
 /// </example>
-public interface IDomainEventSource<TEvent> where TEvent : class, IInternalDomainEvent
+public interface IDomainEventSource<TEvent>
+    where TEvent : class, IInternalDomainEvent
 {
     /// <summary>
     ///     Applies a domain event to the aggregate, adding it to the pending events collection.

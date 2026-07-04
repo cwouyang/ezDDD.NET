@@ -14,17 +14,25 @@ public sealed record Money(decimal Amount, string Currency = "USD") : IValueObje
             throw new InvalidOperationException($"Cannot add different currencies: {Currency} and {other.Currency}");
         }
 
-        return this with { Amount = Amount + other.Amount };
+        return this with
+        {
+            Amount = Amount + other.Amount,
+        };
     }
 
     public Money Subtract(Money other)
     {
         if (Currency != other.Currency)
         {
-            throw new InvalidOperationException($"Cannot subtract different currencies: {Currency} and {other.Currency}");
+            throw new InvalidOperationException(
+                $"Cannot subtract different currencies: {Currency} and {other.Currency}"
+            );
         }
 
-        return this with { Amount = Amount - other.Amount };
+        return this with
+        {
+            Amount = Amount - other.Amount,
+        };
     }
 
     public bool IsPositive()
