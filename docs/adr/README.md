@@ -54,7 +54,7 @@ Create an ADR when making decisions about:
 - Code formatting changes
 - Internal refactoring without API impact
 
-**Rule of thumb**: If a decision from [DOTNET_PORT.md](../../DOTNET_PORT.md) is confirmed, write an ADR.
+**Rule of thumb**: If an architectural decision is confirmed, write an ADR.
 
 ---
 
@@ -123,10 +123,8 @@ What decision did we make?
 
 ```
 ADR (docs/adr/*.md)
-  ↓ Referenced by
-DOTNET_PORT.md
   ↓ Summarized in
-CLAUDE.md
+AGENTS.md
 ```
 
 ### 1. ADR = Single Source of Truth
@@ -136,39 +134,10 @@ CLAUDE.md
 - To change a decision, write a **new ADR** that supersedes the old one
 - File naming: `0001-target-framework.md`, `0002-package-naming.md`
 
-### 2. DOTNET_PORT.md = Planning Document + ADR Index
+### 2. AGENTS.md = Quick Reference Card
 
-- Maintains **overview** of the porting plan
-- Each decision includes an **ADR link**
-- Example format:
-
-```markdown
-## Core Design Decisions
-
-### 1. Complete Reimplementation
-
-**Status**: ✅ Accepted (See [ADR-0005](docs/adr/0005-complete-reimplementation-approach.md))
-
-**Summary**: We will completely reimplement ezddd in .NET rather than wrap existing libraries...
-```
-
-### 3. CLAUDE.md = Quick Reference Card
-
-- **Most concise** summary for Claude Code
-- Listed format with ADR links
-- Example:
-
-```markdown
-## Key Design Decisions
-
-> For detailed decisions, see ADR or DOTNET_PORT.md
-
-### Confirmed Decisions
-
-- **Target Framework**: .NET 8+ ([ADR-0001](docs/adr/0001-target-framework.md))
-- **Package Naming**: ezDDD/EzDdd convention ([ADR-0002](docs/adr/0002-package-naming-and-structure.md))
-- **Zero Dependencies**: Built-in .NET APIs only ([ADR-0004](docs/adr/0004-zero-third-party-dependency-principle.md))
-```
+- **Most concise** summary of the rules that affect day-to-day development
+- References ADRs for the full rationale (e.g. the R1–R3 event sourcing rules point to ADR-0011)
 
 ### Standard Workflow After Decision Confirmation
 
@@ -185,30 +154,23 @@ CLAUDE.md
 └──────────┬──────────────────────────┘
            ↓
 ┌─────────────────────────────────────┐
-│ Step 2: Update DOTNET_PORT.md       │
-│ - Add summary in relevant section   │
-│ - Add ADR link [ADR-NNNN](...)     │
-└──────────┬──────────────────────────┘
-           ↓
-┌─────────────────────────────────────┐
-│ Step 3: Update CLAUDE.md            │
-│ - Add to "Confirmed Decisions"      │
-│ - Include ADR link                  │
-└──────────┬──────────────────────────┘
-           ↓
-┌─────────────────────────────────────┐
-│ Step 4: Update docs/adr/README.md   │
+│ Step 2: Update docs/adr/README.md   │
 │ - Add to ADR Index below            │
 │ - Update status and date            │
+└──────────┬──────────────────────────┘
+           ↓
+┌─────────────────────────────────────┐
+│ Step 3: Update AGENTS.md if the     │
+│ decision changes day-to-day rules   │
 └─────────────────────────────────────┘
 ```
 
 ### Preventing Conflicts
 
-1. **Unidirectional References**: Only DOTNET_PORT.md and CLAUDE.md reference ADRs, not vice versa
+1. **Unidirectional References**: Guidance documents reference ADRs; ADRs do not depend on guidance documents
 2. **ADR Immutability**: Once Accepted, freeze content; changes require new ADR
 3. **Explicit ADR Numbers**: Always include `[ADR-NNNN]` links in all locations
-4. **Periodic Sync Check**: When confirming decisions, update all three locations simultaneously
+4. **Periodic Sync Check**: When confirming decisions, update the ADR, this index, and AGENTS.md together
 
 ---
 
@@ -353,10 +315,9 @@ done
 - [ADR Planning Document](ADR_PLANNING.md) - Roadmap of planned ADRs
 - [ADR Template](ADR.template.md) - Standard ADR format
 - [ADR Maintenance Checklist](ADR_MAINTENANCE_CHECKLIST.md) - Quality guidelines
-- [DOTNET_PORT.md](../../DOTNET_PORT.md) - Technical decisions and planning
-- [CLAUDE.md](../../CLAUDE.md) - Development guidance
+- [AGENTS.md](../../AGENTS.md) - Development guidance
 - [Java ezddd](https://gitlab.com/TeddyChen/ezddd) - Original implementation
-- [uContract.NET ADRs](../../../uContract.NET/docs/adr/) - Reference implementation
+- [uContract.NET ADRs](https://github.com/cwouyang/uContract.NET/tree/master/docs/adr) - Reference implementation
 
 ---
 

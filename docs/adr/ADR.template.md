@@ -144,6 +144,6 @@ Template Usage Notes:
 4. Keep the structure consistent across all ADRs
 5. After creating ADR, update:
    - docs/adr/README.md (ADR Index)
-   - ../../DOTNET_PORT.md (relevant section)
+   - Related project planning documents (relevant section)
    - ../../CLAUDE.md (Confirmed Decisions)
 -->

@@ -439,7 +439,7 @@ public interface IAggregateRoot<TId, TEvent> : IEntity<TId>
 
 - **Related to**:
   - [ADR-0010: EsAggregateRoot Event Sourcing Implementation](0010-esaggregate-root-event-sourcing-implementation.md) - Extends AggregateRoot
-  - [ADR-0011: Async/Await Throughout](planned) - Why Apply() is synchronous
+  - ADR-0011: Async/Await Throughout (planned) - Why Apply() is synchronous
 
 ---
 
@@ -562,8 +562,8 @@ public void AggregateRoot_ThreadSafe_ConcurrentEventAddition()
 ## References
 
 - **Java ezddd Source**:
-  - `path/to/local/checkout Frame\ezddd\ezddd-entity\src\main\java\tw\teddysoft\ezddd\entity\AggregateRoot.java`
-  - `path/to/local/checkout Frame\ezddd\ezddd-entity\src\main\java\tw\teddysoft\ezddd\entity\DomainEventSource.java`
+  - `ezddd-entity/src/main/java/tw/teddysoft/ezddd/entity/AggregateRoot.java`
+  - `ezddd-entity/src/main/java/tw/teddysoft/ezddd/entity/DomainEventSource.java`
 
 - **DDD Patterns**:
   - Evans, Eric. *Domain-Driven Design*. Addison-Wesley, 2003. Chapter 6: "Aggregates"
@@ -578,7 +578,7 @@ public void AggregateRoot_ThreadSafe_ConcurrentEventAddition()
   - Gamma et al. *Design Patterns*. Addison-Wesley, 1994. "Template Method" pattern
 
 - **Internal Documents**:
-  - [DOTNET_PORT.md](../../DOTNET_PORT.md) - Section "核心介面 > 實體層 > AggregateRoot"
+  - Internal porting notes (not retained) - Section "核心介面 > 實體層 > AggregateRoot"
   - [CLAUDE.md](../../CLAUDE.md) - Section "Important Implementation Rules > Event Sourcing Implementation"
 
 ---

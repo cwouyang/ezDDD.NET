@@ -134,7 +134,7 @@ See the [Migration Guide](docs/MIGRATION_GUIDE.md) for complete migration instru
 
 If you encounter any issues or have suggestions:
 - **Bug Reports**: [GitHub Issues](https://github.com/cwouyang/ezDDD.NET/issues)
-- **Feature Requests**: [GitHub Discussions](https://github.com/cwouyang/ezDDD.NET/discussions)
+- **Feature Requests**: [GitHub Issues](https://github.com/cwouyang/ezDDD.NET/issues)
 
 ---
 

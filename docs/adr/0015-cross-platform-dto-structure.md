@@ -500,7 +500,7 @@ function EventLog() {
 - Phase 3 final review report - Identified DTO incompatibility as critical issue (internal working note, not retained in the repository)
 - Phase 3 Group 4 review - Critical Issue #2: Structure Incompatibility, lines 102-170 (internal working note, not retained in the repository)
 - [InternalDomainEventDto.cs](../../src/EzDdd.UseCase/Port/InOut/InternalDomainEventDto.cs) - Implementation (lines 66-117)
-- [Java InternalDomainEventDto.java](../../../../ezddd/ezddd-usecase/src/main/java/tw/teddysoft/ezddd/usecase/port/inout/domainevent/InternalDomainEventDto.java) - Java reference
+- `ezddd-usecase/src/main/java/tw/teddysoft/ezddd/usecase/port/inout/domainevent/InternalDomainEventDto.java` - Java reference
 - Phase 3 post-review session notes - F.3 implementation record, lines 106-144 (internal working note, not retained in the repository)
 
 ---

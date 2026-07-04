@@ -77,7 +77,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
 3. Update metadata (Created, Last Updated dates)
 
 ### Step 2: Identify ADR Topics
-- Review your project planning documents (e.g., DOTNET_PORT.md, DESIGN_CHECKLIST.md)
+- Review your project planning documents (e.g., DESIGN.md, DESIGN_CHECKLIST.md)
 - List all significant architectural decisions to be made
 - For each decision, create an ADR entry below
 
@@ -269,7 +269,7 @@ Add custom fields if helpful:
 
 ### 4. Integration with Project Docs
 - Reference your project's planning documents in "Planning Docs Section"
-- Examples: DOTNET_PORT.md, DESIGN.md, ARCHITECTURE.md, CLAUDE.md
+- Examples: DESIGN.md, ARCHITECTURE.md, CLAUDE.md
 
 ---
 

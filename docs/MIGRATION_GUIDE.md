@@ -1399,7 +1399,6 @@ public class SqlRepositoryPeer<D, ID> : IRepositoryPeer<D, ID>
 
 ## Further Reading
 
-- **DOTNET_PORT.md** - Technical design decisions and architecture
 - **ROADMAP.md** - Development progress and milestones
 - **ADR Index** (docs/adr/README.md) - Architecture Decision Records
 

@@ -523,7 +523,7 @@ Minimize breaking changes in foundational modules (Common, Entity).
 
 - [Clean Architecture (Robert C. Martin)](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
 - [Java ezddd Module Structure](https://gitlab.com/TeddyChen/ezddd)
-- [DOTNET_PORT.md - 模組架構](../../DOTNET_PORT.md#模組架構)
+- Internal porting notes (not retained) - 模組架構
 - [ADR-0002: Package Naming and Structure](0002-package-naming-and-structure.md)
 - [.NET Library Design Guidelines](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/)
 

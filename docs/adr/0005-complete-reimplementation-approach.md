@@ -279,8 +279,8 @@ public class CreateWorkflowHandler : IRequestHandler<CreateWorkflowCommand, Crea
 ## References
 
 - [Java ezddd Repository](https://gitlab.com/TeddyChen/ezddd) - Source of truth for behavior
-- [DOTNET_PORT.md - 完全重新實作](../../DOTNET_PORT.md#1-完全重新實作)
-- [DOTNET_PORT.md - .NET 生態系統現況分析](../../DOTNET_PORT.md#net-生態系統現況分析)
+- Internal porting notes (not retained) - 完全重新實作
+- Internal porting notes (not retained) - .NET 生態系統現況分析
 - [MediatR GitHub](https://github.com/jbogard/MediatR)
 - [EventFlow GitHub](https://github.com/eventflow/EventFlow)
 - [Marten GitHub](https://github.com/JasperFx/marten)
