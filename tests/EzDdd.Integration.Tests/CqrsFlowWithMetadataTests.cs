@@ -37,6 +37,7 @@ namespace EzDdd.Integration.Tests;
 ///         introduced in Java ezddd 4.1.0 for idempotency and distributed tracing support.
 ///     </para>
 /// </remarks>
+[Collection("DomainEventTypeMapper")]
 public sealed class CqrsFlowWithMetadataTests
 {
     #region Event Replay with Metadata Tests
