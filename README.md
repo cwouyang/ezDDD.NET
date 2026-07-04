@@ -1155,20 +1155,14 @@ public sealed class BankAccount : EsAggregateRoot<AccountId, IInternalDomainEven
   - Follows Keep a Changelog / Semantic Versioning
 
 ### Developer Documentation
-- 🏗️ **[DOTNET_PORT.md](DOTNET_PORT.md)** - Technical planning and design decisions
-  - Complete porting plan and technical decisions
-  - API design documentation
-  - Cross-references to all ADRs
+- 👨‍💻 **[AGENTS.md](AGENTS.md)** - Development standards and workflow
+  - Build/test commands and module architecture
+  - TDD, Tidy First, and ADR conventions
+  - Key rules and gotchas
 
-- 👨‍💻 **[CLAUDE.md](CLAUDE.md)** - Development guidance and workflow
-  - Development guidelines and session context
-  - Phase tracking and progress
-  - Workflow instructions
-
-- 🗺️ **[ROADMAP.md](ROADMAP.md)** - Project roadmap and progress (97% complete)
-  - Complete development roadmap with session logs
-  - Phase breakdown and timeline
-  - Progress tracking and milestones
+- 🗺️ **[ROADMAP.md](ROADMAP.md)** - Project roadmap
+  - Current status and release target
+  - Future considerations and upstream tracking
 
 - 📋 **[Architecture Decision Records](docs/adr/)** - 27 ADRs documenting design decisions
   - **Stage 1**: Core Architecture (ADR-0001 to ADR-0006)
@@ -1226,12 +1220,12 @@ dotnet pack -c Release
 
 ## Contributing
 
-Contributions are welcome! Please see [DOTNET_PORT.md](DOTNET_PORT.md) for development guidelines.
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
 
 **Before contributing**:
 1. Read the [Architecture Decision Records](docs/adr/) to understand design rationale
 2. Review the [ADR_PLANNING.md](docs/adr/ADR_PLANNING.md) for planned decisions
-3. Follow the coding standards in [CLAUDE.md](CLAUDE.md)
+3. Follow the coding standards in [AGENTS.md](AGENTS.md)
 4. Write tests BEFORE implementation (TDD)
 5. Maintain >90% unit test coverage
 6. Update ADRs and documentation when making architectural changes
@@ -1277,7 +1271,7 @@ See [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt) for the required attribut
 
 - 📖 **Documentation**: See [docs/](docs/) directory for comprehensive guides
 - 🐛 **Bug Reports**: [GitHub Issues](https://github.com/cwouyang/ezDDD.NET/issues)
-- 💡 **Feature Requests**: [GitHub Discussions](https://github.com/cwouyang/ezDDD.NET/discussions)
+- 💡 **Feature Requests**: [GitHub Issues](https://github.com/cwouyang/ezDDD.NET/issues)
 - 💬 **Questions**: [Stack Overflow](https://stackoverflow.com/questions/tagged/ezddd-dotnet) (tag: `ezddd-dotnet`)
 
 ---

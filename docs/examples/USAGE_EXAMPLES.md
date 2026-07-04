@@ -3790,7 +3790,6 @@ builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 - [API Reference](API_REFERENCE.md) - Complete API documentation
 - [Architecture Decision Records](../adr/) - Design decisions
 - [README.md](../../README.md) - Project overview
-- [DOTNET_PORT.md](../../DOTNET_PORT.md) - Technical planning and design
 
 ---
 

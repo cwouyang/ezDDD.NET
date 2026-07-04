@@ -360,8 +360,8 @@ public async Task ReconcileAsync_WithExpiredOrders_DeletesThem()
   - `da156c6` - Add Reconciler interface
   - `f377dcf` - Add NullContext class
   - `d4ed869` - Add reconciler examples
-- **[DOTNET_PORT.md](../../DOTNET_PORT.md)** - Java 4.1.0 Synchronization Plan, Stage S2 (lines 293-318)
-- **[ROADMAP.md](../../ROADMAP.md)** - Phase 6 Stage S2 (lines 293-318)
+- **Internal porting notes (not retained)** - Java 4.1.0 Synchronization Plan, Stage S2 (lines 293-318)
+- ROADMAP.md Phase 6 Stage S2 section (historical; the phase breakdown has since been removed from the roadmap)
 - **Null Object Pattern**: [Martin Fowler](https://martinfowler.com/eaaCatalog/specialCase.html)
 
 ---

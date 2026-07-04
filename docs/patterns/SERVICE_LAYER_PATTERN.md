@@ -768,7 +768,7 @@ public class WithdrawMoneyService
 
 ### ezDDD.NET Documentation
 
-- **[DOTNET_PORT.md](../../DOTNET_PORT.md)** - Java 4.1.0 Synchronization Plan (Stage S4)
+- Internal porting notes (not retained) - Java 4.1.0 Synchronization Plan (Stage S4)
 - **[ADR-0026](../adr/0026-service-layer-pattern.md)** - Service Layer Pattern Decision
 - **[TRANSACTION_BOUNDARY_GUIDE.md](../TRANSACTION_BOUNDARY_GUIDE.md)** - Where transactions belong
 

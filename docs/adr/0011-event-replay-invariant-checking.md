@@ -528,8 +528,8 @@ public abstract class EsAggregateRoot<TId, TEvent>
   - [ADR-0010: EsAggregateRoot Event Sourcing Implementation](0010-esaggregate-root-event-sourcing-implementation.md) - Defines Apply() and R1/R2/R3 rules
 
 - **Related to**:
-  - [ADR-0016: Reflection for Aggregate Reconstruction](planned) - Details constructor caching and optimization
-  - [ADR-0018: Exception Hierarchy Design](planned) - AggregateReplayException and EventReplayException
+  - ADR-0016: Reflection for Aggregate Reconstruction (planned) - Details constructor caching and optimization
+  - ADR-0018: Exception Hierarchy Design (planned) - AggregateReplayException and EventReplayException
 
 ---
 
@@ -652,7 +652,7 @@ public class Order : EsAggregateRoot<Guid, InternalDomainEvent>
 ## References
 
 - **Java ezddd Source**:
-  - `path/to/local/checkout Frame\ezddd\ezddd-entity\src\main\java\tw\teddysoft\ezddd\entity\EsAggregateRoot.java`
+  - `ezddd-entity/src/main/java/tw/teddysoft/ezddd/entity/EsAggregateRoot.java`
 
 - **Event Sourcing References**:
   - Young, Greg. ["Versioning in an Event Sourced System"](https://leanpub.com/esversioning)
@@ -668,7 +668,7 @@ public class Order : EsAggregateRoot<Guid, InternalDomainEvent>
   - Richter, Jeffrey. *CLR via C#*. Chapter on "Reflection" performance characteristics
 
 - **Internal Documents**:
-  - [DOTNET_PORT.md](../../DOTNET_PORT.md) - Section "技術實作細節 > 1. 事件溯源實作"
+  - Internal porting notes (not retained) - Section "技術實作細節 > 1. 事件溯源實作"
   - [CLAUDE.md](../../CLAUDE.md) - Section "Event Sourcing Implementation"
 
 ---

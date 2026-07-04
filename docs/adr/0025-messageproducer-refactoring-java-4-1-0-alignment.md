@@ -503,7 +503,7 @@ See "Alternatives Considered" section above for detailed analysis of:
   - `InMemoryOutboxStoreRelay.java` (relay pattern example)
 
 ### Internal Documents
-- [DOTNET_PORT.md](../../DOTNET_PORT.md) - Java 4.1.0 Synchronization Plan
+- Internal porting notes (not retained) - Java 4.1.0 Synchronization Plan
 - Stage S3 implementation plan (internal working note, superseded by this ADR)
 - Checkpoint 3 redo guide - Repository integration guidance (internal working note, not retained in the repository)
 - [ADR-0012](0012-resource-management-event-bus-producers.md) - Resource management foundation
@@ -541,7 +541,7 @@ See "Alternatives Considered" section above for detailed analysis of:
 - [x] Remove IReactor tests from InputOutputTests and ProjectorTests
 - [x] Verify all 487 tests passing
 - [x] Update README.md with new pattern examples
-- [x] Update DOTNET_PORT.md with ADR-0025 reference
+- [x] Update planning documents with ADR-0025 reference
 - [x] Update ROADMAP.md marking Stage S3 complete
 - [x] Update CLAUDE.md reflecting Stage S3 completion
 - [x] Update docs/adr/README.md with ADR-0025 entry

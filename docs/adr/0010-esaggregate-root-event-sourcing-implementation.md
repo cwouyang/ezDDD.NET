@@ -583,7 +583,7 @@ public sealed override async Task ApplyAsync(TEvent @event)
 
 - **Related to**:
   - [ADR-0011: Event Replay and Invariant Checking](0011-event-replay-invariant-checking.md) - Details replay mechanism
-  - [ADR-0016: Reflection for Aggregate Reconstruction](planned) - How repositories instantiate aggregates via replay constructor
+  - ADR-0016: Reflection for Aggregate Reconstruction (planned) - How repositories instantiate aggregates via replay constructor
 
 ---
 
@@ -813,7 +813,7 @@ public void ReplayEvents_ReconstructsCorrectState()
 ## References
 
 - **Java ezddd Source**:
-  - `path/to/local/checkout Frame\ezddd\ezddd-entity\src\main\java\tw\teddysoft\ezddd\entity\EsAggregateRoot.java`
+  - `ezddd-entity/src/main/java/tw/teddysoft/ezddd/entity/EsAggregateRoot.java`
 
 - **Event Sourcing Correctness**:
   - Chen, Teddy. "Aggregate Correctness Rules in Event Sourcing" (internal specification)
@@ -829,7 +829,7 @@ public void ReplayEvents_ReconstructsCorrectState()
   - [Type Patterns](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/type-testing-and-cast#type-testing-with-pattern-matching)
 
 - **Internal Documents**:
-  - [DOTNET_PORT.md](../../DOTNET_PORT.md) - Section "重要實作規則 > Aggregate Correctness Rules"
+  - Internal porting notes (not retained) - Section "重要實作規則 > Aggregate Correctness Rules"
   - [CLAUDE.md](../../CLAUDE.md) - Section "Event Sourcing Rules (Priority: 43)"
 
 ---

@@ -33,7 +33,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
   - Modern C# features (nullable reference types, records, pattern matching)
   - Async/await maturity
 - **Status**: ✅ Completed
-- **Planning Docs Section**: DOTNET_PORT.md - "Target Framework"
+- **Planning Docs Section**: Internal porting notes (not retained) - "Target Framework"
 - **Dependencies**: None (foundational)
 
 #### ADR-0002: Package Naming and Structure
@@ -43,7 +43,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
   - Package IDs: ezDDD.Common, ezDDD.Entity, etc.
   - Namespaces: EzDdd.Common, EzDdd.Entity, etc.
 - **Status**: ✅ Completed
-- **Planning Docs Section**: DOTNET_PORT.md - "Naming Convention"
+- **Planning Docs Section**: Internal porting notes (not retained) - "Naming Convention"
 - **Dependencies**: None
 
 #### ADR-0003: Module Architecture and Dependency Chain
@@ -53,7 +53,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
   - No circular dependencies
   - Clear separation of concerns
 - **Status**: ✅ Completed
-- **Planning Docs Section**: DOTNET_PORT.md - "Module Architecture"
+- **Planning Docs Section**: Internal porting notes (not retained) - "Module Architecture"
 - **Dependencies**: None (foundational)
 
 #### ADR-0004: Zero Third-Party Dependency Principle
@@ -63,7 +63,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
   - System.Text.Json for serialization
   - No MediatR, no AutoMapper, no Newtonsoft.Json
 - **Status**: ✅ Completed
-- **Planning Docs Section**: DOTNET_PORT.md - "Dependencies"
+- **Planning Docs Section**: Internal porting notes (not retained) - "Dependencies"
 - **Dependencies**: ADR-0001
 
 #### ADR-0005: Complete Reimplementation Approach
@@ -73,7 +73,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
   - Maintain semantic parity (~95-99%)
   - Leverage .NET strengths (async/await, nullable types)
 - **Status**: ✅ Completed
-- **Planning Docs Section**: DOTNET_PORT.md - "Porting Strategy"
+- **Planning Docs Section**: Internal porting notes (not retained) - "Porting Strategy"
 - **Dependencies**: ADR-0001
 
 #### ADR-0006: uContract.NET Integration for Design by Contract
@@ -83,7 +83,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
   - Essential for EsAggregateRoot invariant checking
   - Part of TeddySoft ecosystem (not third-party)
 - **Status**: ✅ Completed
-- **Planning Docs Section**: DOTNET_PORT.md - "Dependencies"
+- **Planning Docs Section**: Internal porting notes (not retained) - "Dependencies"
 - **Dependencies**: ADR-0004
 - **Related**: ADR-0010, ADR-0011 (use uContract for invariants)
 
@@ -101,7 +101,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
   - IValueObject as marker interface
   - Immutability enforcement strategies
 - **Status**: ✅ Completed
-- **Planning Docs Section**: DOTNET_PORT.md - "Entity Layer"
+- **Planning Docs Section**: Internal porting notes (not retained) - "Entity Layer"
 - **Dependencies**: ADR-0003
 
 #### ADR-0008: IDomainEvent Hierarchy
@@ -111,7 +111,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
   - InternalDomainEvent vs. ExternalDomainEvent
   - IConstructionEvent and IDestructionEvent markers
 - **Status**: ✅ Completed
-- **Planning Docs Section**: DOTNET_PORT.md - "Domain Events"
+- **Planning Docs Section**: Internal porting notes (not retained) - "Domain Events"
 - **Dependencies**: ADR-0007
 
 #### ADR-0009: AggregateRoot Base Class Design
@@ -121,7 +121,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
   - Version tracking
   - Event clearing semantics
 - **Status**: ✅ Completed
-- **Planning Docs Section**: DOTNET_PORT.md - "Aggregate Patterns"
+- **Planning Docs Section**: Internal porting notes (not retained) - "Aggregate Patterns"
 - **Dependencies**: ADR-0007, ADR-0008
 
 #### ADR-0010: EsAggregateRoot Event Sourcing Implementation
@@ -131,7 +131,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
   - Template method pattern (Apply calls When)
   - ConstructorInfo caching for performance
 - **Status**: ✅ Completed
-- **Planning Docs Section**: DOTNET_PORT.md - "Event Sourcing"
+- **Planning Docs Section**: Internal porting notes (not retained) - "Event Sourcing"
 - **Dependencies**: ADR-0006, ADR-0009
 
 #### ADR-0011: Event Replay and Invariant Checking (R1, R2, R3)
@@ -141,7 +141,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
   - R2 (Command): Check invariants before and after
   - R3 (Destruction): No post-invariant check
 - **Status**: ✅ Completed
-- **Planning Docs Section**: DOTNET_PORT.md - "Event Sourcing Rules"
+- **Planning Docs Section**: Internal porting notes (not retained) - "Event Sourcing Rules"
 - **Dependencies**: ADR-0010
 
 ---
@@ -198,7 +198,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
   - IUseCase: ExecuteAsync
   - In-memory operations remain sync
 - **Status**: ✅ Completed
-- **Planning Docs Section**: DOTNET_PORT.md - "Async/Await"
+- **Planning Docs Section**: Internal porting notes (not retained) - "Async/Await"
 - **Dependencies**: ADR-0001
 - **Related**: All UseCase and Repository ADRs
 
@@ -303,7 +303,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
   - Java 4.1.0 feature addition
 - **Status**: ⏳ Planned (S2)
 - **Priority**: 🟢 NEW FEATURE
-- **Planning Docs Section**: DOTNET_PORT.md - "Java 4.1.0 Synchronization Plan, Stage 3"
+- **Planning Docs Section**: Internal porting notes (not retained) - "Java 4.1.0 Synchronization Plan, Stage 3"
 - **Dependencies**: ADR-0003 (UseCase layer pattern)
 - **Related**: ADR-0020 (similar to IProjector lifecycle)
 - **Estimated Effort**: 4-6 hours
@@ -320,7 +320,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
 - **Status**: ✅ Completed (S3, 2026-01-07, 3 hours)
 - **ADR Document**: [ADR-0025](0025-messageproducer-refactoring-java-4-1-0-alignment.md)
 - **Priority**: 🔴 BREAKING (Critical)
-- **Planning Docs Section**: DOTNET_PORT.md - "Java 4.1.0 Synchronization Plan, Stage 4"
+- **Planning Docs Section**: Internal porting notes (not retained) - "Java 4.1.0 Synchronization Plan, Stage 4"
 - **Dependencies**: ADR-0012 (extends resource management), ADR-0024 (metadata in messages)
 - **Related**: ADR-0013 (messaging patterns)
 - **Estimated Effort**: 10-14 hours (most complex)
@@ -336,7 +336,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
 - **Status**: ✅ Completed (S4, 2026-01-08, 6 hours)
 - **ADR Document**: [ADR-0026](0026-service-layer-pattern.md)
 - **Priority**: 🟡 OPTIONAL (Guidance)
-- **Planning Docs Section**: DOTNET_PORT.md - "Java 4.1.0 Synchronization Plan, Stage 5"
+- **Planning Docs Section**: Internal porting notes (not retained) - "Java 4.1.0 Synchronization Plan, Stage 5"
 - **Dependencies**: ADR-0003 (UseCase layer)
 - **Related**: ADR-0017 (UseCase patterns)
 - **Estimated Effort**: 6-8 hours
@@ -352,7 +352,7 @@ This document provides a **roadmap for all Architecture Decision Records (ADRs)*
   - Java 4.1.0 quality improvements
 - **Status**: ⏳ Planned (S5)
 - **Priority**: 🔵 QUALITY
-- **Planning Docs Section**: DOTNET_PORT.md - "Java 4.1.0 Synchronization Plan, Stage 6"
+- **Planning Docs Section**: Internal porting notes (not retained) - "Java 4.1.0 Synchronization Plan, Stage 6"
 - **Dependencies**: All core implementation ADRs
 - **Related**: ADR-0004 (BCL usage), ADR-0014 (equals/hashCode)
 - **Estimated Effort**: 6-8 hours
@@ -532,7 +532,7 @@ Before marking any ADR as "Accepted", verify it meets quality standards:
 - ✅ At least 2 alternatives documented
 - ✅ Consequences analyzed (positive/negative/neutral)
 - ✅ Related ADRs cross-referenced
-- ✅ All three locations updated: ADR file → DOTNET_PORT.md → CLAUDE.md
+- ✅ All locations updated: ADR file → docs/adr/README.md index → AGENTS.md
 
 ---
 

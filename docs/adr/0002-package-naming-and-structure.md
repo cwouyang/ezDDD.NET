@@ -215,7 +215,7 @@ ezDDD.sln                           (Solution file)
 
 ## References
 
-- [DOTNET_PORT.md - 命名決策](../../DOTNET_PORT.md#0-命名決策-已確認-2025-10-28)
+- Internal porting notes (not retained) - 命名決策
 - [.NET Naming Guidelines](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/naming-guidelines)
 - [NuGet Package ID Guidelines](https://learn.microsoft.com/en-us/nuget/create-packages/creating-a-package#choose-a-unique-package-identifier-and-version-number)
 - [Java ezddd Repository](https://gitlab.com/TeddyChen/ezddd)

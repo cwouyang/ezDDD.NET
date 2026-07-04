@@ -338,7 +338,7 @@ private static readonly Lazy<BiMap<string, Type>> Mapper =
 
 **Iteration 6: ADR-0027 & Documentation** (1.5 hours)
 - Created: ADR-0027 (~400 lines)
-- Updated: docs/adr/README.md, DOTNET_PORT.md, CLAUDE.md
+- Updated: docs/adr/README.md and project guidance documents
 
 ### Files Modified (9 production files + 1 test file + 1 new test file)
 
@@ -408,7 +408,7 @@ private static readonly Lazy<BiMap<string, Type>> Mapper =
 - [.NET Lazy<T> Documentation](https://learn.microsoft.com/en-us/dotnet/api/system.lazy-1) - Thread-safe lazy initialization pattern
 - [ArgumentNullException.ThrowIfNull Documentation](https://learn.microsoft.com/en-us/dotnet/api/system.argumentnullexception.throwifnull) - .NET 6+ null validation
 - Phase 6 Stage S4 completion handoff - Stage S4 completion and S5 planning (internal working note, not retained in the repository)
-- [DOTNET_PORT.md - Java 4.1.0 Synchronization Plan](../../DOTNET_PORT.md#java-410-synchronization-plan) - Complete Phase 6 roadmap
+- Internal porting notes (not retained) - Java 4.1.0 Synchronization Plan - Complete Phase 6 roadmap
 
 ---
 

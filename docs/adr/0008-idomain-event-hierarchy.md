@@ -423,7 +423,7 @@ public interface IDomainEvent<TMetadata>
 - **Related to**:
   - [ADR-0009: AggregateRoot Base Class Design](0009-aggregate-root-base-class-design.md) - Aggregates raise internal domain events
   - [ADR-0010: EsAggregateRoot Event Sourcing Implementation](0010-esaggregate-root-event-sourcing-implementation.md) - R1/R2/R3 rules depend on construction/destruction markers
-  - [ADR-0013: Record Types for Immutability](planned) - Events should be implemented as records
+  - ADR-0013: Record Types for Immutability (planned) - Events should be implemented as records
 
 ---
 
@@ -506,9 +506,9 @@ public void OrderCancelled_ImplementsDestructionEvent()
 ## References
 
 - **Java ezddd Source**:
-  - `path/to/local/checkout Frame\ezddd\ezddd-entity\src\main\java\tw\teddysoft\ezddd\entity\DomainEvent.java`
-  - `path/to/local/checkout Frame\ezddd\ezddd-entity\src\main\java\tw\teddysoft\ezddd\entity\InternalDomainEvent.java`
-  - `path/to/local/checkout Frame\ezddd\ezddd-entity\src\main\java\tw\teddysoft\ezddd\entity\ExternalDomainEvent.java`
+  - `ezddd-entity/src/main/java/tw/teddysoft/ezddd/entity/DomainEvent.java`
+  - `ezddd-entity/src/main/java/tw/teddysoft/ezddd/entity/InternalDomainEvent.java`
+  - `ezddd-entity/src/main/java/tw/teddysoft/ezddd/entity/ExternalDomainEvent.java`
 
 - **Event Sourcing**:
   - Vernon, Vaughn. *Implementing Domain-Driven Design*. Addison-Wesley, 2013. Chapter 8: "Domain Events"
@@ -521,7 +521,7 @@ public void OrderCancelled_ImplementsDestructionEvent()
   - [Pattern Matching](https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/pattern-matching)
 
 - **Internal Documents**:
-  - [DOTNET_PORT.md](../../DOTNET_PORT.md) - Section "核心介面 > 實體層 > IDomainEvent"
+  - Internal porting notes (not retained) - Section "核心介面 > 實體層 > IDomainEvent"
   - [CLAUDE.md](../../CLAUDE.md) - Section "Module Architecture > EzDdd.Entity"
 
 ---

@@ -493,7 +493,7 @@ If uContract.NET becomes unmaintained:
 - [uContract.NET Repository](../../../uContract.NET)
 - [uContract.NET Documentation](../../../uContract.NET/README.md)
 - [Java ezddd - uContract 2.0.0 Usage](https://gitlab.com/TeddyChen/ezddd)
-- [DOTNET_PORT.md - 最小依賴原則](../../DOTNET_PORT.md#2-最小依賴原則)
+- Internal porting notes (not retained) - 最小依賴原則
 - [ADR-0004: Zero Third-Party Dependency Principle](0004-zero-third-party-dependency-principle.md)
 - [Design by Contract (Bertrand Meyer)](https://en.wikipedia.org/wiki/Design_by_contract)
 

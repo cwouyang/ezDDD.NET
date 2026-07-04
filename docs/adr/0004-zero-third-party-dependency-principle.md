@@ -393,7 +393,7 @@ If users request features requiring third-party libraries:
 - [NuGet Package Dependencies](https://learn.microsoft.com/en-us/nuget/consume-packages/dependency-resolution)
 - [.NET API Browser](https://learn.microsoft.com/en-us/dotnet/api/)
 - [System.Text.Json](https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/overview)
-- [DOTNET_PORT.md - 最小依賴原則](../../DOTNET_PORT.md#2-最小依賴原則)
+- Internal porting notes (not retained) - 最小依賴原則
 - [uContract.NET ADR-0011: Zero-Dependency Principle](../../../uContract.NET/docs/adr/0011-zero-dependency-principle.md)
 - [Java ezddd Dependencies](https://gitlab.com/TeddyChen/ezddd)
 

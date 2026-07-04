@@ -219,19 +219,8 @@ Complete checklist for releasing ezDDD.NET to NuGet.
   - [ ] Quick start examples use correct version
 
 - [ ] **Update `ROADMAP.md`**
-  - [ ] Phase 5 marked complete ✅
-  - [ ] Overall progress updated to 100%
-  - [ ] Final statistics recorded (501 tests, 5 modules, 44 APIs)
-  - [ ] Release date recorded
-
-- [ ] **Update `CLAUDE.md`**
-  - [ ] Project status updated to "Released 1.0.0-alpha.1"
-  - [ ] Current version updated to 1.0.0-alpha.1
-  - [ ] Last updated date set to release date
-
-- [ ] **Update `DOTNET_PORT.md`** (if exists)
-  - [ ] Port status updated to "Complete"
-  - [ ] Version information updated
+  - [ ] Project status updated to the released version
+  - [ ] Last updated information reflects the release
 
 ### Update Module-Specific Documentation
 

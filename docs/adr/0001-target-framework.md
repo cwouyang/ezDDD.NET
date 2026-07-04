@@ -234,7 +234,7 @@ dotnet --list-sdks
 - [System.Text.Json Overview](https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/overview)
 - [Nullable Reference Types](https://learn.microsoft.com/en-us/dotnet/csharp/nullable-references)
 - [Records in C#](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/record)
-- [DOTNET_PORT.md](../../DOTNET_PORT.md)
+- Internal porting notes (not retained)
 - [uContract.NET ADR-0001](../../../uContract.NET/docs/adr/0001-target-framework.md) - Similar decision for ecosystem consistency
 
 ---

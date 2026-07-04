@@ -365,8 +365,8 @@ IEntity<Guid> entity = new Order();  // Works due to <out TId>
 ## References
 
 - **Java ezddd Source**:
-  - `path/to/local/checkout Frame\ezddd\ezddd-entity\src\main\java\tw\teddysoft\ezddd\entity\Entity.java`
-  - `path/to/local/checkout Frame\ezddd\ezddd-entity\src\main\java\tw\teddysoft\ezddd\entity\ValueObject.java`
+  - `ezddd-entity/src/main/java/tw/teddysoft/ezddd/entity/Entity.java`
+  - `ezddd-entity/src/main/java/tw/teddysoft/ezddd/entity/ValueObject.java`
 
 - **DDD Reference**:
   - Evans, Eric. *Domain-Driven Design: Tackling Complexity in the Heart of Software*. Addison-Wesley, 2003.
@@ -378,7 +378,7 @@ IEntity<Guid> entity = new Order();  // Works due to <out TId>
   - [Covariance and Contravariance](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/)
 
 - **Internal Documents**:
-  - [DOTNET_PORT.md](../../DOTNET_PORT.md) - Section "API 設計 > 核心介面 > 實體層"
+  - Internal porting notes (not retained) - Section "API 設計 > 核心介面 > 實體層"
   - [CLAUDE.md](../../CLAUDE.md) - Section "Module Architecture > EzDdd.Entity"
 
 ---

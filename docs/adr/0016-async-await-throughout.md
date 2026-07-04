@@ -484,7 +484,7 @@ public async Task ExecuteAsync_InvalidAccount_ThrowsException()
 - Phase 3 Group 2 review - IUseCase async verification (internal working note, not retained in the repository)
 - Phase 3 Group 6 review - OutboxRepository async confirmation (internal working note, not retained in the repository)
 - [IReactor.cs](../../src/EzDdd.UseCase/Port/In/IReactor.cs) - Async ExecuteAsync (lines 17)
-- [Java Reactor.java](../../../../ezddd/ezddd-usecase/src/main/java/tw/teddysoft/ezddd/usecase/port/in/interactor/Reactor.java) - Sync execute() (line 16)
+- `ezddd-usecase/src/main/java/tw/teddysoft/ezddd/usecase/port/in/interactor/Reactor.java` - Sync execute() (line 16)
 - [IRepository.cs](../../src/EzDdd.UseCase/Port/Out/IRepository.cs) - Async repository APIs
 - Phase 3 post-review session notes - Phase 3 completion, line 247 (internal working note, not retained in the repository)
 
