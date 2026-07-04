@@ -2,9 +2,9 @@
 
 > **Tactical Domain-Driven Design patterns library for .NET 8+**
 >
-> Based on [Java ezddd 4.1.0](https://gitlab.com/TeddyChen/ezddd)
+> Based on [Java ezddd 6.0.1](https://gitlab.com/TeddyChen/ezddd)
 
-A modern tactical DDD library for .NET, specifically designed for Domain-Driven Design with event sourcing, state sourcing, and CQRS patterns. This is a faithful .NET port of the **Java ezddd 4.1.0** library (GitLab commit: `91fac63`) with **~99% semantic parity** and .NET-specific improvements.
+A modern tactical DDD library for .NET, specifically designed for Domain-Driven Design with event sourcing, state sourcing, and CQRS patterns. This is a faithful .NET port of the **Java ezddd 6.0.1** library (GitLab commit: `3aac0f5`) with **~99% semantic parity** and .NET-specific improvements.
 
 [![.NET](https://img.shields.io/badge/.NET-8.0+-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -14,19 +14,22 @@ A modern tactical DDD library for .NET, specifically designed for Domain-Driven 
 
 ## Status
 
-✅ **Version 1.0.0** (2026-01-XX) - **Based on Java ezddd 4.1.0**
+✅ **Version 1.0.0** - **Based on Java ezddd 6.0.1**
 
-- ✅ **Phase 1-5**: Core Implementation (500 tests)
-- ✅ **Phase 6**: Java 4.1.0 Synchronization (37 integration tests)
-- ✅ **562 tests passing (100%)**
-- ✅ **27 ADRs documented** (including 4 new for Java 4.1.0 features)
+- ✅ **Phase 1-5**: Core Implementation
+- ✅ **Phase 6**: Java 4.1.0 Synchronization
+- ✅ **Phase 7**: Java 6.0.1 Synchronization
+- ✅ **543 tests passing (100%)**
+- ✅ **29 ADRs documented**
 - ✅ **Zero external dependencies** (only .NET BCL + uContract.NET)
-- ✅ **~99% semantic parity** with Java ezddd 4.1.0
+- ✅ **~99% semantic parity** with Java ezddd 6.0.1
 
-**New in 1.0.0 (Java 4.1.0 features)**:
+**New in 1.0.0 (Java 4.1.0 → 6.0.1 features)**:
 - ✅ **IDomainEvent.Metadata** - Idempotency and distributed tracing support
 - ✅ **IReconciler** - System state reconciliation interface
-- ✅ **MessageProducer** - Resource-managed event publishing (IDisposable)
+- ✅ **IReactor / IProjector&lt;TInput&gt; / INotifier** - Unified reactor hierarchy for event reaction (Java 5.0.0)
+- ✅ **IExternalDomainEventPublisher** - Out-port for publishing integration events (Java 6.0.x)
+- ✅ **Transactional Outbox + Relay** - Repositories persist events; a separate Relay publishes them (matches Java architecture)
 - ✅ **Thread Safety** - Enhanced concurrent operation support
 - ✅ **Null Safety** - Comprehensive parameter validation
 
@@ -310,7 +313,8 @@ public class AccountBalanceProjection : IProjection<GetAccountBalanceInput, Acco
 - ✅ **Queries** - `IQuery<TInput, TOutput>` for read operations (extends IUseCase)
 - ✅ **Inquiries** - `IInquiry<TInput, TOutput>` for validation queries (independent)
 - ✅ **Projections** - `IProjection<TInput, TOutput>` for read model builders (independent)
-- ✅ **Projectors** - `IProjector` marker for background services
+- ✅ **Projectors** - `IProjector<TInput>` reactors that maintain read models (extends `IReactor<TInput>`)
+- ✅ **Notifiers** - `INotifier<TInput>` reactors that convert internal events to external (integration) events
 - ✅ **Archive** - `IArchive<TData, TId>` for query database (read-side counterpart to IRepository)
 - ✅ **CqrsOutput** - Fluent API for unified output with `Success()` and `Failure()` factory methods
 
@@ -331,15 +335,19 @@ public class AccountBalanceProjection : IProjection<GetAccountBalanceInput, Acco
 - ✅ **Ports & Adapters** - Hexagonal architecture support with clear layer boundaries
 - ✅ **Dependency Direction** - Unidirectional: Common → Entity → UseCase → Cqrs → Core
 
-### Message Producer & Event Publishing (Java 4.1.0)
-- ✅ **IMessageProducer<TMessage>** - Primary interface for posting messages (replaces MessageBus pattern)
-  - `Task PostAsync(TMessage)` - Asynchronous message posting
-  - `IDisposable` - Resource management for network connections, buffers
-- ✅ **InMemoryMessageProducer<TMessage>** - In-memory implementation for testing
-  - `PostedMessages` property for verification in tests
-  - Thread-safe with `ConcurrentQueue<TMessage>`
-- ✅ **Event Publishing** - Repositories automatically publish events after successful persistence (optional)
-- ✅ **Resource Management** - Proper disposal pattern prevents resource leaks
+### Event Reaction & External Publishing (Java 5.0.0 / 6.0.x)
+- ✅ **IReactor<TInput>** - In-port for reacting to messages with side effects (idempotent handling)
+  - `Task ExecuteAsync(TInput)` - Asynchronous message handling
+  - Base of the reactor hierarchy: `IProjector<TInput>` and `INotifier<TInput>` both extend it
+- ✅ **INotifier<TInput>** - Reactor that converts internal domain events into external
+  (integration) events and dispatches them outward, upholding Clean Architecture layer boundaries
+- ✅ **IExternalDomainEventPublisher<TEvent>** - Out-port for publishing `IExternalDomainEvent`
+  to message brokers (e.g., Kafka), downstream bounded contexts, or front-ends
+  - `Task PublishAsync(TEvent)` - Asynchronous publishing
+- ✅ **Relay Pattern** - Repositories do NOT publish events; a separate Relay reads the
+  event store/outbox and publishes reliably (see `examples/EventInfrastructure/EventStoreRelay.cs`)
+  - Note: Java 6.0.0 moved `MessageProducer` out of core into the separate ezddd-gateway
+    artifact; ezDDD.NET core follows suit (a .NET Gateway package is deferred post-1.0)
 
 ### Design Philosophy
 - 🚀 **Async/await throughout** - All I/O operations are async (`Task<T>`, never blocking)
@@ -347,7 +355,7 @@ public class AccountBalanceProjection : IProjection<GetAccountBalanceInput, Acco
 - 📦 **Zero external dependencies** - Only .NET BCL + uContract.NET (ecosystem dependency)
 - 🔒 **Thread-safe** - Concurrent collections, Lazy<T>, and snapshot patterns for safe concurrent access
 - 💎 **Strongly typed** - Generic constraints and covariance (`in TInput`, `out TOutput`)
-- 🧪 **Highly tested** - 562 tests (including 37 integration tests), >90% coverage across all modules
+- 🧪 **Highly tested** - 543 tests (including integration tests), >90% coverage across all modules
 
 ### .NET Platform Improvements
 - ✅ **Async/await** - Non-blocking I/O throughout (vs Java's blocking `execute()` methods)
@@ -421,7 +429,7 @@ Core DDD building blocks (entities layer):
   - Thread-safe registration for serialization/deserialization
 
 **Dependencies**: EzDdd.Common, uContract.NET
-**Tests**: 85 passing (>95% coverage)
+**Tests**: 92 passing (>90% coverage)
 
 #### EzDdd.UseCase - Use Cases and Repositories
 Use cases layer with persistence abstractions:
@@ -430,7 +438,7 @@ Use cases layer with persistence abstractions:
 - **`IInput`** / **`IOutput`** - Marker interfaces for use case inputs/outputs
 - **`IVersionedInput`** - Input with version field for optimistic locking
 - **`ExitCode`** - Enumeration (`SUCCESS = 0`, `FAILURE = 1`)
-- **`IReactor`** - Event reactor interface for async event processing
+- **`IReactor<in TInput>`** - Reactor in-port for async, idempotent message handling (`ExecuteAsync(TInput)`); base interface of `IProjector<TInput>` and `INotifier<TInput>`
 
 **Use Case Pattern**:
 - **`IUseCase<in TInput, out TOutput>`** - Contravariant/covariant interface
@@ -476,13 +484,13 @@ Use cases layer with persistence abstractions:
   - Atomic persistence: aggregate state + events in single transaction
   - Transaction boundary at IRepositoryPeer implementation level
 
-**Message Producer - Event Publishing**:
-- **`IMessageProducer<TMessage>`** - Primary interface for posting messages (IDisposable)
-- **`InMemoryMessageProducer<TMessage>`** - In-memory implementation for testing
+**External Event Publishing (Java 6.0.x)**:
+- **`IExternalDomainEventPublisher<TEvent>`** - Out-port for publishing external domain events (`PublishAsync(TEvent)`)
 - **`PostEventFailureException`** - Exception for event publishing failures
+- Note: `MessageProducer` lives outside the core (Java: ezddd-gateway artifact); see `examples/EventInfrastructure/` for the Relay pattern
 
 **Dependencies**: EzDdd.Entity → EzDdd.Common
-**Tests**: 279 passing (>95% coverage, including 49 integration tests)
+**Tests**: 283 passing (>90% coverage)
 
 #### EzDdd.Cqrs - CQRS Patterns
 CQRS pattern separation:
@@ -498,7 +506,8 @@ CQRS pattern separation:
 - **`IProjection<in TInput, out TOutput>`** - Read model builder
   - Independent of IUseCase with dedicated `QueryAsync()` method
 - **`IProjectionInput`** - Marker for projection inputs
-- **`IProjector`** - Background service marker for maintaining read models
+- **`IProjector<TInput>`** - Reactor that maintains read models (extends `IReactor<TInput>`); typically hosted as a background service
+- **`INotifier<TInput>`** - Reactor that converts internal domain events into external (integration) events and dispatches them via `IExternalDomainEventPublisher<TEvent>`
 - **`IArchive<TData, TId>`** - Query database interface
   - Read-side counterpart to IRepository
   - `FindByIdAsync(TId)` - Load read model data asynchronously
@@ -510,7 +519,7 @@ CQRS pattern separation:
   - Properties: `IsSuccess`, `Data`, `Message`, `ExitCode`
 
 **Dependencies**: EzDdd.UseCase → EzDdd.Entity → EzDdd.Common
-**Tests**: 68 passing (>95% coverage, including 14 integration tests)
+**Tests**: 71 passing (>90% coverage)
 
 #### EzDdd.Core - Aggregator Package
 Aggregator package for convenient installation:
@@ -536,14 +545,14 @@ Aggregator package for convenient installation:
 
 > 📖 **Complete Documentation**: [API_REFERENCE.md](docs/examples/API_REFERENCE.md) (3,674 lines with detailed signatures, parameters, exceptions, and examples)
 
-**Quick Overview** - 46 Public APIs across 4 modules:
+**Quick Overview** - Public APIs across 4 modules:
 
-| Module | APIs | Key Types |
-|--------|------|-----------|
-| **Common** (3) | `Converter<TSource, TTarget>`, `JsonUtil`, `BiMap<TKey, TValue>` |
-| **Entity** (7) | `IEntity<TId>`, `IValueObject`, `IDomainEvent`, `IInternalDomainEvent`, `AggregateRoot<TId, TEvent>`, `EsAggregateRoot<TId, TEvent>`, `DomainEventTypeMapper` |
-| **UseCase** (27) | `IUseCase<TInput, TOutput>`, **`IReconciler<TContext, TReport>`**, **`NullContext`**, `IRepository<TAggregate, TId>`, `IRepositoryPeer<TData, TId>`, `EsRepository<TAggregate, TId, TEvent>`, `OutboxRepository<TAggregate, TId, TEvent>`, `IMessageProducer<TMessage>`, `InMemoryMessageProducer<TMessage>`, `DomainEventMapper`, etc. |
-| **Cqrs** (9) | `ICommand<TInput, TOutput>`, `IQuery<TInput, TOutput>`, `IInquiry<TInput, TOutput>`, `IProjection<TInput, TOutput>`, `IProjector`, `IArchive<TData, TId>`, `CqrsOutput<T>` |
+| Module | Key Types |
+|--------|-----------|
+| **Common** | `Converter<TSource, TTarget>`, `JsonUtil`, `BiMap<TKey, TValue>` |
+| **Entity** | `IEntity<TId>`, `IValueObject`, `IDomainEvent`, `IInternalDomainEvent`, `AggregateRoot<TId, TEvent>`, `EsAggregateRoot<TId, TEvent>`, `DomainEventTypeMapper` |
+| **UseCase** | `IUseCase<TInput, TOutput>`, **`IReactor<TInput>`**, **`IReconciler<TContext, TReport>`**, **`NullContext`**, `IRepository<TAggregate, TId>`, `IRepositoryPeer<TData, TId>`, `EsRepository<TAggregate, TId>`, `OutboxRepository<TAggregate, TData, TId>`, **`IExternalDomainEventPublisher<TEvent>`**, `DomainEventMapper`, etc. |
+| **Cqrs** | `ICommand<TInput, TOutput>`, `IQuery<TInput, TOutput>`, `IInquiry<TInput, TOutput>`, `IProjection<TInput, TOutput>`, `IProjector<TInput>`, `INotifier<TInput>`, `IArchive<TData, TId>`, `CqrsOutput<T>` |
 
 ### Common Module APIs
 
@@ -610,13 +619,12 @@ Aggregator package for convenient installation:
 - Implements IRepository interface
 - Transactional Outbox pattern for reliable event publishing
 
-**`IMessageProducer<TMessage>`** - Message producer interface
-- `Task PostAsync(TMessage message)` - Post message to infrastructure
-- `void Dispose()` - Release resources (e.g., network connections)
+**`IReactor<in TInput>`** - Reactor in-port (base of `IProjector<TInput>` / `INotifier<TInput>`)
+- `Task ExecuteAsync(TInput input)` - Handle a message idempotently
 
-**`InMemoryMessageProducer<TMessage>`** - In-memory implementation
-- `IReadOnlyCollection<TMessage> PostedMessages` - Verification property for testing
-- Thread-safe message storage with ConcurrentQueue
+**`IExternalDomainEventPublisher<in TEvent>`** - External event publishing out-port
+- `Task PublishAsync(TEvent @event)` - Publish an `IExternalDomainEvent` to external systems
+- Typically invoked by an `INotifier<TInput>` implementation
 
 ### Cqrs Module APIs
 
@@ -936,25 +944,22 @@ public class GetAccountQuery : IQuery<GetAccountInput, CqrsOutput<AccountView>>
 }
 ```
 
-### Message Bus Example
+### Event Reaction Example (Reactor + Relay)
 
 ```csharp
-// Define reactor
-public class AccountEventReactor : IReactor
+// Define reactor (IProjector<TInput> and INotifier<TInput> extend IReactor<TInput>)
+public class AccountEventReactor : IReactor<IDomainEvent>
 {
-    public async Task ReactToAsync(IEnumerable<IDomainEvent> events)
+    public async Task ExecuteAsync(IDomainEvent @event)
     {
-        foreach (var @event in events)
+        switch (@event)
         {
-            switch (@event)
-            {
-                case AccountCreated created:
-                    Console.WriteLine($"Account {created.AccountId} created for {created.Owner}");
-                    break;
-                case MoneyDeposited deposited:
-                    Console.WriteLine($"${deposited.Amount.Amount} deposited to {deposited.AccountId}");
-                    break;
-            }
+            case AccountCreated created:
+                Console.WriteLine($"Account {created.AccountId} created for {created.Owner}");
+                break;
+            case MoneyDeposited deposited:
+                Console.WriteLine($"${deposited.Amount.Amount} deposited to {deposited.AccountId}");
+                break;
         }
         await Task.CompletedTask;
     }
@@ -1010,7 +1015,7 @@ See [USAGE_EXAMPLES.md](docs/examples/USAGE_EXAMPLES.md) for:
 - **State Sourcing with Outbox** (8+ examples)
 - **CQRS Patterns** (12+ examples)
 - **System Reconciliation** (4+ examples with scheduling patterns)
-- **Message Bus Integration** (5+ examples)
+- **Event Publishing & Relay Integration** (5+ examples)
 - **Real-World Scenarios**: Banking, E-commerce, Inventory, Order Management
 
 ---
@@ -1057,7 +1062,7 @@ See [USAGE_EXAMPLES.md](docs/examples/USAGE_EXAMPLES.md) for:
 
 ### Semantic Parity
 
-- ✅ **~99% semantic parity** achieved with Java ezddd 4.1.0
+- ✅ **~99% semantic parity** achieved with Java ezddd 6.0.1
 - ✅ **Core patterns preserved**: Entity, AggregateRoot, Repository, CQRS identical
 - ✅ **R1/R2/R3 event sourcing rules**: Identical enforcement via template method
 - ✅ **Bridge pattern**: IRepository ↔ IRepositoryPeer separation identical
@@ -1066,7 +1071,9 @@ See [USAGE_EXAMPLES.md](docs/examples/USAGE_EXAMPLES.md) for:
 - ✅ **CQRS separation**: Command/Query/Inquiry/Projection identical
 - ✅ **Metadata support**: IDomainEvent.Metadata for idempotency (Java 4.1.0)
 - ✅ **Reconciler pattern**: IReconciler for system maintenance (Java 4.1.0)
-- ✅ **MessageProducer**: IDisposable resource management (Java 4.1.0)
+- ✅ **Reactor hierarchy**: IReactor / IProjector&lt;TInput&gt; / INotifier&lt;TInput&gt; (Java 5.0.0)
+- ✅ **External event publishing**: IExternalDomainEventPublisher out-port (Java 6.0.x)
+- ✅ **Core boundary**: MessageProducer excluded from core, matching Java's ezddd-gateway split (Java 6.0.0)
 
 ### Example Comparison
 
@@ -1257,10 +1264,10 @@ See [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt) for the required attribut
 
 ## Acknowledgments
 
-- **Original Java ezddd 4.1.0**: [Teddy Chen](https://gitlab.com/TeddyChen) (TeddySoft)
+- **Original Java ezddd 6.0.1**: [Teddy Chen](https://gitlab.com/TeddyChen) (TeddySoft)
   - Repository: https://gitlab.com/TeddyChen/ezddd
-  - Commit: `91fac63` (Release 4.1.0)
-  - Previous base: `6e94aee` (Release 2.1.0) → Synchronized to 4.1.0 in Phase 6
+  - Commit: `3aac0f5` (6.0.1)
+  - History: `6e94aee` (2.1.0) → `91fac63` (4.1.0) synchronized in Phase 6 → `3aac0f5` (6.0.1) synchronized in Phase 7
 - **Inspiration**: Domain-Driven Design by Eric Evans - Tactical DDD patterns
 - **Architecture**: Clean Architecture by Robert C. Martin - Layered architecture design
 - **Event Sourcing**: Martin Fowler's Event Sourcing pattern - Event sourcing concepts
@@ -1281,7 +1288,7 @@ See [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt) for the required attribut
 
 ## Links
 
-- **Java ezddd (original) 4.1.0**: https://gitlab.com/TeddyChen/ezddd (commit: `91fac63`)
+- **Java ezddd (original) 6.0.1**: https://gitlab.com/TeddyChen/ezddd (commit: `3aac0f5`)
 - **uContract.NET**: https://github.com/cwouyang/uContract.NET
 - **NuGet Packages**: (will be published soon)
 - **API Documentation**: [docs/examples/API_REFERENCE.md](docs/examples/API_REFERENCE.md)
@@ -1292,4 +1299,4 @@ See [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt) for the required attribut
 
 **ezDDD.NET** - Tactical Domain-Driven Design for .NET 8+
 
-*Last updated: 2026-01-11 (Java 4.1.0 synchronization complete)*
+*Last updated: 2026-07-04 (Java 6.0.1 synchronization complete)*

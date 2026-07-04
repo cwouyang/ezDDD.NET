@@ -10,16 +10,16 @@ This file provides guidance to Claude Code when working on the **.NET port** of 
 
 **ezddd.NET** is a .NET port of the Java ezddd library, providing tactical Domain-Driven Design (DDD) patterns, Command Query Responsibility Segregation (CQRS), and Clean Architecture (CA) support. It supports both **state sourcing** and **event sourcing** for implementing aggregates and repositories.
 
-**Based on**: Java ezddd 4.1.0 (commit `91fac63`) - ✅ **Synchronized from Java 2.1.0 in Phase 6**
+**Based on**: Java ezddd 6.0.1 (commit `3aac0f5`) - ✅ **Synchronized 2.1.0 → 4.1.0 in Phase 6, 4.1.0 → 6.0.1 in Phase 7**
 
 - **Language**: C# / .NET 8+
 - **Build Tool**: dotnet CLI
 - **Development Version**: 1.0.0 (ready for NuGet publication)
-- **Target Release**: 1.0.0 (based on Java ezddd 4.1.0)
+- **Target Release**: 1.0.0 (based on Java ezddd 6.0.1)
 - **Target Framework**: .NET 8.0
 - **Main Namespace**: `EzDdd`
 - **Package ID Prefix**: `ezDDD`
-- **Semantic Parity**: ~99% with Java ezddd 4.1.0
+- **Semantic Parity**: ~99% with Java ezddd 6.0.1 (commit `3aac0f5`)
 
 ---
 
@@ -54,7 +54,7 @@ This file provides guidance to Claude Code when working on the **.NET port** of 
   - ADR-0030 (Feature Parity Verification) - QA report, covered in README/MIGRATION_GUIDE
   - **Reason**: ADRs document "why we designed it this way" (architecture), not "how we developed" (process)
 
-**Test Coverage**: 562 tests passing (100% pass rate, >90% code coverage) - Updated 2026-01-15 after verification
+**Test Coverage**: 543 tests passing (100% pass rate, >90% code coverage) - Updated 2026-07-04 after Phase 7 (Common 69 / Entity 92 / UseCase 283 / Cqrs 71 / Integration 28; earlier "562" figure included MessageProducer tests removed in Phase 7 I3)
 
 **Current Status** (2026-01-11):
 - ✅ Phase 1-5 complete (based on Java ezddd 2.1.0, commit `6e94aee`)
@@ -81,7 +81,7 @@ This file provides guidance to Claude Code when working on the **.NET port** of 
 - **Status**: ✅ Complete (501 tests passing, 23 ADRs)
 - **Note**: Phase 1-5 were developed against Java 2.1.0, then synchronized to 4.1.0 in Phase 6
 
-### Current Implementation (Phase 6 Complete) ✅
+### Phase 6 Synchronization (Java 4.1.0) ✅
 
 - **Based on**: Java ezddd 4.1.0
 - **GitLab Commit**: `91fac63` (HEAD, master)
@@ -97,6 +97,20 @@ This file provides guidance to Claude Code when working on the **.NET port** of 
 - 🐛 **FIX**: Thread safety improvements (CopyOnWriteArrayList, AtomicReference)
 - 🐛 **FIX**: Null safety - Comprehensive null validation
 - 🐛 **FIX**: Equals/HashCode contract compliance
+
+### Current Implementation (Phase 7 Complete) ✅
+
+- **Based on**: Java ezddd 6.0.1
+- **GitLab Commit**: `3aac0f5` (HEAD, master, 2026-07-03)
+- **Changes Since 4.1.0**: 7 commits (5.0.0 → 5.0.1 → 6.0.0 → 6.0.1), 10 files, +211/−33
+- **Semantic Parity Verification**: [docs/PHASE7_SEMANTIC_PARITY_REPORT.md](docs/PHASE7_SEMANTIC_PARITY_REPORT.md)
+
+**Major Changes in Java 5.x/6.x (synchronized in Phase 7, 2026-07-04)**:
+1. ⚠️ **BREAKING** (5.0.0, `b7a336f`): `Projector` → `Projector<Input> extends Reactor<Input>`, new `Notifier<Input> extends Reactor<Input>` — .NET: `IReactor<TInput>` re-added, `IProjector<TInput> : IReactor<TInput>`, `INotifier<TInput> : IReactor<TInput>` ([ADR-0028](docs/adr/0028-reactor-hierarchy-projector-notifier-genericization.md))
+2. 🗑️ **REMOVED** (`dc4b2e1`): `ExternalDomainEventDto` deleted upstream — .NET no-op (never ported)
+3. ✨ **NEW** (`f440d15`): `ExternalDomainEventPublisher<E>` out-port — .NET: `IExternalDomainEventPublisher<TEvent>`
+4. ⚠️ **BREAKING** (6.0.0, `67686ac`): `MessageProducer` moved out of core into ezddd-gateway artifact — .NET: `IMessageProducer`/`InMemoryMessageProducer` removed from core ([ADR-0029](docs/adr/0029-messageproducer-removal-gateway-deferral.md)); ezDDD.Gateway package deferred post-1.0
+5. 🐛 **FIX** (6.0.1, `3aac0f5`): `OutboxRepository.findById` must filter soft-deleted aggregates — .NET: same bug fixed in `OutboxRepository.FindByIdAsync` + ported test
 
 ### Version Strategy - Pre-Publication Synchronization
 
@@ -196,7 +210,7 @@ EzDdd.Common (utilities: BiMap, IConverter, JsonUtil)
     ↓
 EzDdd.Entity (core DDD: IEntity, IValueObject, IDomainEvent, AggregateRoot, EsAggregateRoot)
     ↓
-EzDdd.UseCase (use cases: IUseCase, IRepository, IRepositoryPeer, IMessageBus, mappers)
+EzDdd.UseCase (use cases: IUseCase, IRepository, IRepositoryPeer, IReactor, mappers)
     ↓
 EzDdd.Cqrs (CQRS: ICommand, IQuery, IProjection, IProjector, IArchive, IInquiry)
     ↓
@@ -234,8 +248,8 @@ Use cases layer with persistence abstractions:
 - **EsRepository**: Generic event sourcing repository implementation
 - **OutboxRepository**: Generic state sourcing repository with Transactional Outbox pattern
 - **DomainEventMapper**: Converts domain events to/from DomainEventData records
-- **IMessageBus/IReactor**: Intra-process event distribution
-- **IEventBusProducer**: External event bus integration adapter
+- **IReactor<TInput>**: In-port for reacting to messages (base of IProjector/INotifier; Phase 7)
+- **IExternalDomainEventPublisher<TEvent>**: Out-port for publishing external domain events (Phase 7)
 
 ### EzDdd.Cqrs
 CQRS pattern separation:
@@ -243,7 +257,8 @@ CQRS pattern separation:
 - **IQuery<TInput, TOutput>**: Marker extending IUseCase for read operations
 - **IInquiry<TInput, TOutput>**: Validation queries usable within commands
 - **IProjection<TInput, TOutput>**: Read model builder that generates view models from query database
-- **IProjector**: Background service marker for building and maintaining read models
+- **IProjector<TInput>**: Reactor that writes read models in a query database (generic since Phase 7, ADR-0028)
+- **INotifier<TInput>**: Reactor that converts internal events to external events and dispatches them outward (Phase 7)
 - **IArchive<TData, TId>**: Query database interface (query-side counterpart to IRepository)
 - **CqrsOutput<T>**: Unified output class with builder pattern
 
@@ -461,12 +476,9 @@ dotnet build -c Release               # Release build
    - Always clarify which version before proceeding
 
 2. **Check Project Status**:
-   - ✅ **Phase 1 完成** - EzDdd.Common (69 tests)
-   - ✅ **Phase 2 完成** - EzDdd.Entity (85 tests)
-   - ✅ **Phase 3 完成** - EzDdd.UseCase (279 tests) - All fixes and ADRs complete
-   - ✅ **Phase 4 完成** - EzDdd.Cqrs (67 tests) - All iterations and ADRs complete 🎉
-   - 🎯 **下一步**: Phase 5 (EzDdd.Core aggregator module)
-   - See [PHASE4_SESSION_STATE.md](docs/PHASE4_SESSION_STATE.md) for Phase 4 completion details
+   - ✅ **Phase 1-7 全部完成**（2026-07-04）— 基準 Java ezddd 6.0.1 (`3aac0f5`)，543 tests passing
+   - 🎯 **下一步**: 1.0.0 發佈準備（見 HANDOFF.md 的 P0/P1 清單）
+   - See "Current Phase: Phase 7" section above for the latest sync details
 
 3. **Consult Planning Documents**:
    - Check [ADR_PLANNING.md](docs/adr/ADR_PLANNING.md) for ADR priorities and dependencies
@@ -513,7 +525,21 @@ dotnet build -c Release               # Release build
 
 ---
 
-## 🎯 Current Phase: Phase 6 - Java 4.1.0 Synchronization 🚀
+## 🎯 Current Phase: Phase 7 - Java 6.0.1 Synchronization ✅ COMPLETE
+
+**Phase 7 Complete** (2026-07-04): Synchronized from Java ezddd 4.1.0 (`91fac63`) to 6.0.1 (`3aac0f5`, upstream HEAD). Plan: [docs/PHASE7_SYNC_PLAN.md](docs/PHASE7_SYNC_PLAN.md).
+
+- **I1** `9683b36`: `IReactor<TInput>` re-added; `IProjector<TInput> : IReactor<TInput>` (breaking); `INotifier<TInput>` added (ADR-0028)
+- **I2** `ffb304e`: `IExternalDomainEventPublisher<TEvent>` out-port added; `ExternalDomainEventDto` removal confirmed no-op (never ported)
+- **I3** `1b9b1e4`: `IMessageProducer`/`InMemoryMessageProducer` removed from core per upstream 6.0.0 (ADR-0029; ezDDD.Gateway package deferred post-1.0)
+- **I4** `c8bdb5b`: `OutboxRepository.FindByIdAsync` soft-delete filter bug fix + 2 tests (upstream 6.0.1 bug fix)
+- **I5**: Docs alignment + semantic parity spot-check ([docs/PHASE7_SEMANTIC_PARITY_REPORT.md](docs/PHASE7_SEMANTIC_PARITY_REPORT.md))
+
+**Result**: build 0 errors / 0 warnings; **543 tests passing** (2026-07-04); semantic parity ≥98% vs `3aac0f5`.
+
+---
+
+The section below documents Phase 6 (Java 4.1.0 synchronization, completed 2026-01-11) and is retained for historical reference.
 
 **Phase 6 Overview** (2026-01-06, estimated 44-62 hours / ~1-2 weeks):
 
@@ -688,11 +714,11 @@ See [DOTNET_PORT.md](DOTNET_PORT.md) "Java 4.1.0 Synchronization Plan" section (
 
 ## ⚠️ Pending Tasks (Post-Phase 6)
 
-### 🔴 HIGH Priority: Remove Repository MessageProducer Integration
+### ✅ COMPLETE: Remove Repository MessageProducer Integration
 
 **Date Identified**: 2026-01-13 (Feature Parity Verification)
-**Status**: ⏳ PENDING (handoff document ready)
-**Priority**: 🔴 HIGH - Blocks 100% semantic parity
+**Status**: ✅ **COMPLETE** — implemented in `9e7e842` / `c06ec24` / `70ee225` / `bb7f0e4`; verified 2026-07-04 during Phase 7 planning (semantic parity with the Java Relay pattern achieved)
+**Priority**: 🔴 HIGH - Blocks 100% semantic parity → **RESOLVED**
 **Estimated Effort**: 1.5-2 hours
 
 **Issue**: C# Repository classes (EsRepository, OutboxRepository) have optional MessageProducer integration for direct event publishing, but Java 4.1.0 does NOT. Java uses independent Relay pattern to strictly follow Transactional Outbox Pattern.
@@ -721,13 +747,11 @@ See [DOTNET_PORT.md](DOTNET_PORT.md) "Java 4.1.0 Synchronization Plan" section (
 - `examples/EventInfrastructure/README.md` (NEW - Usage guide)
 
 **Success Criteria**:
-- [ ] Repository classes have NO MessageProducer dependency
-- [ ] EventStoreRelay example implemented
-- [ ] All tests passing (562 tests)
-- [ ] Semantic parity: **100%** with Java 4.1.0
-
-**Next Developer**: Read handoff document completely, then execute steps sequentially.
+- [x] Repository classes have NO MessageProducer dependency ✅ (verified 2026-07-04)
+- [x] EventStoreRelay example implemented ✅ (`examples/EventInfrastructure/`)
+- [x] All tests passing ✅ (543 tests as of 2026-07-04; MessageProducer tests removed from core in Phase 7 I3)
+- [x] Semantic parity restored with the Java Relay pattern ✅ (re-verified against Java 6.0.1 in Phase 7)
 
 ---
 
-*Last updated: 2026-01-13 (Added pending task: Remove Repository MessageProducer Integration)*
+*Last updated: 2026-07-04 (Phase 7 complete: synchronized to Java ezddd 6.0.1 `3aac0f5`; closed MessageProducer removal task)*
