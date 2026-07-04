@@ -560,34 +560,38 @@ public class BiMapTests
         BiMap<string, int> biMap = [];
         const int writeCount = 1000;
         const int readCount = 1000;
-        int successfulReads = 0;
 
         IEnumerable<Task> writeTasks = Enumerable
             .Range(0, writeCount)
             .Select(i => Task.Run(() => biMap.Add($"key{i}", i)));
 
+        // Whether a concurrent read observes its write depends on scheduling,
+        // but any observed entry must be untorn: correct value and reverse mapping.
         IEnumerable<Task> readTasks = Enumerable
             .Range(0, readCount)
             .Select(i =>
                 Task.Run(() =>
                 {
-                    if (biMap.TryGetValue($"key{i}", out int value) && value == i)
+                    if (biMap.TryGetValue($"key{i}", out int value))
                     {
-                        if (
-                            biMap.TryGetKey(value, out string? key)
-                            && string.Equals(key, $"key{i}", StringComparison.Ordinal)
-                        )
-                        {
-                            Interlocked.Increment(ref successfulReads);
-                        }
+                        Assert.Equal(i, value);
+                        Assert.True(biMap.TryGetKey(value, out string? key));
+                        Assert.Equal($"key{i}", key);
                     }
                 })
             );
 
         await Task.WhenAll(writeTasks.Concat(readTasks));
 
-        // Some reads should have succeeded
-        Assert.True(successfulReads > 0);
+        // Deterministic final-state check: every write is present and bidirectional
+        Assert.Equal(writeCount, biMap.Count);
+        for (int i = 0; i < writeCount; i++)
+        {
+            Assert.True(biMap.TryGetValue($"key{i}", out int value));
+            Assert.Equal(i, value);
+            Assert.True(biMap.TryGetKey(i, out string? key));
+            Assert.Equal($"key{i}", key);
+        }
 
         // Final consistency check
         foreach (KeyValuePair<string, int> entry in biMap)

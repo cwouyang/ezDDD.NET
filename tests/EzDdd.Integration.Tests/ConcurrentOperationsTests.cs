@@ -29,6 +29,7 @@ namespace EzDdd.Integration.Tests;
 ///         in concurrent scenarios.
 ///     </para>
 /// </remarks>
+[Collection("DomainEventTypeMapper")]
 public sealed class ConcurrentOperationsTests
 {
     #region DomainEventTypeMapper Concurrent Registration Tests
@@ -39,7 +40,9 @@ public sealed class ConcurrentOperationsTests
         const int threadCount = 20;
         const int registrationsPerThread = 5;
 
-        // Act: Register event types concurrently from multiple threads
+        // Act: Each thread repeatedly registers its dedicated event type under a fixed,
+        // consistent name (idempotent path). Consistent type-name mappings must never throw,
+        // so no exception is caught - any exception fails the test.
         List<Task> tasks = [];
         for (int t = 0; t < threadCount; t++)
         {
@@ -49,30 +52,91 @@ public sealed class ConcurrentOperationsTests
                 {
                     for (int i = 0; i < registrationsPerThread; i++)
                     {
-                        // Each thread registers unique event types
-                        string eventTypeName = $"ConcurrentEvent_T{threadId:D2}_E{i:D2}";
-
-                        // Create a unique event type dynamically
-                        // For testing, we'll just register the same type multiple times
-                        // (The mapper should handle duplicate registrations gracefully)
-                        try
-                        {
-                            DomainEventTypeMapper.Register<AggregateCreated>(eventTypeName);
-                        }
-                        catch
-                        {
-                            // Duplicate registration may throw - that's acceptable
-                            // We're testing thread safety, not duplicate handling
-                        }
+                        _RegisterConcurrentEvent(threadId % 5);
                     }
                 })
             );
         }
 
-        // Assert: All tasks should complete without deadlock or race conditions
+        // Assert: All tasks complete without deadlock, race condition, or exception
         await Task.WhenAll(tasks);
-        Assert.Equal(threadCount, tasks.Count);
+
+        // Assert: Bidirectional lookups resolve correctly after concurrent registration
+        Assert.Equal("ConcurrentEvent0", DomainEventTypeMapper.GetTypeName(typeof(ConcurrentEvent0)));
+        Assert.Equal("ConcurrentEvent1", DomainEventTypeMapper.GetTypeName(typeof(ConcurrentEvent1)));
+        Assert.Equal("ConcurrentEvent2", DomainEventTypeMapper.GetTypeName(typeof(ConcurrentEvent2)));
+        Assert.Equal("ConcurrentEvent3", DomainEventTypeMapper.GetTypeName(typeof(ConcurrentEvent3)));
+        Assert.Equal("ConcurrentEvent4", DomainEventTypeMapper.GetTypeName(typeof(ConcurrentEvent4)));
+        Assert.Equal(typeof(ConcurrentEvent0), DomainEventTypeMapper.GetType("ConcurrentEvent0"));
+        Assert.Equal(typeof(ConcurrentEvent1), DomainEventTypeMapper.GetType("ConcurrentEvent1"));
+        Assert.Equal(typeof(ConcurrentEvent2), DomainEventTypeMapper.GetType("ConcurrentEvent2"));
+        Assert.Equal(typeof(ConcurrentEvent3), DomainEventTypeMapper.GetType("ConcurrentEvent3"));
+        Assert.Equal(typeof(ConcurrentEvent4), DomainEventTypeMapper.GetType("ConcurrentEvent4"));
     }
+
+    /// <summary>
+    ///     Registers the dedicated concurrent-test event type assigned to the given slot,
+    ///     always using the same fixed type name (idempotent, consistent mapping).
+    /// </summary>
+    private static void _RegisterConcurrentEvent(int eventNumber)
+    {
+        switch (eventNumber)
+        {
+            case 0:
+                DomainEventTypeMapper.Register<ConcurrentEvent0>("ConcurrentEvent0");
+                break;
+            case 1:
+                DomainEventTypeMapper.Register<ConcurrentEvent1>("ConcurrentEvent1");
+                break;
+            case 2:
+                DomainEventTypeMapper.Register<ConcurrentEvent2>("ConcurrentEvent2");
+                break;
+            case 3:
+                DomainEventTypeMapper.Register<ConcurrentEvent3>("ConcurrentEvent3");
+                break;
+            case 4:
+                DomainEventTypeMapper.Register<ConcurrentEvent4>("ConcurrentEvent4");
+                break;
+        }
+    }
+
+    // Dedicated event types for the concurrent registration test.
+    // Never reuse shared TestDomain types here: binding a shared type to a random name
+    // would poison the process-global mapper for every other test in this assembly.
+    private sealed record ConcurrentEvent0(
+        Guid Id,
+        DateTimeOffset OccurredOn,
+        string Source,
+        IReadOnlyDictionary<string, string> Metadata
+    ) : IInternalDomainEvent;
+
+    private sealed record ConcurrentEvent1(
+        Guid Id,
+        DateTimeOffset OccurredOn,
+        string Source,
+        IReadOnlyDictionary<string, string> Metadata
+    ) : IInternalDomainEvent;
+
+    private sealed record ConcurrentEvent2(
+        Guid Id,
+        DateTimeOffset OccurredOn,
+        string Source,
+        IReadOnlyDictionary<string, string> Metadata
+    ) : IInternalDomainEvent;
+
+    private sealed record ConcurrentEvent3(
+        Guid Id,
+        DateTimeOffset OccurredOn,
+        string Source,
+        IReadOnlyDictionary<string, string> Metadata
+    ) : IInternalDomainEvent;
+
+    private sealed record ConcurrentEvent4(
+        Guid Id,
+        DateTimeOffset OccurredOn,
+        string Source,
+        IReadOnlyDictionary<string, string> Metadata
+    ) : IInternalDomainEvent;
 
     #endregion
 

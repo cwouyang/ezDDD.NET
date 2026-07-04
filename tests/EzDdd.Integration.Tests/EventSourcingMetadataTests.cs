@@ -32,6 +32,7 @@ namespace EzDdd.Integration.Tests;
 ///         <strong>Java 4.1.0 Feature</strong>: Validates IDomainEvent.Metadata in event sourcing context.
 ///     </para>
 /// </remarks>
+[Collection("DomainEventTypeMapper")]
 public sealed class EventSourcingMetadataTests
 {
     #region Version Control and Metadata Tests
