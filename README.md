@@ -7,7 +7,7 @@
 A modern tactical DDD library for .NET, specifically designed for Domain-Driven Design with event sourcing, state sourcing, and CQRS patterns. This is a faithful .NET port of the **Java ezddd 4.1.0** library (GitLab commit: `91fac63`) with **~99% semantic parity** and .NET-specific improvements.
 
 [![.NET](https://img.shields.io/badge/.NET-8.0+-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/status-alpha-orange.svg)](#status)
 
 ---
@@ -1247,11 +1247,11 @@ Contributions are welcome! Please see [DOTNET_PORT.md](DOTNET_PORT.md) for devel
 
 ## License
 
-**Apache License 2.0** - Same as the [Java ezddd library](https://gitlab.com/TeddyChen/ezddd)
+**MIT License** — Copyright (c) 2025-2026 ezDDD.NET Contributors. See [LICENSE](LICENSE) for details.
 
-Copyright (c) 2025 ezDDD.NET Contributors
-
-See [LICENSE](LICENSE) file for details.
+This project is a derivative work of the [Java ezddd library](https://gitlab.com/TeddyChen/ezddd)
+by Teddy Chen and contributors, which is licensed under the **Apache License 2.0**.
+See [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt) for the required attribution and license text.
 
 ---
 

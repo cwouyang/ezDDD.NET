@@ -18,7 +18,7 @@
     <!-- Assembly Information -->
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
-    <Copyright>Copyright (c) 2025 ezDDD.NET Contributors</Copyright>
+    <Copyright>Copyright (c) 2025-2026 ezDDD.NET Contributors</Copyright>
 
     <!-- Package Metadata -->
     <PackageId>ezDDD.Entity</PackageId>
@@ -40,7 +40,7 @@ Features:
 
 Designed for Domain-Driven Design with event sourcing and state sourcing.</Description>
     <PackageTags>ddd;domain-driven-design;aggregate-root;entity;value-object;domain-events;event-sourcing;tactical-ddd;dotnet;csharp</PackageTags>
-    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/TeddyChen/ezddd.NET</PackageProjectUrl>
     <RepositoryUrl>https://github.com/TeddyChen/ezddd.NET</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
@@ -58,6 +58,7 @@ Designed for Domain-Driven Design with event sourcing and state sourcing.</Descr
 
   <ItemGroup>
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\THIRD-PARTY-NOTICES.txt" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>

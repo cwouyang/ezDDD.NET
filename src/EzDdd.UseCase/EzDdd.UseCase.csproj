@@ -17,7 +17,7 @@
     <!-- Assembly Information -->
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
-    <Copyright>Copyright (c) 2025 ezDDD.NET Contributors</Copyright>
+    <Copyright>Copyright (c) 2025-2026 ezDDD.NET Contributors</Copyright>
 
     <!-- Package Metadata -->
     <PackageId>ezDDD.UseCase</PackageId>
@@ -40,7 +40,7 @@ Features:
 
 Implements Clean Architecture layers with tactical DDD patterns.</Description>
     <PackageTags>ddd;domain-driven-design;clean-architecture;use-case;repository;event-sourcing;state-sourcing;outbox-pattern;message-bus;dotnet;csharp</PackageTags>
-    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/TeddyChen/ezddd.NET</PackageProjectUrl>
     <RepositoryUrl>https://github.com/TeddyChen/ezddd.NET</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
@@ -58,6 +58,7 @@ Implements Clean Architecture layers with tactical DDD patterns.</Description>
 
   <ItemGroup>
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\THIRD-PARTY-NOTICES.txt" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>
