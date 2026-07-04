@@ -1,0 +1,35 @@
+#nullable enable
+EzDdd.Common.BiMap<TKey, TValue>
+EzDdd.Common.BiMap<TKey, TValue>.Add(System.Collections.Generic.KeyValuePair<TKey, TValue> item) -> void
+EzDdd.Common.BiMap<TKey, TValue>.Add(TKey key, TValue value) -> void
+EzDdd.Common.BiMap<TKey, TValue>.BiMap() -> void
+EzDdd.Common.BiMap<TKey, TValue>.BiMap(int capacity) -> void
+EzDdd.Common.BiMap<TKey, TValue>.Clear() -> void
+EzDdd.Common.BiMap<TKey, TValue>.Contains(System.Collections.Generic.KeyValuePair<TKey, TValue> item) -> bool
+EzDdd.Common.BiMap<TKey, TValue>.ContainsKey(TKey key) -> bool
+EzDdd.Common.BiMap<TKey, TValue>.CopyTo(System.Collections.Generic.KeyValuePair<TKey, TValue>[]! array, int arrayIndex) -> void
+EzDdd.Common.BiMap<TKey, TValue>.Count.get -> int
+EzDdd.Common.BiMap<TKey, TValue>.GetEnumerator() -> System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<TKey, TValue>>!
+EzDdd.Common.BiMap<TKey, TValue>.GetKey(TValue value) -> TKey?
+EzDdd.Common.BiMap<TKey, TValue>.IsReadOnly.get -> bool
+EzDdd.Common.BiMap<TKey, TValue>.Keys.get -> System.Collections.Generic.ICollection<TKey>!
+EzDdd.Common.BiMap<TKey, TValue>.PutAll(System.Collections.Generic.IDictionary<TKey, TValue>! dictionary) -> void
+EzDdd.Common.BiMap<TKey, TValue>.PutIfAbsent(TKey key, TValue value) -> TValue?
+EzDdd.Common.BiMap<TKey, TValue>.Remove(System.Collections.Generic.KeyValuePair<TKey, TValue> item) -> bool
+EzDdd.Common.BiMap<TKey, TValue>.Remove(TKey key) -> bool
+EzDdd.Common.BiMap<TKey, TValue>.Replace(TKey key, TValue oldValue, TValue newValue) -> bool
+EzDdd.Common.BiMap<TKey, TValue>.this[TKey key].get -> TValue
+EzDdd.Common.BiMap<TKey, TValue>.this[TKey key].set -> void
+EzDdd.Common.BiMap<TKey, TValue>.TryGetKey(TValue value, out TKey key) -> bool
+EzDdd.Common.BiMap<TKey, TValue>.TryGetValue(TKey key, out TValue value) -> bool
+EzDdd.Common.BiMap<TKey, TValue>.TryReplace(TKey key, TValue newValue, out TValue oldValue) -> bool
+EzDdd.Common.BiMap<TKey, TValue>.Values.get -> System.Collections.Generic.ICollection<TValue>!
+EzDdd.Common.Converter<TSource, TTarget>
+EzDdd.Common.JsonUtil
+static EzDdd.Common.JsonUtil.AsString(object! value) -> string!
+static EzDdd.Common.JsonUtil.DeepCopy<T>(T value) -> T?
+static EzDdd.Common.JsonUtil.ReadAs<T>(byte[]! bytes) -> T?
+static EzDdd.Common.JsonUtil.ReadTree(byte[]! bytes) -> System.Text.Json.JsonDocument!
+static EzDdd.Common.JsonUtil.ReadTree(string! json) -> System.Text.Json.JsonDocument!
+static EzDdd.Common.JsonUtil.ReadValue<T>(string! json) -> T?
+static readonly EzDdd.Common.JsonUtil.Options -> System.Text.Json.JsonSerializerOptions!
