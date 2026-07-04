@@ -23,4 +23,18 @@ Enables Command Query Responsibility Segregation with eventual consistency.</Des
     <PackageTags>ddd;domain-driven-design;cqrs;command;query;projection;read-model;archive;inquiry;dotnet;csharp</PackageTags>
   </PropertyGroup>
 
+  <!-- Build-time packages (not propagated to consumers). -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.3.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!-- Public API tracking baseline -->
+  <ItemGroup>
+    <AdditionalFiles Include="PublicAPI.Shipped.txt" />
+    <AdditionalFiles Include="PublicAPI.Unshipped.txt" />
+  </ItemGroup>
+
 </Project>

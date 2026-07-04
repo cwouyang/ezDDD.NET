@@ -1,0 +1,49 @@
+#nullable enable
+abstract EzDdd.Entity.EsAggregateRoot<TId, TEvent>.GetCategory() -> string!
+abstract EzDdd.Entity.EsAggregateRoot<TId, TEvent>._When(TEvent! event) -> void
+EzDdd.Entity.AggregateRoot<TId, TEvent>
+EzDdd.Entity.AggregateRoot<TId, TEvent>.AggregateRoot() -> void
+EzDdd.Entity.AggregateRoot<TId, TEvent>.ClearDomainEvents() -> void
+EzDdd.Entity.AggregateRoot<TId, TEvent>.GetDomainEvents() -> System.Collections.Generic.IReadOnlyList<TEvent!>!
+EzDdd.Entity.AggregateRoot<TId, TEvent>.GetDomainEventSize() -> int
+EzDdd.Entity.AggregateRoot<TId, TEvent>.GetLastDomainEvent() -> TEvent?
+EzDdd.Entity.AggregateRoot<TId, TEvent>.Id.get -> TId
+EzDdd.Entity.AggregateRoot<TId, TEvent>.Id.set -> void
+EzDdd.Entity.AggregateRoot<TId, TEvent>.IsDeleted.get -> bool
+EzDdd.Entity.AggregateRoot<TId, TEvent>.IsDeleted.set -> void
+EzDdd.Entity.AggregateRoot<TId, TEvent>.Version.get -> long
+EzDdd.Entity.AggregateRoot<TId, TEvent>.Version.set -> void
+EzDdd.Entity.AggregateRoot<TId, TEvent>._AddDomainEvent(TEvent! event) -> void
+EzDdd.Entity.DomainEventTypeMapper
+EzDdd.Entity.EsAggregateRoot<TId, TEvent>
+EzDdd.Entity.EsAggregateRoot<TId, TEvent>.EsAggregateRoot() -> void
+EzDdd.Entity.EsAggregateRoot<TId, TEvent>.EsAggregateRoot(System.Collections.Generic.IEnumerable<TEvent!>! events) -> void
+EzDdd.Entity.EsAggregateRoot<TId, TEvent>.GetStreamName() -> string!
+EzDdd.Entity.IDomainEvent
+EzDdd.Entity.IDomainEvent.Id.get -> System.Guid
+EzDdd.Entity.IDomainEvent.Metadata.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+EzDdd.Entity.IDomainEvent.OccurredOn.get -> System.DateTimeOffset
+EzDdd.Entity.IDomainEvent.Source.get -> string!
+EzDdd.Entity.IDomainEventSource<TEvent>
+EzDdd.Entity.IDomainEventSource<TEvent>.Apply(TEvent! event) -> void
+EzDdd.Entity.IDomainEventSource<TEvent>.ClearDomainEvents() -> void
+EzDdd.Entity.IDomainEventSource<TEvent>.GetDomainEvents() -> System.Collections.Generic.IReadOnlyList<TEvent!>!
+EzDdd.Entity.IDomainEventSource<TEvent>.GetDomainEventSize() -> int
+EzDdd.Entity.IDomainEventSource<TEvent>.GetLastDomainEvent() -> TEvent?
+EzDdd.Entity.IEntity<TId>
+EzDdd.Entity.IEntity<TId>.Id.get -> TId
+EzDdd.Entity.IInternalDomainEvent
+EzDdd.Entity.IInternalDomainEvent.IConstructionEvent
+EzDdd.Entity.IInternalDomainEvent.IDestructionEvent
+EzDdd.Entity.IValueObject
+override sealed EzDdd.Entity.EsAggregateRoot<TId, TEvent>.Apply(TEvent! event) -> void
+static EzDdd.Entity.DomainEventTypeMapper.Clear() -> void
+static EzDdd.Entity.DomainEventTypeMapper.Contains(string! typeName) -> bool
+static EzDdd.Entity.DomainEventTypeMapper.GetAllMappings() -> System.Collections.Generic.IReadOnlyDictionary<string!, System.Type!>!
+static EzDdd.Entity.DomainEventTypeMapper.GetType(string! typeName) -> System.Type!
+static EzDdd.Entity.DomainEventTypeMapper.GetTypeName(EzDdd.Entity.IInternalDomainEvent! event) -> string!
+static EzDdd.Entity.DomainEventTypeMapper.GetTypeName(System.Type! eventType) -> string!
+static EzDdd.Entity.DomainEventTypeMapper.Register<TEvent>(string! typeName) -> void
+virtual EzDdd.Entity.AggregateRoot<TId, TEvent>.Apply(TEvent! event) -> void
+virtual EzDdd.Entity.EsAggregateRoot<TId, TEvent>._EnsureInvariant() -> void
+virtual EzDdd.Entity.EsAggregateRoot<TId, TEvent>._ReplayEvents(System.Collections.Generic.IEnumerable<TEvent!>! events) -> void
