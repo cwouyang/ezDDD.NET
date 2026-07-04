@@ -14,7 +14,7 @@ A modern tactical DDD library for .NET, specifically designed for Domain-Driven 
 
 ## Status
 
-✅ **Version 1.0.0** - **Based on Java ezddd 6.0.1**
+✅ **First public release in preparation** - **Based on Java ezddd 6.0.1**
 
 - ✅ **Phase 1-5**: Core Implementation
 - ✅ **Phase 6**: Java 4.1.0 Synchronization
@@ -24,7 +24,7 @@ A modern tactical DDD library for .NET, specifically designed for Domain-Driven 
 - ✅ **Zero external dependencies** (only .NET BCL + uContract.NET)
 - ✅ **~99% semantic parity** with Java ezddd 6.0.1
 
-**New in 1.0.0 (Java 4.1.0 → 6.0.1 features)**:
+**Included in the first release (Java 4.1.0 → 6.0.1 features)**:
 - ✅ **IDomainEvent.Metadata** - Idempotency and distributed tracing support
 - ✅ **IReconciler** - System state reconciliation interface
 - ✅ **IReactor / IProjector&lt;TInput&gt; / INotifier** - Unified reactor hierarchy for event reaction (Java 5.0.0)
@@ -33,7 +33,7 @@ A modern tactical DDD library for .NET, specifically designed for Domain-Driven 
 - ✅ **Thread Safety** - Enhanced concurrent operation support
 - ✅ **Null Safety** - Comprehensive parameter validation
 
-**Current Version**: `1.0.0` (ready for NuGet)
+**Status**: first public release in preparation (not yet published to NuGet)
 
 ---
 
@@ -1150,9 +1150,9 @@ public sealed class BankAccount : EsAggregateRoot<AccountId, IInternalDomainEven
   - Pre-release verification steps
   - Post-release tasks
 
-- 📝 **[CHANGELOG.md](CHANGELOG.md)** - Complete release history (567 lines)
-  - Detailed changelog for version 1.0.0-alpha.1
-  - All 501 tests, 23 ADRs, 5 modules documented
+- 📝 **[CHANGELOG.md](CHANGELOG.md)** - Release history
+  - Consolidated [Unreleased] entry covering the full first-release scope
+  - Follows Keep a Changelog / Semantic Versioning
 
 ### Developer Documentation
 - 🏗️ **[DOTNET_PORT.md](DOTNET_PORT.md)** - Technical planning and design decisions

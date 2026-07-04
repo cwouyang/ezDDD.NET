@@ -1,9 +1,9 @@
 # ezDDD.NET Development Roadmap
 
 **Project**: ezDDD.NET - Tactical DDD Framework for .NET
-**Version**: 1.0.0 (Ready for NuGet Publication)
-**Target Release**: 1.0.0 (based on Java ezddd 4.1.0)
-**Last Updated**: 2026-01-11
+**Status**: first public release in preparation (not yet published to NuGet)
+**Target Release**: 1.0.0 (based on Java ezddd 6.0.1 after Phase 7)
+**Last Updated**: 2026-07-04
 
 ---
 
@@ -12,12 +12,12 @@
 **ezDDD.NET** is a .NET port of the Java ezddd library, providing tactical Domain-Driven Design (DDD) patterns, Command Query Responsibility Segregation (CQRS), and Clean Architecture (CA) support. It supports both **state sourcing** and **event sourcing** for implementing aggregates and repositories.
 
 ### Key Metrics
-- **Based on**: Java ezddd 4.1.0 (commit `91fac63`) - ✅ Synchronized from Java 2.1.0 in Phase 6
+- **Based on**: Java ezddd 6.0.1 (commit `3aac0f5`) - ✅ Synchronized 2.1.0 → 4.1.0 in Phase 6, 4.1.0 → 6.0.1 in Phase 7
 - **Language**: C# / .NET 8+
-- **Development Version**: 1.0.0 (ready for NuGet publication)
-- **Test Coverage**: 562 tests passing (>90% coverage, 100% pass rate)
-- **ADRs**: 27 architecture decisions documented
-- **Semantic Parity**: ~99-100% with Java ezddd 4.1.0 achieved ✅
+- **Status**: first public release in preparation (not yet published to NuGet)
+- **Test Coverage**: 543 tests passing (>90% coverage, 100% pass rate)
+- **ADRs**: 29 architecture decisions documented
+- **Semantic Parity**: ~99% with Java ezddd 6.0.1 achieved ✅
 
 ---
 
@@ -37,7 +37,7 @@ Overall Progress:              ████████████████�
 **Current Status** (2026-01-11):
 - ✅ Phase 1-5 Complete (500 tests passing, 23 ADRs)
 - ✅ Phase 6 Stage S6 Complete (562 tests, 27 ADRs, 37 integration tests)
-- ✅ Ready for 1.0.0 NuGet publication (S7 deferred to post-release)
+- ✅ Phase 6 code complete (at the time); first public release still in preparation (S7 deferred to post-release)
 
 ---
 
@@ -488,7 +488,7 @@ Extract business logic >20 lines from UseCases to Service classes for reusabilit
 - [ ] Feature parity ~99% verified
 
 **Deliverables**:
-- ✅ ezDDD.NET 1.0.0 ready for NuGet (based on Java ezddd 4.1.0)
+- ✅ ezDDD.NET first-release packages prepared (based on Java ezddd 4.1.0 at the time)
 - ✅ Complete documentation (README, CHANGELOG, API docs)
 - ✅ 8 ADRs (ADR-0024 to ADR-0030)
 - ✅ ~99% semantic parity with Java ezddd 4.1.0
@@ -650,13 +650,20 @@ Total: 27/30 ADRs   ██████████████████░░
 
 ## 🚀 Future Considerations (Post-1.0.0)
 
-### Potential Future Phases (Not Committed)
-- **Phase 7**: Performance optimization (if needed)
-- **Phase 8**: Advanced patterns (if Java ezddd adds more features)
-- **Phase 9**: Integration examples (ASP.NET Core, Entity Framework Core)
+### Potential Future Work (Not Committed)
+- **ezDDD.Gateway package** — port of the upstream ezddd-gateway artifact (`MessageProducer`
+  moved out of core in Java 6.0.0); deferred to post-1.0 (see ADR-0029)
+- **Phase 6 Stage S7** — final review & completion pass (deferred to post-release maintenance)
+- **Performance** — benchmarks and optimization profiles (Expression Trees instead of
+  reflection, AOT support, ValueTask for hot paths)
+- **Event store adapters** — EventStoreDB, Marten
+- **Messaging adapters** — Azure Service Bus, RabbitMQ, Kafka (natural candidates for ezDDD.Gateway)
+- **ASP.NET Core integration** — helpers/middleware, projector lifecycle via BackgroundService
+- **Additional examples** — e-commerce, reservation system, gRPC integration
+- **Advanced event sourcing** — snapshots, temporal queries, saga pattern support
 
 ### Java ezddd Tracking
-- Monitor Java ezddd releases (4.2+)
+- Monitor Java ezddd releases (post-6.0.1)
 - Assess need for additional synchronization
 - Maintain ~99% semantic parity
 

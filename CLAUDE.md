@@ -14,7 +14,7 @@ This file provides guidance to Claude Code when working on the **.NET port** of 
 
 - **Language**: C# / .NET 8+
 - **Build Tool**: dotnet CLI
-- **Development Version**: 1.0.0 (ready for NuGet publication)
+- **Status**: first public release in preparation (not yet published to NuGet)
 - **Target Release**: 1.0.0 (based on Java ezddd 6.0.1)
 - **Target Framework**: .NET 8.0
 - **Main Namespace**: `EzDdd`
@@ -25,7 +25,7 @@ This file provides guidance to Claude Code when working on the **.NET port** of 
 
 ## ⚠️ Project Status
 
-**✅ PHASE 6 STAGE S6 COMPLETE - 🚀 READY FOR 1.0.0 NUGET PUBLICATION** (2026-01-11)
+**✅ PHASE 6 STAGE S6 COMPLETE** (2026-01-11) — first public release in preparation
 
 **Implementation Progress**:
 - ✅ **Phase 1-5 Complete** (Based on Java ezddd 2.1.0):
@@ -60,9 +60,9 @@ This file provides guidance to Claude Code when working on the **.NET port** of 
 - ✅ Phase 1-5 complete (based on Java ezddd 2.1.0, commit `6e94aee`)
 - ✅ Phase 6 Stage S6 complete (7/8 stages, 87.5%) - **S7 deferred to post-1.0.0**
 - ✅ Pre-publication synchronization complete (all Java 4.1.0 features implemented)
-- 🎯 Ready for 1.0.0 NuGet publication
+- 🎯 First public release in preparation (not yet published)
 
-**Next Steps**: Prepare for 1.0.0 NuGet publication (Stage S7 deferred to post-release maintenance)
+**Next Steps**: Prepare the first public NuGet release (Stage S7 deferred to post-release maintenance)
 
 **📊 Complete Roadmap**: See [ROADMAP.md](ROADMAP.md) for detailed workflow, timeline, and progress tracking
 
@@ -584,7 +584,7 @@ This ensures users receive a complete, up-to-date API aligned with Java 4.1.0 fr
 - [x] All "Java 2.1.0" references updated to "Java 4.1.0" - **✅ Complete**
 - [x] Feature parity with Java 4.1.0 verified (~99%) - **✅ Verified**
 - [x] Documentation updated (README, CHANGELOG, API docs) - **✅ Complete**
-- [x] NuGet packages ready for **1.0.0** release (5 packages) - **✅ Ready**
+- [x] NuGet packages prepared for the first release (5 packages) - **✅ Ready (at the time)**
 - [x] Integration tests for all Java 4.1.0 features - **✅ 38 tests**
 
 ### 📚 Complete Implementation Plan
@@ -699,7 +699,7 @@ See [DOTNET_PORT.md](DOTNET_PORT.md) "Java 4.1.0 Synchronization Plan" section (
 **Outcomes Achieved**:
 - ✅ **562 tests passing** (100% pass rate, exceeded 520+ target)
 - ✅ **~99% semantic parity** with Java 4.1.0
-- ✅ **Feature-complete 1.0.0** ready for NuGet
+- ✅ **Feature-complete codebase** for the first release (at the time; publication still pending)
 - ✅ **All breaking changes** in initial release (no migration needed)
 - ✅ **37 integration tests** for Java 4.1.0 features
 - ✅ **Complete documentation** (README, CHANGELOG, API docs)
