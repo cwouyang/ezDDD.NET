@@ -9,7 +9,7 @@ public sealed record Money(decimal Amount, string Currency = "USD") : IValueObje
 {
     public Money Add(Money other)
     {
-        if (Currency != other.Currency)
+        if (!string.Equals(Currency, other.Currency, StringComparison.Ordinal))
         {
             throw new InvalidOperationException($"Cannot add different currencies: {Currency} and {other.Currency}");
         }
@@ -22,7 +22,7 @@ public sealed record Money(decimal Amount, string Currency = "USD") : IValueObje
 
     public Money Subtract(Money other)
     {
-        if (Currency != other.Currency)
+        if (!string.Equals(Currency, other.Currency, StringComparison.Ordinal))
         {
             throw new InvalidOperationException(
                 $"Cannot subtract different currencies: {Currency} and {other.Currency}"

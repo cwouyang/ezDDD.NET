@@ -38,7 +38,7 @@ public class OutboxDataTests
             "John Doe",
             new Dictionary<string, string>()
         );
-        IReadOnlyList<IDomainEvent> events = new List<IDomainEvent> { @event };
+        IReadOnlyList<IDomainEvent> events = [@event];
 
         BankAccountData data = new(accountId, 1, events, "account-acc-123", "John Doe", 1000.00m);
 
@@ -88,7 +88,7 @@ public class OutboxDataTests
             "Charlie",
             new Dictionary<string, string>()
         );
-        IReadOnlyList<IDomainEvent> events = new List<IDomainEvent> { @event };
+        IReadOnlyList<IDomainEvent> events = [@event];
         BankAccountData data = new(accountId, 0, events, "stream", "Charlie", 0.00m);
 
         IReadOnlyList<IDomainEvent> retrievedEvents = data.Events;
@@ -155,9 +155,9 @@ public class OutboxDataTests
 
     #region Test Data Structures
 
-    private record AccountId(string Value);
+    private sealed record AccountId(string Value);
 
-    private record AccountCreated(
+    private sealed record AccountCreated(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -165,7 +165,7 @@ public class OutboxDataTests
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent, IInternalDomainEvent.IConstructionEvent;
 
-    private class BankAccountData : IOutboxData<AccountId>
+    private sealed class BankAccountData : IOutboxData<AccountId>
     {
         public BankAccountData(
             AccountId id,

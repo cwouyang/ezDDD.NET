@@ -84,17 +84,19 @@ public class ValueObjectTests
     }
 
     // Record-based value object (recommended approach)
-    private record MoneyRecord(decimal Amount, string Currency) : IValueObject;
+    private sealed record MoneyRecord(decimal Amount, string Currency) : IValueObject;
 
     // Class-based value object (manual equality)
-    private class MoneyClass(decimal amount, string currency) : IValueObject
+    private sealed class MoneyClass(decimal amount, string currency) : IValueObject
     {
         public decimal Amount { get; } = amount;
         public string Currency { get; } = currency;
 
         public override bool Equals(object? obj)
         {
-            return obj is MoneyClass other && Amount == other.Amount && Currency == other.Currency;
+            return obj is MoneyClass other
+                && Amount == other.Amount
+                && string.Equals(Currency, other.Currency, StringComparison.Ordinal);
         }
 
         public override int GetHashCode()

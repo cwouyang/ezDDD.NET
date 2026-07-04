@@ -33,7 +33,7 @@ public class ProjectorTests
         Assert.Same(projector, stringProjector);
     }
 
-    private class TestProjector : IProjector<string>
+    private sealed class TestProjector : IProjector<string>
     {
         public Task ExecuteAsync(string input)
         {
@@ -41,7 +41,7 @@ public class ProjectorTests
         }
     }
 
-    private class ObjectProjector : IProjector<object>
+    private sealed class ObjectProjector : IProjector<object>
     {
         public Task ExecuteAsync(object input)
         {

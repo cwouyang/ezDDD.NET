@@ -64,7 +64,7 @@ public class ExternalDomainEventTests
     }
 
     // Test event for external domain event
-    private record TestExternalEvent(
+    private sealed record TestExternalEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -73,7 +73,7 @@ public class ExternalDomainEventTests
     ) : IExternalDomainEvent;
 
     // Test event for internal domain event (for comparison)
-    private record TestInternalEvent(
+    private sealed record TestInternalEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,

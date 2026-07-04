@@ -37,7 +37,7 @@ public sealed class AccountProjector : IProjector<DomainEventData>
     ///     Executes the projector logic to update the read model based on the received domain event.
     ///     This method is called by the event relay infrastructure when events are published.
     /// </summary>
-    /// <param name="eventData">The domain event data to process.</param>
+    /// <param name="input">The domain event data to process.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     /// <remarks>
     ///     <para>
@@ -50,11 +50,11 @@ public sealed class AccountProjector : IProjector<DomainEventData>
     ///         exceptions to make test failures visible.
     ///     </para>
     /// </remarks>
-    public async Task ExecuteAsync(DomainEventData eventData)
+    public async Task ExecuteAsync(DomainEventData input)
     {
         try
         {
-            IInternalDomainEvent domainEvent = _DeserializeDomainEvent(eventData);
+            IInternalDomainEvent domainEvent = _DeserializeDomainEvent(input);
 
             switch (domainEvent)
             {
@@ -80,7 +80,7 @@ public sealed class AccountProjector : IProjector<DomainEventData>
             // In test scenarios: rethrow to make failures visible in test results
             // In production: log error and continue processing (don't crash projector)
             await Console.Error.WriteLineAsync(
-                $"Error processing event {eventData.Id} (type: {eventData.EventType}): {ex.Message}"
+                $"Error processing event {input.Id} (type: {input.EventType}): {ex.Message}"
             );
             throw; // Rethrow for test observability
         }

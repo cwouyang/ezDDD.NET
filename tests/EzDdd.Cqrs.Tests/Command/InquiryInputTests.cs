@@ -50,7 +50,7 @@ public class InquiryInputTests
         Assert.NotEqual(input1.GetType(), input2.GetType());
     }
 
-    private record TestInquiryInput(string Data) : IInquiryInput;
+    private sealed record TestInquiryInput(string Data) : IInquiryInput;
 
-    private record AnotherTestInquiryInput(int Value) : IInquiryInput;
+    private sealed record AnotherTestInquiryInput(int Value) : IInquiryInput;
 }

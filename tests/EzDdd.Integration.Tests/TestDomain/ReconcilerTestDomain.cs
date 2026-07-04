@@ -12,7 +12,7 @@ public sealed record DataItem(string Id, string Status, DateTimeOffset CreatedAt
 /// </summary>
 public sealed class InMemoryDataItemRepository
 {
-    private readonly Dictionary<string, DataItem> _storage = new();
+    private readonly Dictionary<string, DataItem> _storage = [];
 
     public int Count => _storage.Count;
 
@@ -28,18 +28,20 @@ public sealed class InMemoryDataItemRepository
         return Task.FromResult(item);
     }
 
-    public Task<List<DataItem>> FindByStatusAsync(string status)
+    public Task<IList<DataItem>> FindByStatusAsync(string status)
     {
-        List<DataItem> items = _storage.Values.Where(i => i.Status == status).ToList();
-        return Task.FromResult(items);
+        List<DataItem> items = _storage
+            .Values.Where(i => string.Equals(i.Status, status, StringComparison.Ordinal))
+            .ToList();
+        return Task.FromResult<IList<DataItem>>(items);
     }
 
-    public Task<List<DataItem>> FindExpiredAsync(DateTimeOffset cutoffDate)
+    public Task<IList<DataItem>> FindExpiredAsync(DateTimeOffset cutoffDate)
     {
         List<DataItem> items = _storage
             .Values.Where(i => i.ExpiresAt.HasValue && i.ExpiresAt.Value < cutoffDate)
             .ToList();
-        return Task.FromResult(items);
+        return Task.FromResult<IList<DataItem>>(items);
     }
 
     public Task DeleteAsync(string id)
@@ -95,12 +97,14 @@ public sealed class ExpiredDataCleanupReconciler : IReconciler<CleanupContext, C
         }
 
         // Find expired items
-        List<DataItem> expiredItems = await _repository.FindExpiredAsync(context.CutoffDate);
+        IList<DataItem> expiredItems = await _repository.FindExpiredAsync(context.CutoffDate);
 
         // Filter by target status if specified
         if (!string.IsNullOrEmpty(context.TargetStatus))
         {
-            expiredItems = expiredItems.Where(i => i.Status == context.TargetStatus).ToList();
+            expiredItems = expiredItems
+                .Where(i => string.Equals(i.Status, context.TargetStatus, StringComparison.Ordinal))
+                .ToList();
         }
 
         int totalChecked = expiredItems.Count;

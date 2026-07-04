@@ -101,27 +101,7 @@ public sealed class ConcurrentOperationsTests
         for (int i = 0; i < updateCount / 2; i++)
         {
             int updateId = i;
-            tasks.Add(
-                Task.Run(async () =>
-                {
-                    try
-                    {
-                        // Load current state
-                        MetadataTestAggregate? agg = await repository.FindByIdAsync(sharedId);
-                        if (agg != null && !agg.IsClosed)
-                        {
-                            // Update value
-                            agg.UpdateValue((updateId + 1) * 100);
-                            await repository.SaveAsync(agg);
-                        }
-                    }
-                    catch (RepositorySaveException)
-                    {
-                        // Expected: Optimistic locking conflict due to concurrent updates
-                        // Some updates will fail - this is correct behavior
-                    }
-                })
-            );
+            tasks.Add(Task.Run(() => _TryUpdateSharedAggregateAsync(repository, sharedId, updateId)));
         }
 
         // Other half performs reads
@@ -147,6 +127,34 @@ public sealed class ConcurrentOperationsTests
         // Due to optimistic locking, not all updates will succeed
         // Verify at least the initial aggregate was persisted
         Assert.True(finalAgg.Value >= 0);
+    }
+
+    /// <summary>
+    ///     Loads the shared aggregate and applies one update, swallowing the optimistic-locking
+    ///     conflicts that concurrent updates are expected to produce.
+    /// </summary>
+    private static async Task _TryUpdateSharedAggregateAsync(
+        EsRepository<MetadataTestAggregate, MetadataTestId> repository,
+        MetadataTestId sharedId,
+        int updateId
+    )
+    {
+        try
+        {
+            // Load current state
+            MetadataTestAggregate? agg = await repository.FindByIdAsync(sharedId);
+            if (agg != null && !agg.IsClosed)
+            {
+                // Update value
+                agg.UpdateValue((updateId + 1) * 100);
+                await repository.SaveAsync(agg);
+            }
+        }
+        catch (RepositorySaveException)
+        {
+            // Expected: Optimistic locking conflict due to concurrent updates
+            // Some updates will fail - this is correct behavior
+        }
     }
 
     #endregion

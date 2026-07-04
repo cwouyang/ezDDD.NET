@@ -52,7 +52,7 @@ public class ProjectionInputTests
         Assert.NotEqual(input1.GetType(), input2.GetType());
     }
 
-    private record TestProjectionInput(string Id) : IProjectionInput;
+    private sealed record TestProjectionInput(string Id) : IProjectionInput;
 
-    private record ComplexProjectionInput(string Id, bool IncludeDetails) : IProjectionInput;
+    private sealed record ComplexProjectionInput(string Id, bool IncludeDetails) : IProjectionInput;
 }

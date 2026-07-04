@@ -7,15 +7,15 @@ public class StoreDataTests
 {
     #region Test Helpers
 
-    private class TestStoreData : IStoreData<string>
+    private sealed class TestStoreData : IStoreData<string>
     {
         public long Version { get; set; } = -1;
         public string Id { get; set; } = string.Empty;
-        public IReadOnlyList<IDomainEvent> Events { get; set; } = new List<IDomainEvent>();
+        public IReadOnlyList<IDomainEvent> Events { get; set; } = [];
         public string StreamName { get; set; } = string.Empty;
     }
 
-    private record TestEvent(
+    private sealed record TestEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -64,10 +64,7 @@ public class StoreDataTests
         IStoreData<string> storeData = new TestStoreData
         {
             Version = -1,
-            Events = new List<IDomainEvent>
-            {
-                new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", new Dictionary<string, string>()),
-            },
+            Events = [new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", new Dictionary<string, string>())],
         };
 
         var optimisticLockVersion = storeData.GetOptimisticLockVersion();
@@ -81,10 +78,7 @@ public class StoreDataTests
         IStoreData<string> storeData = new TestStoreData
         {
             Version = 0,
-            Events = new List<IDomainEvent>
-            {
-                new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", new Dictionary<string, string>()),
-            },
+            Events = [new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", new Dictionary<string, string>())],
         };
 
         var optimisticLockVersion = storeData.GetOptimisticLockVersion();
@@ -98,12 +92,12 @@ public class StoreDataTests
         IStoreData<string> storeData = new TestStoreData
         {
             Version = 5,
-            Events = new List<IDomainEvent>
-            {
+            Events =
+            [
                 new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", new Dictionary<string, string>()),
                 new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", new Dictionary<string, string>()),
                 new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", new Dictionary<string, string>()),
-            },
+            ],
         };
 
         var optimisticLockVersion = storeData.GetOptimisticLockVersion();
@@ -149,22 +143,22 @@ public class StoreDataTests
             StreamName = "account-789",
         };
 
-        storeData.Events = new List<IDomainEvent>
-        {
+        storeData.Events =
+        [
             new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", new Dictionary<string, string>()),
-        };
+        ];
 
         Assert.Equal(0, storeData.GetOptimisticLockVersion());
 
         storeData.Version = 0;
-        storeData.Events = new List<IDomainEvent>();
+        storeData.Events = [];
 
         Assert.Equal(0, storeData.GetOptimisticLockVersion());
 
-        storeData.Events = new List<IDomainEvent>
-        {
+        storeData.Events =
+        [
             new TestEvent(Guid.NewGuid(), DateTimeOffset.UtcNow, "test", new Dictionary<string, string>()),
-        };
+        ];
 
         Assert.Equal(1, storeData.GetOptimisticLockVersion());
     }

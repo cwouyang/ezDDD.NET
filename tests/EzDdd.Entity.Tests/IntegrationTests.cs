@@ -266,7 +266,7 @@ public class IntegrationTests
 
     // ========== Domain Events ==========
 
-    private record AccountOpenedEvent(
+    private sealed record AccountOpenedEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -275,7 +275,7 @@ public class IntegrationTests
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent, IInternalDomainEvent.IConstructionEvent;
 
-    private record MoneyDepositedEvent(
+    private sealed record MoneyDepositedEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -284,7 +284,7 @@ public class IntegrationTests
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent;
 
-    private record MoneyWithdrawnEvent(
+    private sealed record MoneyWithdrawnEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -293,7 +293,7 @@ public class IntegrationTests
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent;
 
-    private record AccountClosedEvent(
+    private sealed record AccountClosedEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -303,11 +303,11 @@ public class IntegrationTests
 
     // ========== Value Objects ==========
 
-    private record Money(decimal Amount, string Currency) : IValueObject
+    private sealed record Money(decimal Amount, string Currency) : IValueObject
     {
         public Money Add(Money other)
         {
-            if (Currency != other.Currency)
+            if (!string.Equals(Currency, other.Currency, StringComparison.Ordinal))
             {
                 throw new InvalidOperationException($"Cannot add {other.Currency} to {Currency}");
             }
@@ -320,7 +320,7 @@ public class IntegrationTests
 
         public Money Subtract(Money other)
         {
-            if (Currency != other.Currency)
+            if (!string.Equals(Currency, other.Currency, StringComparison.Ordinal))
             {
                 throw new InvalidOperationException($"Cannot subtract {other.Currency} from {Currency}");
             }
@@ -337,7 +337,7 @@ public class IntegrationTests
         }
     }
 
-    private record AccountId(Guid Value) : IValueObject
+    private sealed record AccountId(Guid Value) : IValueObject
     {
         public static AccountId NewId()
         {
@@ -352,8 +352,13 @@ public class IntegrationTests
 
     // ========== Entities ==========
 
-    private class Transaction(Guid id, DateTimeOffset timestamp, Money amount, string description, TransactionType type)
-        : IEntity<Guid>
+    private sealed class Transaction(
+        Guid id,
+        DateTimeOffset timestamp,
+        Money amount,
+        string description,
+        TransactionType type
+    ) : IEntity<Guid>
     {
         public DateTimeOffset Timestamp { get; } = timestamp;
         public Money Amount { get; } = amount;
@@ -370,7 +375,7 @@ public class IntegrationTests
 
     // ========== Aggregate Root ==========
 
-    private class BankAccount : EsAggregateRoot<AccountId, IInternalDomainEvent>
+    private sealed class BankAccount : EsAggregateRoot<AccountId, IInternalDomainEvent>
     {
         private readonly List<Transaction> _transactions = [];
 

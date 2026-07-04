@@ -268,7 +268,7 @@ public class AggregateRootTests
     #endregion
 
     // Test events
-    private record TestCreatedEvent(
+    private sealed record TestCreatedEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -276,7 +276,7 @@ public class AggregateRootTests
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent, IInternalDomainEvent.IConstructionEvent;
 
-    private record TestUpdatedEvent(
+    private sealed record TestUpdatedEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -284,7 +284,7 @@ public class AggregateRootTests
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent;
 
-    private record TestDeletedEvent(
+    private sealed record TestDeletedEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,

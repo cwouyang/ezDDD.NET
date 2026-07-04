@@ -117,7 +117,7 @@ public sealed class EventSourcingMetadataTests
         }
     }
 
-    private static IReadOnlyDictionary<string, string> _CreateMetadata(
+    private static ReadOnlyDictionary<string, string> _CreateMetadata(
         string correlationId,
         string? causationId = null,
         string? userId = null,

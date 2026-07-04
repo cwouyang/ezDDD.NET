@@ -253,9 +253,9 @@ public class OutboxRepositoryTests
 
     #region Test Infrastructure
 
-    private record AccountId(string Value);
+    private sealed record AccountId(string Value);
 
-    private record AccountCreated(
+    private sealed record AccountCreated(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -264,7 +264,7 @@ public class OutboxRepositoryTests
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent, IInternalDomainEvent.IConstructionEvent;
 
-    private record MoneyDeposited(
+    private sealed record MoneyDeposited(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -272,7 +272,7 @@ public class OutboxRepositoryTests
         IReadOnlyDictionary<string, string> Metadata
     ) : IInternalDomainEvent;
 
-    private class BankAccount : AggregateRoot<AccountId, IInternalDomainEvent>
+    private sealed class BankAccount : AggregateRoot<AccountId, IInternalDomainEvent>
     {
         public BankAccount(AccountId id, string owner, decimal initialBalance)
         {
@@ -316,7 +316,7 @@ public class OutboxRepositoryTests
         }
     }
 
-    private class BankAccountData : IOutboxData<AccountId>
+    private sealed class BankAccountData : IOutboxData<AccountId>
     {
         public BankAccountData(
             AccountId id,
@@ -348,7 +348,7 @@ public class OutboxRepositoryTests
         }
     }
 
-    private class BankAccountMapper : OutboxMapper<BankAccount, BankAccountData, AccountId>
+    private sealed class BankAccountMapper : OutboxMapper<BankAccount, BankAccountData, AccountId>
     {
         public override BankAccountData ToData(BankAccount aggregate)
         {
@@ -369,9 +369,9 @@ public class OutboxRepositoryTests
     }
 
     // Mock RepositoryPeer for testing
-    private class InMemoryRepositoryPeer : IRepositoryPeer<BankAccountData, AccountId>
+    private sealed class InMemoryRepositoryPeer : IRepositoryPeer<BankAccountData, AccountId>
     {
-        private readonly Dictionary<AccountId, BankAccountData> _storage = new();
+        private readonly Dictionary<AccountId, BankAccountData> _storage = [];
         public bool ThrowOnSave { get; set; }
 
         public Task<BankAccountData?> FindByIdAsync(AccountId id)

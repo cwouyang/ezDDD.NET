@@ -139,5 +139,5 @@ public class InternalDomainEventDto
     ///         Complex metadata values should be serialized to JSON strings.
     ///     </para>
     /// </remarks>
-    public Dictionary<string, string> Metadata { get; set; } = new();
+    public IDictionary<string, string> Metadata { get; set; } = new Dictionary<string, string>(StringComparer.Ordinal);
 }

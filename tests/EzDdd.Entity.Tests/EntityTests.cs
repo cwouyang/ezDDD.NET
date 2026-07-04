@@ -61,12 +61,12 @@ public class EntityTests
     }
 
     // Test implementation classes
-    private class TestEntity(Guid id) : IEntity<Guid>
+    private sealed class TestEntity(Guid id) : IEntity<Guid>
     {
         public Guid Id { get; } = id;
     }
 
-    private class TestStringEntity(string id) : IEntity<string>
+    private sealed class TestStringEntity(string id) : IEntity<string>
     {
         public string Id { get; } = id;
     }

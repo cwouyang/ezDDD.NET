@@ -8,11 +8,12 @@ public class BiMapTests
     public void Add_AndGet_WorksBidirectionally()
     {
         // ReSharper disable once UseObjectOrCollectionInitializer
-        BiMap<string, int> biMap = new();
-
-        biMap.Add("one", 1);
-        biMap.Add("two", 2);
-        biMap.Add("three", 3);
+        BiMap<string, int> biMap = new()
+        {
+            { "one", 1 },
+            { "two", 2 },
+            { "three", 3 },
+        };
 
         Assert.Equal(1, biMap["one"]);
         Assert.Equal(2, biMap["two"]);
@@ -37,9 +38,7 @@ public class BiMapTests
     public void Add_WhenSameValueHasDifferentKey_RemovesOldKey()
     {
         // ReSharper disable once UseObjectOrCollectionInitializer
-        BiMap<string, int> biMap = new() { { "key1", 100 } };
-
-        biMap.Add("key2", 100);
+        BiMap<string, int> biMap = new() { { "key1", 100 }, { "key2", 100 } };
 
         Assert.Equal("key2", biMap.GetKey(100));
         Assert.False(biMap.ContainsKey("key1"));
@@ -75,7 +74,7 @@ public class BiMapTests
     public void TryGetValue_WhenKeyNotExists_ReturnsFalse()
     {
         // ReSharper disable once CollectionNeverUpdated.Local
-        BiMap<string, int> biMap = new();
+        BiMap<string, int> biMap = [];
 
         bool found = biMap.TryGetValue("missing", out int value);
 
@@ -97,7 +96,7 @@ public class BiMapTests
     [Fact]
     public void TryGetKey_WhenValueNotExists_ReturnsFalse()
     {
-        BiMap<string, int> biMap = new();
+        BiMap<string, int> biMap = [];
 
         bool found = biMap.TryGetKey(999, out string? key);
 
@@ -199,9 +198,9 @@ public class BiMapTests
         List<KeyValuePair<string, int>> entries = biMap.ToList();
 
         Assert.Equal(3, entries.Count);
-        Assert.Contains(entries, e => e.Key == "one" && e.Value == 1);
-        Assert.Contains(entries, e => e.Key == "two" && e.Value == 2);
-        Assert.Contains(entries, e => e.Key == "three" && e.Value == 3);
+        Assert.Contains(entries, e => string.Equals(e.Key, "one", StringComparison.Ordinal) && e.Value == 1);
+        Assert.Contains(entries, e => string.Equals(e.Key, "two", StringComparison.Ordinal) && e.Value == 2);
+        Assert.Contains(entries, e => string.Equals(e.Key, "three", StringComparison.Ordinal) && e.Value == 3);
     }
 
     [Fact]
@@ -275,7 +274,7 @@ public class BiMapTests
     public void PutAll_WhenAddingEmptyDictionary_DoesNotModifyBiMap()
     {
         BiMap<string, int> biMap = new() { { "key", 42 } };
-        Dictionary<string, int> empty = new();
+        Dictionary<string, int> empty = [];
 
         biMap.PutAll(empty);
 
@@ -304,7 +303,7 @@ public class BiMapTests
     [Fact]
     public void PutIfAbsent_WhenKeyDoesNotExist_AddsAndReturnsValue()
     {
-        BiMap<string, int> biMap = new();
+        BiMap<string, int> biMap = [];
 
         int? result = biMap.PutIfAbsent("key", 42);
 
@@ -422,7 +421,7 @@ public class BiMapTests
     [Fact]
     public async Task ConcurrentAdds_MaintainConsistency()
     {
-        BiMap<string, int> biMap = new();
+        BiMap<string, int> biMap = [];
         const int threadCount = 100;
         const int operationsPerThread = 100;
 
@@ -460,7 +459,7 @@ public class BiMapTests
     [Fact]
     public async Task ConcurrentRemoves_MaintainConsistency()
     {
-        BiMap<string, int> biMap = new();
+        BiMap<string, int> biMap = [];
         const int entryCount = 1000;
 
         // Add initial entries
@@ -502,7 +501,7 @@ public class BiMapTests
     [Fact]
     public async Task ConcurrentPutAndRemove_MaintainConsistency()
     {
-        BiMap<string, int> biMap = new();
+        BiMap<string, int> biMap = [];
         const int operationCount = 10000;
 
         IEnumerable<Task> addTasks = Enumerable
@@ -532,7 +531,7 @@ public class BiMapTests
             .Select(_ =>
                 Task.Run(() =>
                 {
-                    BiMap<string, int> biMap = new();
+                    BiMap<string, int> biMap = [];
 
                     // Add initial data
                     for (int i = 0; i < 100; i++)
@@ -558,7 +557,7 @@ public class BiMapTests
     [Fact]
     public async Task ConcurrentReadsAndWrites_MaintainConsistency()
     {
-        BiMap<string, int> biMap = new();
+        BiMap<string, int> biMap = [];
         const int writeCount = 1000;
         const int readCount = 1000;
         int successfulReads = 0;
@@ -574,7 +573,10 @@ public class BiMapTests
                 {
                     if (biMap.TryGetValue($"key{i}", out int value) && value == i)
                     {
-                        if (biMap.TryGetKey(value, out string? key) && key == $"key{i}")
+                        if (
+                            biMap.TryGetKey(value, out string? key)
+                            && string.Equals(key, $"key{i}", StringComparison.Ordinal)
+                        )
                         {
                             Interlocked.Increment(ref successfulReads);
                         }
@@ -597,7 +599,7 @@ public class BiMapTests
     [Fact]
     public async Task ConcurrentValueOverwrites_MaintainConsistency()
     {
-        BiMap<string, int> biMap = new();
+        BiMap<string, int> biMap = [];
         const int threadCount = 100;
 
         // Multiple threads try to update the same keys with different values
@@ -631,7 +633,7 @@ public class BiMapTests
     [Fact]
     public async Task ConcurrentEnumeration_DoesNotThrow()
     {
-        BiMap<string, int> biMap = new();
+        BiMap<string, int> biMap = [];
 
         // Add initial data
         for (int i = 0; i < 100; i++)

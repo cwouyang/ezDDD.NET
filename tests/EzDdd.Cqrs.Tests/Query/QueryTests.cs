@@ -53,9 +53,9 @@ public class QueryTests
         Assert.Equal(firstResult.RetrievedData, secondResult.RetrievedData);
     }
 
-    private record TestInput(string Id) : IInput;
+    private sealed record TestInput(string Id) : IInput;
 
-    private class TestOutput : CqrsOutput<TestOutput>
+    private sealed class TestOutput : CqrsOutput<TestOutput>
     {
         public string RetrievedData { get; set; } = string.Empty;
 
@@ -66,7 +66,7 @@ public class QueryTests
         }
     }
 
-    private class TestQuery : IQuery<TestInput, TestOutput>
+    private sealed class TestQuery : IQuery<TestInput, TestOutput>
     {
         public Task<TestOutput> ExecuteAsync(TestInput input)
         {

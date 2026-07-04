@@ -33,7 +33,7 @@ public class NotifierTests
         Assert.Same(notifier, stringNotifier);
     }
 
-    private class TestNotifier : INotifier<string>
+    private sealed class TestNotifier : INotifier<string>
     {
         public Task ExecuteAsync(string input)
         {
@@ -41,7 +41,7 @@ public class NotifierTests
         }
     }
 
-    private class ObjectNotifier : INotifier<object>
+    private sealed class ObjectNotifier : INotifier<object>
     {
         public Task ExecuteAsync(object input)
         {

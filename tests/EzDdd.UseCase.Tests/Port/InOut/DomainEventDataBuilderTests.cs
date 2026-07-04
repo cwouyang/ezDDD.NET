@@ -11,7 +11,7 @@ public class DomainEventDataBuilderTests
     /// <summary>
     ///     Test helper record for payload serialization.
     /// </summary>
-    private record TestPayload(int Amount, string Currency);
+    private sealed record TestPayload(int Amount, string Currency);
 
     #region Factory Methods Tests
 

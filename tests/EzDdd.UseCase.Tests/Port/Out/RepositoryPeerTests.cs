@@ -9,13 +9,13 @@ public class RepositoryPeerTests
     #region Test Fixtures
 
     // Test data structure implementing IStoreData
-    private record TestDataId(string Value);
+    private sealed record TestDataId(string Value);
 
-    private class TestStoreDataImpl : IStoreData<TestDataId>
+    private sealed class TestStoreDataImpl : IStoreData<TestDataId>
     {
         public long Version { get; set; } = -1;
         public TestDataId Id { get; set; } = new("default");
-        public IReadOnlyList<IDomainEvent> Events { get; set; } = new List<IDomainEvent>();
+        public IReadOnlyList<IDomainEvent> Events { get; set; } = [];
         public string StreamName { get; set; } = string.Empty;
         public string Data { get; set; } = string.Empty;
     }
@@ -24,9 +24,9 @@ public class RepositoryPeerTests
 
     #region Mock Implementations
 
-    private class MockRepositoryPeer : IRepositoryPeer<TestStoreDataImpl, TestDataId>
+    private sealed class MockRepositoryPeer : IRepositoryPeer<TestStoreDataImpl, TestDataId>
     {
-        private readonly Dictionary<TestDataId, TestStoreDataImpl> _store = new();
+        private readonly Dictionary<TestDataId, TestStoreDataImpl> _store = [];
         public bool ThrowOnSave { get; set; }
 
         public Task<TestStoreDataImpl?> FindByIdAsync(TestDataId id)
@@ -193,14 +193,14 @@ public class RepositoryPeerTests
         {
             Id = dataId,
             Data = "Test",
-            Events = new List<IDomainEvent>
-            {
+            Events =
+            [
                 // In real implementation, SaveAsync would:
                 // 1. Begin transaction
                 // 2. Save aggregate state
                 // 3. Save events (outbox)
                 // 4. Commit transaction atomically
-            },
+            ],
         };
 
         await peer.SaveAsync(storeData);

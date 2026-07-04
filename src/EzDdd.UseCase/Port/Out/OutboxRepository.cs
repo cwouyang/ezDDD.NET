@@ -137,7 +137,7 @@ public class OutboxRepository<TAggregate, TData, TId> : IRepository<TAggregate, 
     /// </remarks>
     public async Task<TAggregate?> FindByIdAsync(TId id)
     {
-        TData? data = await _peer.FindByIdAsync(id);
+        TData? data = await _peer.FindByIdAsync(id).ConfigureAwait(false);
         if (data == null)
         {
             return null;
@@ -202,7 +202,7 @@ public class OutboxRepository<TAggregate, TData, TId> : IRepository<TAggregate, 
 
         try
         {
-            await _peer.SaveAsync(data);
+            await _peer.SaveAsync(data).ConfigureAwait(false);
         }
         catch (RepositoryPeerSaveException e)
         {
@@ -233,6 +233,6 @@ public class OutboxRepository<TAggregate, TData, TId> : IRepository<TAggregate, 
         ArgumentNullException.ThrowIfNull(aggregate);
 
         TData data = _mapper.ToData(aggregate);
-        await _peer.DeleteAsync(data);
+        await _peer.DeleteAsync(data).ConfigureAwait(false);
     }
 }

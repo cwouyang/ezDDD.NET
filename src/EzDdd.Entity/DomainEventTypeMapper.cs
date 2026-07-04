@@ -54,7 +54,7 @@ public static class DomainEventTypeMapper
 {
     // Use Lazy<T> for thread-safe lazy initialization (Java 4.1.0 alignment)
     // Ensures no race conditions during static initialization in multi-threaded scenarios
-    private static readonly Lazy<BiMap<string, Type>> Mapper = new(() => new BiMap<string, Type>());
+    private static readonly Lazy<BiMap<string, Type>> Mapper = new(() => []);
 
     /// <summary>
     ///     Registers a domain event type with its string identifier.
@@ -107,7 +107,8 @@ public static class DomainEventTypeMapper
             {
                 throw new ArgumentException(
                     $"Type name '{typeName}' is already registered to type '{existingType.Name}'. "
-                        + $"Cannot register it to '{eventType.Name}'."
+                        + $"Cannot register it to '{eventType.Name}'.",
+                    nameof(typeName)
                 );
             }
 
@@ -119,11 +120,12 @@ public static class DomainEventTypeMapper
         string? existingName = Mapper.Value.GetKey(eventType);
         if (existingName != null)
         {
-            if (existingName != typeName)
+            if (!string.Equals(existingName, typeName, StringComparison.Ordinal))
             {
                 throw new ArgumentException(
                     $"Type '{eventType.Name}' is already registered with name '{existingName}'. "
-                        + $"Cannot register it with name '{typeName}'."
+                        + $"Cannot register it with name '{typeName}'.",
+                    nameof(typeName)
                 );
             }
 
@@ -290,7 +292,7 @@ public static class DomainEventTypeMapper
     {
         // BiMap implements IDictionary, so we can enumerate it
         // Create a defensive copy as a read-only dictionary
-        return new Dictionary<string, Type>(Mapper.Value);
+        return new Dictionary<string, Type>(Mapper.Value, StringComparer.Ordinal);
     }
 
     /// <summary>

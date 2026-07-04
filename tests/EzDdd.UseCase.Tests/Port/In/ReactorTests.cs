@@ -34,7 +34,7 @@ public class ReactorTests
         Assert.Same(reactor, stringReactor);
     }
 
-    private class TestReactor : IReactor<string>
+    private sealed class TestReactor : IReactor<string>
     {
         public string? LastInput { get; private set; }
 
@@ -45,7 +45,7 @@ public class ReactorTests
         }
     }
 
-    private class ObjectReactor : IReactor<object>
+    private sealed class ObjectReactor : IReactor<object>
     {
         public Task ExecuteAsync(object input)
         {

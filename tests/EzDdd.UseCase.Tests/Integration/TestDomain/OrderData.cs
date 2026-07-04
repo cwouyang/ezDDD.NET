@@ -11,7 +11,7 @@ public sealed class OrderData : IOutboxData<OrderId>
     // State fields (current snapshot)
     public string CustomerName { get; set; } = string.Empty;
     public decimal TotalAmount { get; set; }
-    public List<OrderItemData> Items { get; set; } = [];
+    public IList<OrderItemData> Items { get; set; } = [];
     public OrderStatus Status { get; set; } = OrderStatus.Draft;
     public OrderId Id { get; set; } = default!;
     public long Version { get; set; }

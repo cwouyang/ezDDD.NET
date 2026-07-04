@@ -151,7 +151,7 @@ public class EsRepository<TAggregate, TId> : IRepository<TAggregate, TId, IInter
             throw new ArgumentNullException(nameof(id));
         }
 
-        EventStoreData<TId>? data = await _peer.FindByIdAsync(id);
+        EventStoreData<TId>? data = await _peer.FindByIdAsync(id).ConfigureAwait(false);
         if (data == null)
         {
             return null;
@@ -226,7 +226,7 @@ public class EsRepository<TAggregate, TId> : IRepository<TAggregate, TId, IInter
 
         try
         {
-            await _peer.SaveAsync(data);
+            await _peer.SaveAsync(data).ConfigureAwait(false);
         }
         catch (RepositoryPeerSaveException ex)
         {
@@ -270,7 +270,7 @@ public class EsRepository<TAggregate, TId> : IRepository<TAggregate, TId, IInter
         ArgumentNullException.ThrowIfNull(aggregate);
 
         EventStoreData<TId> data = EventStoreMapper.ToData(aggregate);
-        await _peer.DeleteAsync(data);
+        await _peer.DeleteAsync(data).ConfigureAwait(false);
     }
 
     /// <summary>

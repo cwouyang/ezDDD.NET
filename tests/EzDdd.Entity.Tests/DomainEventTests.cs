@@ -36,7 +36,7 @@ public class DomainEventTests
     public void IDomainEvent_WithEmptyMetadata_WorksCorrectly()
     {
         // ReSharper disable once CollectionNeverUpdated.Local
-        Dictionary<string, string> emptyMetadata = new();
+        Dictionary<string, string> emptyMetadata = [];
 
         TestCommandEvent @event = new(Guid.NewGuid(), DateTimeOffset.UtcNow, "source", 0, emptyMetadata);
 
@@ -115,7 +115,7 @@ public class DomainEventTests
 
     // Test implementation - Construction event
     // ReSharper disable once UnusedType.Local
-    private record TestConstructionEvent(
+    private sealed record TestConstructionEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -124,7 +124,7 @@ public class DomainEventTests
     ) : IInternalDomainEvent, IInternalDomainEvent.IConstructionEvent;
 
     // Test implementation - Command event (middle event)
-    private record TestCommandEvent(
+    private sealed record TestCommandEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
@@ -134,7 +134,7 @@ public class DomainEventTests
 
     // Test implementation - Destruction event
     // ReSharper disable once UnusedType.Local
-    private record TestDestructionEvent(
+    private sealed record TestDestructionEvent(
         Guid Id,
         DateTimeOffset OccurredOn,
         string Source,
