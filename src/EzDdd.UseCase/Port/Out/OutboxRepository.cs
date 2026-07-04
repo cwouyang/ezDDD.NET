@@ -28,7 +28,7 @@ namespace EzDdd.UseCase.Port.Out;
 ///         <list type="bullet">
 ///             <item>
 ///                 <description>
-///                     <see cref="FindByIdAsync" />: Loads data from peer, converts to aggregate using mapper
+///                     <see cref="FindByIdAsync" />: Loads data from peer, converts to aggregate using mapper, filters soft-deleted aggregates
 ///                 </description>
 ///             </item>
 ///             <item>
@@ -111,9 +111,18 @@ public class OutboxRepository<TAggregate, TData, TId> : IRepository<TAggregate, 
     /// <param name="id">The unique identifier of the aggregate</param>
     /// <returns>
     ///     A task that represents the asynchronous operation. The task result contains
-    ///     the aggregate if found; otherwise, <c>null</c>.
+    ///     the aggregate if found and not soft-deleted; otherwise, <c>null</c>.
     /// </returns>
     /// <remarks>
+    ///     <para>
+    ///         <strong>Soft Delete Filtering:</strong>
+    ///         If the reconstructed aggregate is marked as deleted
+    ///         (<see cref="AggregateRoot{TId, TEvent}.IsDeleted" /> is <c>true</c>),
+    ///         this method returns <c>null</c>. With the Transactional Outbox pattern,
+    ///         soft-deleted aggregates remain in storage so their domain events can still
+    ///         be relayed, but they are logically deleted and must not be observable
+    ///         through the repository.
+    ///     </para>
     ///     <para>
     ///         This method loads the persisted data from the peer and uses the mapper
     ///         to reconstruct the aggregate. The reconstructed aggregate has:
@@ -139,6 +148,11 @@ public class OutboxRepository<TAggregate, TData, TId> : IRepository<TAggregate, 
         }
 
         TAggregate aggregate = _mapper.ToDomain(data);
+        if (aggregate.IsDeleted)
+        {
+            return null;
+        }
+
         return aggregate;
     }
 
