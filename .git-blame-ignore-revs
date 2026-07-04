@@ -1,0 +1,6 @@
+# Commits to ignore in git blame.
+# GitHub honors this file automatically in web UI blame views.
+# Local one-time setup: git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# CSharpier 1.2.6 baseline format — repository-wide whitespace/wrapping reformat (P2 rollout, 2026-07-04).
+bc459af12215683c504c8a083821ff92623ad8e0
