@@ -22,6 +22,13 @@
 
 ## Overview
 
+> **Note (2026-07)**: Earlier drafts of this document used a richer `ExitCode` enum
+> (`InvalidInputFailure`, `ResourceNotFoundFailure`, `InvalidStateFailure`, `ConflictFailure`, …)
+> and a `CqrsOutput.Success()`/`Failure()` factory API. The shipped API — matching Java
+> ezddd 6.0.1 — is a two-state `ExitCode` (`Success = 0`, `Failure = 1`) and a self-referential
+> fluent `CqrsOutput<T>` (`Create()`, `Succeed()`, `Fail()`, `SetMessage()`); failure detail is
+> conveyed via `Message`. The code below uses the current API.
+
 ### Scenario
 
 Transfer money between two bank accounts (cross-aggregate operation).
@@ -59,10 +66,24 @@ using EzDdd.UseCase.Port.Out;
 namespace Banking.Application.UseCases;
 
 /// <summary>
+/// Output type: self-referential CqrsOutput subclass with a domain-specific payload.
+/// </summary>
+public sealed class TransferMoneyOutput : CqrsOutput<TransferMoneyOutput>
+{
+    public Guid TransactionId { get; set; }
+
+    public TransferMoneyOutput SetTransactionId(Guid transactionId)
+    {
+        TransactionId = transactionId;
+        return this;
+    }
+}
+
+/// <summary>
 /// Use Case for transferring money between accounts.
 /// ❌ PROBLEM: Contains complex business logic that should be in a Service.
 /// </summary>
-public sealed class TransferMoneyUseCase : ICommand<TransferMoneyInput, CqrsOutput<TransferMoneyOutput>>
+public sealed class TransferMoneyUseCase : ICommand<TransferMoneyInput, TransferMoneyOutput>
 {
     private readonly IRepository<BankAccount, AccountId, IInternalDomainEvent> _repository;
 
@@ -71,23 +92,23 @@ public sealed class TransferMoneyUseCase : ICommand<TransferMoneyInput, CqrsOutp
         _repository = repository;
     }
 
-    public async Task<CqrsOutput<TransferMoneyOutput>> ExecuteAsync(TransferMoneyInput input)
+    public async Task<TransferMoneyOutput> ExecuteAsync(TransferMoneyInput input)
     {
         // ❌ PROBLEM: Too much logic in Use Case (40+ lines)
 
         // 1. Validate inputs
         if (input.Amount.Amount <= 0)
         {
-            return CqrsOutput<TransferMoneyOutput>.Failure(
-                ExitCode.InvalidInputFailure,
-                "Transfer amount must be positive");
+            return TransferMoneyOutput.Create()
+                .Fail()
+                .SetMessage("Transfer amount must be positive");
         }
 
         if (input.FromAccountId == input.ToAccountId)
         {
-            return CqrsOutput<TransferMoneyOutput>.Failure(
-                ExitCode.InvalidInputFailure,
-                "Cannot transfer to the same account");
+            return TransferMoneyOutput.Create()
+                .Fail()
+                .SetMessage("Cannot transfer to the same account");
         }
 
         // 2. Load both accounts
@@ -96,45 +117,45 @@ public sealed class TransferMoneyUseCase : ICommand<TransferMoneyInput, CqrsOutp
 
         if (fromAccount == null)
         {
-            return CqrsOutput<TransferMoneyOutput>.Failure(
-                ExitCode.ResourceNotFoundFailure,
-                $"Source account not found: {input.FromAccountId}");
+            return TransferMoneyOutput.Create()
+                .Fail()
+                .SetMessage($"Source account not found: {input.FromAccountId}");
         }
 
         if (toAccount == null)
         {
-            return CqrsOutput<TransferMoneyOutput>.Failure(
-                ExitCode.ResourceNotFoundFailure,
-                $"Destination account not found: {input.ToAccountId}");
+            return TransferMoneyOutput.Create()
+                .Fail()
+                .SetMessage($"Destination account not found: {input.ToAccountId}");
         }
 
         // 3. Validate business rules (❌ DOMAIN LOGIC IN USE CASE)
         if (fromAccount.IsClosed)
         {
-            return CqrsOutput<TransferMoneyOutput>.Failure(
-                ExitCode.InvalidStateFailure,
-                $"Source account is closed: {input.FromAccountId}");
+            return TransferMoneyOutput.Create()
+                .Fail()
+                .SetMessage($"Source account is closed: {input.FromAccountId}");
         }
 
         if (toAccount.IsClosed)
         {
-            return CqrsOutput<TransferMoneyOutput>.Failure(
-                ExitCode.InvalidStateFailure,
-                $"Destination account is closed: {input.ToAccountId}");
+            return TransferMoneyOutput.Create()
+                .Fail()
+                .SetMessage($"Destination account is closed: {input.ToAccountId}");
         }
 
         if (fromAccount.Balance.Amount < input.Amount.Amount)
         {
-            return CqrsOutput<TransferMoneyOutput>.Failure(
-                ExitCode.InvalidStateFailure,
-                $"Insufficient balance. Current: {fromAccount.Balance}, Requested: {input.Amount}");
+            return TransferMoneyOutput.Create()
+                .Fail()
+                .SetMessage($"Insufficient balance. Current: {fromAccount.Balance}, Requested: {input.Amount}");
         }
 
         if (input.Amount.Amount > 10000)  // ❌ HARDCODED BUSINESS RULE
         {
-            return CqrsOutput<TransferMoneyOutput>.Failure(
-                ExitCode.InvalidStateFailure,
-                $"Transfer amount exceeds limit of $10,000");
+            return TransferMoneyOutput.Create()
+                .Fail()
+                .SetMessage("Transfer amount exceeds limit of $10,000");
         }
 
         // 4. Execute transfer
@@ -149,17 +170,16 @@ public sealed class TransferMoneyUseCase : ICommand<TransferMoneyInput, CqrsOutp
         }
         catch (RepositorySaveException ex)
         {
-            return CqrsOutput<TransferMoneyOutput>.Failure(
-                ExitCode.ConflictFailure,
-                ex.Message);
+            return TransferMoneyOutput.Create()
+                .Fail()
+                .SetMessage(ex.Message);
         }
 
         // 6. Return success
-        return CqrsOutput<TransferMoneyOutput>.Success(new TransferMoneyOutput
-        {
-            TransactionId = Guid.NewGuid(),
-            Status = "Success"
-        });
+        return TransferMoneyOutput.Create()
+            .SetTransactionId(Guid.NewGuid())
+            .Succeed()
+            .SetMessage("Transfer completed");
     }
 }
 ```
@@ -354,7 +374,7 @@ namespace Banking.Application.UseCases;
 /// Use Case for transferring money between accounts.
 /// ✅ SOLUTION: Thin orchestration that delegates to Service.
 /// </summary>
-public sealed class TransferMoneyUseCase : ICommand<TransferMoneyInput, CqrsOutput<TransferMoneyOutput>>
+public sealed class TransferMoneyUseCase : ICommand<TransferMoneyInput, TransferMoneyOutput>
 {
     private readonly ITransferMoneyService _transferService;
 
@@ -363,7 +383,7 @@ public sealed class TransferMoneyUseCase : ICommand<TransferMoneyInput, CqrsOutp
         _transferService = transferService;
     }
 
-    public async Task<CqrsOutput<TransferMoneyOutput>> ExecuteAsync(TransferMoneyInput input)
+    public async Task<TransferMoneyOutput> ExecuteAsync(TransferMoneyInput input)
     {
         try
         {
@@ -373,33 +393,22 @@ public sealed class TransferMoneyUseCase : ICommand<TransferMoneyInput, CqrsOutp
                 input.ToAccountId,
                 input.Amount);
 
-            return CqrsOutput<TransferMoneyOutput>.Success(new TransferMoneyOutput
-            {
-                TransactionId = confirmation.TransactionId,
-                Status = confirmation.Status.ToString()
-            });
+            return TransferMoneyOutput.Create()
+                .SetTransactionId(confirmation.TransactionId)
+                .Succeed()
+                .SetMessage(confirmation.Status.ToString());
         }
-        catch (AccountNotFoundException ex)
-        {
-            return CqrsOutput<TransferMoneyOutput>.Failure(
-                ExitCode.ResourceNotFoundFailure, ex.Message);
-        }
-        catch (InsufficientBalanceException ex)
-        {
-            return CqrsOutput<TransferMoneyOutput>.Failure(
-                ExitCode.InvalidStateFailure, ex.Message);
-        }
-        catch (TransferLimitExceededException ex)
-        {
-            return CqrsOutput<TransferMoneyOutput>.Failure(
-                ExitCode.InvalidInputFailure, ex.Message);
-        }
-        catch (Exception ex) when (ex is InvalidTransferAmountException or
+        catch (Exception ex) when (ex is AccountNotFoundException or
+                                         InsufficientBalanceException or
+                                         TransferLimitExceededException or
+                                         InvalidTransferAmountException or
                                          AccountClosedException or
                                          SameAccountTransferException)
         {
-            return CqrsOutput<TransferMoneyOutput>.Failure(
-                ExitCode.InvalidInputFailure, ex.Message);
+            // ✅ Map domain exceptions to the two-state ExitCode + Message
+            return TransferMoneyOutput.Create()
+                .Fail()
+                .SetMessage(ex.Message);
         }
     }
 }
@@ -482,9 +491,8 @@ public async Task TransferMoney_InsufficientBalance_ReturnsFailure()
     var result = await useCase.ExecuteAsync(input);
 
     // Assert: Check CQRS output format
-    Assert.False(result.IsSuccess);
-    Assert.Equal(ExitCode.InvalidStateFailure, result.ExitCode);
-    Assert.Contains("Insufficient balance", result.ErrorMessage);
+    Assert.Equal(ExitCode.Failure, result.ExitCode);
+    Assert.Contains("Insufficient balance", result.Message);
 }
 ```
 
@@ -583,7 +591,7 @@ public class ScheduledTransferUseCase
 // ❌ Business rule hidden in condition
 if (input.Amount.Amount > 10000)
 {
-    return CqrsOutput.Failure(..., "Transfer limit exceeded");
+    return TransferMoneyOutput.Create().Fail().SetMessage("Transfer limit exceeded");
 }
 ```
 
@@ -606,9 +614,9 @@ private static void ValidateTransferLimit(Money amount)
 **Before**:
 ```csharp
 // ❌ Error handling mixed with business logic
-if (fromAccount == null) return CqrsOutput.Failure(...);
-if (toAccount == null) return CqrsOutput.Failure(...);
-if (fromAccount.Balance < amount) return CqrsOutput.Failure(...);
+if (fromAccount == null) return TransferMoneyOutput.Create().Fail().SetMessage(...);
+if (toAccount == null) return TransferMoneyOutput.Create().Fail().SetMessage(...);
+if (fromAccount.Balance < amount) return TransferMoneyOutput.Create().Fail().SetMessage(...);
 ```
 
 **After**:
@@ -618,7 +626,7 @@ if (fromAccount == null) throw new AccountNotFoundException(fromAccountId);
 if (toAccount == null) throw new AccountNotFoundException(toAccountId);
 
 // ✅ Use Case maps exceptions to CQRS outputs
-catch (AccountNotFoundException ex) { return CqrsOutput.Failure(ExitCode.NotFound, ex.Message); }
+catch (AccountNotFoundException ex) { return TransferMoneyOutput.Create().Fail().SetMessage(ex.Message); }
 ```
 
 ---

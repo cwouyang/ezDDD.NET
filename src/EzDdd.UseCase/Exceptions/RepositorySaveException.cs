@@ -40,7 +40,7 @@ namespace EzDdd.UseCase.Exceptions;
 /// catch (RepositorySaveException ex) when (ex.Message == RepositorySaveException.OptimisticLockingFailure)
 /// {
 ///     // Handle concurrent modification conflict
-///     return new UseCaseOutput { ExitCode = ExitCode.ConflictFailure };
+///     return new UseCaseOutput { ExitCode = ExitCode.Failure, Message = "Concurrent modification detected" };
 /// }
 /// </code>
 /// </example>

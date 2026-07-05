@@ -228,7 +228,7 @@ removing it was an over-removal, not a design decision.
 - **Java ezddd HEAD `3aac0f5`**: `ezddd-usecase/.../port/in/interactor/Reactor.java`,
   `ezcqrs/.../cqrs/usecase/query/Projector.java`, `ezcqrs/.../cqrs/usecase/query/Notifier.java`
 - **ezDDD.NET commit `2f9235b`** (Phase 6 S3): IMessageBus removal that also removed `IReactor`
-- **[PHASE7_SYNC_PLAN.md](../PHASE7_SYNC_PLAN.md)** — P.2 decision D1, iteration I1
+- Phase 7 synchronization plan (internal working note, not retained) — P.2 decision D1, iteration I1
 
 ---
 

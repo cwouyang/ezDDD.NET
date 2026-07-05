@@ -59,7 +59,7 @@ namespace EzDdd.Entity;
 ///                 <description>After second event: <c>Version = 1</c></description>
 ///             </item>
 ///             <item>
-///                 <description>Version equals the number of events applied to the aggregate</description>
+///                 <description>After N events: <c>Version = N - 1</c></description>
 ///             </item>
 ///         </list>
 ///         This matches Java ezddd's behavior where <c>version.incrementAndGet()</c> is called
@@ -369,8 +369,8 @@ public abstract class AggregateRoot<TId, TEvent> : IEntity<TId>, IDomainEventSou
     ///         thread-safe event addition and version increment.
     ///     </para>
     ///     <para>
-    ///         <strong>Version Semantics:</strong> Version is incremented on each event addition,
-    ///         making <c>Version</c> equal to the number of events applied to the aggregate
+    ///         <strong>Version Semantics:</strong> Version starts at -1 and is incremented on each
+    ///         event addition, so after N events <c>Version</c> equals <c>N - 1</c>
     ///         (matching Java ezddd's behavior).
     ///     </para>
     /// </remarks>

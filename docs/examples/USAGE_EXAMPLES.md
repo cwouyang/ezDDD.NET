@@ -3,7 +3,7 @@
 Practical examples demonstrating how to use ezDDD.NET in real-world scenarios.
 
 > **Version**: 1.0.0-alpha.1
-> **Last Updated**: 2025-11-22
+> **Last Updated**: 2026-07-05
 
 ---
 
@@ -32,23 +32,11 @@ Practical examples demonstrating how to use ezDDD.NET in real-world scenarios.
   - [CqrsOutput Fluent API](#cqrsoutput-fluent-api)
 - [Real-World Scenarios](#real-world-scenarios)
   - [Banking System (Event Sourcing)](#banking-system-event-sourcing)
-  - [E-Commerce Order Processing (State Sourcing)](#e-commerce-order-processing-state-sourcing)
-  - [Workflow Engine with State Transitions](#workflow-engine-with-state-transitions)
 - [System Reconciliation Examples](#system-reconciliation-examples)
   - [Cleanup Reconciler with Context](#cleanup-reconciler-with-context)
   - [Global Reconciler with NullContext](#global-reconciler-with-nullcontext)
   - [Scheduling with BackgroundService](#scheduling-with-backgroundservice)
   - [Scheduling with Hangfire](#scheduling-with-hangfire)
-- [Advanced Patterns](#advanced-patterns)
-  - [Message Bus Integration](#message-bus-integration)
-  - [Event Bus Producer](#event-bus-producer)
-  - [Generic Reactor for Event Handling](#generic-reactor-for-event-handling)
-  - [DomainEventMapper Usage](#domaineventmapper-usage)
-- [Testing Examples](#testing-examples)
-  - [Testing Event-Sourced Aggregates](#testing-event-sourced-aggregates)
-  - [Testing Use Cases](#testing-use-cases)
-  - [Testing Repositories with In-Memory Peers](#testing-repositories-with-in-memory-peers)
-  - [Testing Projections and Queries](#testing-projections-and-queries)
 
 ---
 
@@ -82,7 +70,7 @@ public sealed record OrderCreated
 ) : IInternalDomainEvent
 {
     string IDomainEvent.Source => Source.Value;
-    Dictionary<string, object>? IDomainEvent.Metadata => null;
+    IReadOnlyDictionary<string, string> IDomainEvent.Metadata => new Dictionary<string, string>();
 }
 
 // Define the aggregate
@@ -139,14 +127,14 @@ Console.WriteLine($"Events raised: {order.GetDomainEvents().Count}");
 ```
 Order ORD-001 for John Doe
 Total: $99.99
-Version: 1
+Version: 0
 Events raised: 1
 ```
 
 **Notes**:
 - ✅ Use record types for immutable events and value objects
 - ✅ Events are automatically collected via `Apply()`
-- ✅ Version increments with each event
+- ✅ Version starts at -1 and increments with each event (after N events: `Version = N - 1`)
 - ⚠️ Simple aggregates don't need event sourcing - use `AggregateRoot` directly
 
 ---
@@ -294,7 +282,7 @@ public sealed record CustomerCreated
 ) : IInternalDomainEvent
 {
     string IDomainEvent.Source => Source.Value;
-    Dictionary<string, object>? IDomainEvent.Metadata => null;
+    IReadOnlyDictionary<string, string> IDomainEvent.Metadata => new Dictionary<string, string>();
 }
 
 public sealed record CustomerEmailChanged
@@ -309,7 +297,7 @@ public sealed record CustomerEmailChanged
     string IDomainEvent.Source => Source.Value;
 
     // Add metadata for audit trail
-    Dictionary<string, object>? IDomainEvent.Metadata => new()
+    IReadOnlyDictionary<string, string> IDomainEvent.Metadata => new Dictionary<string, string>
     {
         ["ChangedAt"] = OccurredOn.ToString("O"),
         ["Reason"] = "Customer request"
@@ -368,12 +356,12 @@ var customerId = new CustomerId("CUST-001");
 var email = new Email("john@example.com");
 var customer = new Customer(customerId, "John Doe", email);
 
-Console.WriteLine($"Version: {customer.Version}"); // 1
+Console.WriteLine($"Version: {customer.Version}"); // 0
 Console.WriteLine($"Events: {customer.GetDomainEvents().Count}"); // 1
 
 customer.ChangeEmail(new Email("john.doe@example.com"));
 
-Console.WriteLine($"Version: {customer.Version}"); // 2
+Console.WriteLine($"Version: {customer.Version}"); // 1
 Console.WriteLine($"Events: {customer.GetDomainEvents().Count}"); // 2
 
 // Examine events
@@ -383,12 +371,9 @@ foreach (var evt in customer.GetDomainEvents())
     Console.WriteLine($"  ID: {evt.Id}");
     Console.WriteLine($"  Source: {evt.Source}");
     Console.WriteLine($"  OccurredOn: {evt.OccurredOn:u}");
-    if (evt.Metadata != null)
+    foreach (var (key, value) in evt.Metadata)
     {
-        foreach (var (key, value) in evt.Metadata)
-        {
-            Console.WriteLine($"  Metadata[{key}]: {value}");
-        }
+        Console.WriteLine($"  Metadata[{key}]: {value}");
     }
 }
 
@@ -406,9 +391,9 @@ Console.WriteLine($"Events after clear: {customer.GetDomainEvents().Count}"); //
 
 **Output**:
 ```
-Version: 1
+Version: 0
 Events: 1
-Version: 2
+Version: 1
 Events: 2
 Event: CustomerCreated
   ID: [guid]
@@ -449,7 +434,11 @@ Events after clear: 0
 using EzDdd.Entity;
 
 // Define aggregate ID
-public sealed record AccountId(string Value) : IValueObject;
+// (override ToString so GetStreamName() produces "account-ACC-001")
+public sealed record AccountId(string Value) : IValueObject
+{
+    public override string ToString() => Value;
+}
 
 // Define domain events
 public sealed record AccountCreated
@@ -462,7 +451,7 @@ public sealed record AccountCreated
 ) : IInternalDomainEvent, IInternalDomainEvent.IConstructionEvent
 {
     string IDomainEvent.Source => Source.Value;
-    Dictionary<string, object>? IDomainEvent.Metadata => null;
+    IReadOnlyDictionary<string, string> IDomainEvent.Metadata => new Dictionary<string, string>();
 }
 
 public sealed record MoneyDeposited
@@ -474,7 +463,7 @@ public sealed record MoneyDeposited
 ) : IInternalDomainEvent
 {
     string IDomainEvent.Source => Source.Value;
-    Dictionary<string, object>? IDomainEvent.Metadata => null;
+    IReadOnlyDictionary<string, string> IDomainEvent.Metadata => new Dictionary<string, string>();
 }
 
 public sealed record MoneyWithdrawn
@@ -486,7 +475,7 @@ public sealed record MoneyWithdrawn
 ) : IInternalDomainEvent
 {
     string IDomainEvent.Source => Source.Value;
-    Dictionary<string, object>? IDomainEvent.Metadata => null;
+    IReadOnlyDictionary<string, string> IDomainEvent.Metadata => new Dictionary<string, string>();
 }
 
 public sealed record AccountClosed
@@ -498,7 +487,7 @@ public sealed record AccountClosed
 ) : IInternalDomainEvent, IInternalDomainEvent.IDestructionEvent
 {
     string IDomainEvent.Source => Source.Value;
-    Dictionary<string, object>? IDomainEvent.Metadata => null;
+    IReadOnlyDictionary<string, string> IDomainEvent.Metadata => new Dictionary<string, string>();
 }
 
 // Event-sourced aggregate
@@ -647,7 +636,7 @@ Console.WriteLine($"Stream: {account.GetStreamName()}");
 ```
 Owner: John Doe
 Balance: 1300.00 USD
-Version: 3
+Version: 2
 Events: 3
 Stream: account-ACC-001
 ```
@@ -750,7 +739,7 @@ Console.WriteLine($"Actual balance: {account.Balance}");
 1. **Event Stream**: Represents historical events from event store
 2. **Replay Constructor**: Invoked with event stream to rebuild state
 3. **State Reconstruction**: Each event is applied via `_When()` method
-4. **Version Tracking**: Version increments with each event (equals event count)
+4. **Version Tracking**: Version starts at -1 and increments with each event (after N events: `Version = N - 1`)
 5. **No Domain Events**: Replayed events are cleared (not re-published)
 
 **Output**:
@@ -759,7 +748,7 @@ Console.WriteLine($"Actual balance: {account.Balance}");
 Account ID: ACC-002
 Owner: Jane Smith
 Balance: 5300.00 USD
-Version: 4
+Version: 3
 IsClosed: False
 Domain Events (after replay): 0
 
@@ -989,7 +978,7 @@ public sealed record PaymentProcessed
 ) : IInternalDomainEvent
 {
     string IDomainEvent.Source => Source.Value;
-    Dictionary<string, object>? IDomainEvent.Metadata => null;
+    IReadOnlyDictionary<string, string> IDomainEvent.Metadata => new Dictionary<string, string>();
 }
 
 public sealed record InterestEarned
@@ -1002,7 +991,7 @@ public sealed record InterestEarned
 ) : IInternalDomainEvent
 {
     string IDomainEvent.Source => Source.Value;
-    Dictionary<string, object>? IDomainEvent.Metadata => null;
+    IReadOnlyDictionary<string, string> IDomainEvent.Metadata => new Dictionary<string, string>();
 }
 
 public sealed class EnhancedBankAccount : EsAggregateRoot<AccountId, IInternalDomainEvent>
@@ -1147,7 +1136,7 @@ Owner: Pattern Matcher
 Balance: 1325.00 USD
 Transactions: 2
 Last Transaction: [timestamp]
-Version: 4
+Version: 3
 ```
 
 **Notes**:
@@ -1183,13 +1172,32 @@ public sealed class InMemoryEventStorePeer : IRepositoryPeer<EventStoreData<Acco
 
     public Task<EventStoreData<AccountId>?> FindByIdAsync(AccountId id)
     {
-        _store.TryGetValue(id.Value, out var data);
+        _store.TryGetValue(id.Value, out EventStoreData<AccountId>? data);
         return Task.FromResult(data);
     }
 
     public Task SaveAsync(EventStoreData<AccountId> data)
     {
-        _store[data.Id.Value] = data;
+        // On save, data.Events contains only the aggregate's PENDING events.
+        // Event sourcing: append them to the already-stored stream.
+        if (_store.TryGetValue(data.Id.Value, out EventStoreData<AccountId>? existing))
+        {
+            var allEvents = new List<IDomainEvent>(existing.Events);
+            allEvents.AddRange(data.Events);
+
+            _store[data.Id.Value] = new EventStoreData<AccountId>
+            {
+                Id = data.Id,
+                Version = data.Version,
+                Events = allEvents,
+                StreamName = data.StreamName,
+            };
+        }
+        else
+        {
+            _store[data.Id.Value] = data; // First save: store as-is
+        }
+
         return Task.CompletedTask;
     }
 
@@ -1287,25 +1295,25 @@ await DemoEventSourcingRepositoryAsync();
 === Event Sourcing Repository Demo ===
 
 Step 1: Create and save new account
-Before save - Version: 3, Events: 3
-After save - Version: 3, Events: 0
+Before save - Version: 2, Events: 3
+After save - Version: 2, Events: 0
 (Events cleared after successful save)
 
 Step 2: Load account from event store
 Loaded - Owner: Event Sourcer
 Loaded - Balance: 1300.00 USD
-Loaded - Version: 3
+Loaded - Version: 2
 Loaded - Events: 0
 (Events cleared after replay)
 
 Step 3: Modify and save again
-Before save - Version: 4, Events: 1
-After save - Version: 4, Events: 0
+Before save - Version: 3, Events: 1
+After save - Version: 3, Events: 0
 
 Step 4: Reload to verify all events persisted
 Final - Owner: Event Sourcer
 Final - Balance: 1600.00 USD
-Final - Version: 4
+Final - Version: 3
 Stream Name: account-ACC-ES-001
 
 Step 5: Load non-existent account
@@ -1350,7 +1358,7 @@ public sealed record OrderCreated
 ) : IInternalDomainEvent, IInternalDomainEvent.IConstructionEvent
 {
     string IDomainEvent.Source => Source.Value;
-    Dictionary<string, object>? IDomainEvent.Metadata => null;
+    IReadOnlyDictionary<string, string> IDomainEvent.Metadata => new Dictionary<string, string>();
 }
 
 public sealed record OrderItemAdded
@@ -1364,7 +1372,7 @@ public sealed record OrderItemAdded
 ) : IInternalDomainEvent
 {
     string IDomainEvent.Source => Source.Value;
-    Dictionary<string, object>? IDomainEvent.Metadata => null;
+    IReadOnlyDictionary<string, string> IDomainEvent.Metadata => new Dictionary<string, string>();
 }
 
 public sealed record OrderConfirmed
@@ -1375,7 +1383,7 @@ public sealed record OrderConfirmed
 ) : IInternalDomainEvent
 {
     string IDomainEvent.Source => Source.Value;
-    Dictionary<string, object>? IDomainEvent.Metadata => null;
+    IReadOnlyDictionary<string, string> IDomainEvent.Metadata => new Dictionary<string, string>();
 }
 
 public sealed class OrderItem
@@ -1500,7 +1508,7 @@ foreach (var item in order.Items)
 2. **Parameterless Constructor**: Required for OutboxMapper to reconstruct state
 3. **Public Setters**: Properties need setters for mapper to restore state
 4. **Current State**: Entire object state is persisted, not just events
-5. **Events Still Raised**: Events published to message bus for integration
+5. **Events Still Raised**: Events published to message broker for integration
 
 **Output**:
 ```
@@ -1510,7 +1518,7 @@ Customer: State Sourcer
 Status: Confirmed
 Items: 2
 Total: $109.97
-Version: 3
+Version: 2
 Events: 3
 
 === Order Items ===
@@ -1544,20 +1552,20 @@ Widget B x1 @ $49.99 = $49.99
 using EzDdd.Entity;
 using EzDdd.UseCase.Port.Out;
 
-// Outbox data structure
+// Outbox data structure (implements all IOutboxData<TId> members)
 public sealed class OrderData : IOutboxData<OrderId>
 {
+    // IStoreData members
     public OrderId Id { get; set; } = null!;
     public long Version { get; set; }
+    public string StreamName { get; set; } = string.Empty;
+    public IReadOnlyList<IDomainEvent> Events { get; set; } = Array.Empty<IDomainEvent>();
 
     // Aggregate state
     public string CustomerName { get; set; } = string.Empty;
     public decimal TotalAmount { get; set; }
-    public string Status { get; set; } = string.Empty;
+    public OrderStatus Status { get; set; } = OrderStatus.Draft;
     public List<OrderItemData> Items { get; set; } = [];
-
-    // Outbox events
-    public List<InternalDomainEventDto> Events { get; set; } = [];
 }
 
 public sealed class OrderItemData
@@ -1623,7 +1631,7 @@ Console.WriteLine("""
     SELECT * FROM outbox_events WHERE published = false
 
     -- For each event:
-    --   1. Publish to message bus
+    --   1. Publish to message broker
     --   2. Mark as published
     --   3. Update last_published_at
 
@@ -1634,7 +1642,7 @@ Console.WriteLine("""
 
 Console.WriteLine("\n=== Benefits ===");
 Console.WriteLine("✅ Guaranteed event delivery (at-least-once)");
-Console.WriteLine("✅ No lost events due to message bus failures");
+Console.WriteLine("✅ No lost events due to message broker failures");
 Console.WriteLine("✅ Can retry failed event publications");
 Console.WriteLine("✅ Audit trail of all published events");
 ```
@@ -1653,11 +1661,11 @@ Console.WriteLine("✅ Audit trail of all published events");
 
 Step 1: Order created with 2 items
 Events before save: 3
-Version: 3
+Version: 2
 
 Step 2: Convert to outbox data
 Outbox events: 3
-Outbox version: 3
+Outbox version: 2
 
 Step 3: Atomic transaction (pseudocode):
     BEGIN TRANSACTION
@@ -1687,7 +1695,7 @@ Step 5: Async event publication (separate process):
     SELECT * FROM outbox_events WHERE published = false
 
     -- For each event:
-    --   1. Publish to message bus
+    --   1. Publish to message broker
     --   2. Mark as published
     --   3. Update last_published_at
 
@@ -1697,7 +1705,7 @@ Step 5: Async event publication (separate process):
 
 === Benefits ===
 ✅ Guaranteed event delivery (at-least-once)
-✅ No lost events due to message bus failures
+✅ No lost events due to message broker failures
 ✅ Can retry failed event publications
 ✅ Audit trail of all published events
 ```
@@ -1844,15 +1852,15 @@ await DemoStateSourcingRepositoryAsync();
 === State Sourcing Repository Demo ===
 
 Step 1: Create and save new order
-Before save - Version: 3, Events: 3
-After save - Version: 3, Events: 0
+Before save - Version: 2, Events: 3
+After save - Version: 2, Events: 0
 (Events cleared after successful save)
 
 Step 2: Load order from storage
 Loaded - Customer: State Sourcer
 Loaded - Total: $69.97
 Loaded - Items: 2
-Loaded - Version: 3
+Loaded - Version: 2
 Loaded - Events: 0
 (State restored, events cleared)
 
@@ -1864,7 +1872,7 @@ Step 4: Reload to verify state persisted
 Final - Customer: State Sourcer
 Final - Status: Confirmed
 Final - Total: $69.97
-Final - Version: 4
+Final - Version: 3
 
 Step 5: Load non-existent order
 Result: null (as expected)
@@ -1893,79 +1901,66 @@ Result: null (as expected)
 **Complete Code**:
 
 ```csharp
+using System.Reflection;
 using EzDdd.Entity;
 using EzDdd.UseCase.Port.Out;
 
-// Outbox data structures
-public sealed class OrderData : IOutboxData<OrderId>
-{
-    public OrderId Id { get; set; } = null!;
-    public long Version { get; set; }
-    public string CustomerName { get; set; } = string.Empty;
-    public decimal TotalAmount { get; set; }
-    public string Status { get; set; } = string.Empty;
-    public List<OrderItemData> Items { get; set; } = [];
-    public List<InternalDomainEventDto> Events { get; set; } = [];
-}
-
-public sealed class OrderItemData
-{
-    public string ProductName { get; set; } = string.Empty;
-    public int Quantity { get; set; }
-    public decimal Price { get; set; }
-}
+// Outbox data structures: see OrderData / OrderItemData in the
+// "Transactional Outbox Pattern" example above.
 
 // Custom mapper implementation
+// (OutboxMapper declares `public abstract TData ToData(...)` and
+//  `public abstract TAggregate ToDomain(...)` - override them directly)
 public sealed class OrderMapper : OutboxMapper<Order, OrderData, OrderId>
 {
-    protected override OrderData _ToData(Order aggregate)
+    public override OrderData ToData(Order aggregate)
     {
         return new OrderData
         {
             Id = aggregate.Id,
             Version = aggregate.Version,
+            StreamName = $"order-{aggregate.Id.Value}",
             CustomerName = aggregate.CustomerName,
             TotalAmount = aggregate.TotalAmount,
-            Status = aggregate.Status.ToString(),
+            Status = aggregate.Status,
             Items = aggregate.Items.Select(item => new OrderItemData
             {
                 ProductName = item.ProductName,
                 Quantity = item.Quantity,
                 Price = item.Price
             }).ToList(),
-            Events = aggregate.GetDomainEvents()
-                .Select(DomainEventMapper.ToDto)
-                .ToList()
+            // Outbox: include the pending domain events as-is
+            Events = aggregate.GetDomainEvents().ToList()
         };
     }
 
-    protected override Order _ToDomain(OrderData data)
+    public override Order ToDomain(OrderData data)
     {
-        // Use parameterless constructor
+        // Use parameterless constructor, then restore state.
+        // CustomerName/TotalAmount/Status have public setters in this example.
         var order = new Order
         {
             CustomerName = data.CustomerName,
             TotalAmount = data.TotalAmount,
-            Status = Enum.Parse<OrderStatus>(data.Status)
+            Status = data.Status
         };
 
-        // Restore ID using reflection (or setter if public)
-        var idField = typeof(Order).BaseType!
-            .GetProperty("Id")!;
-        idField.SetValue(order, data.Id);
+        // Id and Version have protected setters on AggregateRoot -
+        // restore them via their auto-property backing fields
+        typeof(Order).BaseType!
+            .GetField("<Id>k__BackingField",
+                BindingFlags.Instance | BindingFlags.NonPublic)!
+            .SetValue(order, data.Id);
 
-        // Restore version using reflection
-        var versionField = typeof(Order).BaseType!
-            .GetField("_version",
-                System.Reflection.BindingFlags.NonPublic |
-                System.Reflection.BindingFlags.Instance)!;
-        versionField.SetValue(order, data.Version);
+        typeof(Order).BaseType!
+            .GetField("<Version>k__BackingField",
+                BindingFlags.Instance | BindingFlags.NonPublic)!
+            .SetValue(order, data.Version);
 
-        // Restore items
+        // Restore items (private field)
         var itemsField = typeof(Order)
             .GetField("_items",
-                System.Reflection.BindingFlags.NonPublic |
-                System.Reflection.BindingFlags.Instance)!;
+                BindingFlags.Instance | BindingFlags.NonPublic)!;
         var items = (List<OrderItem>)itemsField.GetValue(order)!;
 
         foreach (var itemData in data.Items)
@@ -1976,6 +1971,7 @@ public sealed class OrderMapper : OutboxMapper<Order, OrderData, OrderId>
                 itemData.Price));
         }
 
+        // Domain events are NOT restored (already persisted)
         return order;
     }
 }
@@ -2021,16 +2017,15 @@ Console.WriteLine($"Versions match: {order.Version == restored.Version}");
 
 **Explanation**:
 
-1. **_ToData()**: Convert aggregate to outbox data
-   - Map properties
+1. **ToData()**: Convert aggregate to outbox data
+   - Map properties (including `Id`, `Version`, `StreamName`)
    - Map items/collections
-   - Convert events to DTOs
-2. **_ToDomain()**: Convert outbox data to aggregate
+   - Include pending events from `GetDomainEvents()`
+2. **ToDomain()**: Convert outbox data to aggregate
    - Use parameterless constructor
-   - Restore properties (reflection if needed)
+   - Restore properties (reflection for protected `Id`/`Version`)
    - Restore collections
-   - Clear events (already persisted)
-3. **Event Mapping**: Use `DomainEventMapper` for event DTOs
+   - Do NOT restore events (already persisted)
 
 **Output**:
 ```
@@ -2041,7 +2036,7 @@ Data ID: ORD-MAP-001
 Data Customer: Mapper User
 Data Status: Confirmed
 Data Items: 1
-Data Events: 2
+Data Events: 3
 Data Version: 2
 
 Step 2: Data → Aggregate
@@ -2061,10 +2056,10 @@ Versions match: True
 ```
 
 **Notes**:
-- ✅ Implement both _ToData() and _ToDomain()
+- ✅ Override the public abstract `ToData()` and `ToDomain()`
 - ✅ Use parameterless constructor for reconstruction
-- ✅ May need reflection for private fields
-- ✅ Events cleared during reconstruction
+- ✅ May need reflection for protected/private members
+- ✅ Events are not restored during reconstruction
 - ⚠️ Keep mappings simple and focused
 
 ---
@@ -2084,6 +2079,7 @@ Versions match: True
 **Complete Code**:
 
 ```csharp
+using EzDdd.Cqrs;
 using EzDdd.Cqrs.Command;
 using EzDdd.Entity;
 using EzDdd.UseCase.Exceptions;
@@ -2099,42 +2095,15 @@ public sealed record CreateAccountInput
 ) : IInput;
 
 // Command output
-public sealed class CreateAccountOutput : IOutput
+// (ICommand requires TOutput : CqrsOutput<TOutput>, new() - the base class
+//  already provides Id/Message/ExitCode plus the fluent Set*/Succeed/Fail API)
+public sealed class CreateAccountOutput : CqrsOutput<CreateAccountOutput>
 {
-    public AccountId AccountId { get; init; } = null!;
-    public long Version { get; init; }
+    public long Version { get; set; }
 
-    public string Message { get; private set; } = string.Empty;
-    public ExitCode ExitCode { get; private set; }
-    public string Id { get; private set; } = string.Empty;
-
-    public IOutput SetMessage(string message)
+    public CreateAccountOutput SetVersion(long version)
     {
-        Message = message;
-        return this;
-    }
-
-    public IOutput SetExitCode(ExitCode exitCode)
-    {
-        ExitCode = exitCode;
-        return this;
-    }
-
-    public IOutput SetId(string id)
-    {
-        Id = id;
-        return this;
-    }
-
-    public IOutput Fail()
-    {
-        ExitCode = ExitCode.Failure;
-        return this;
-    }
-
-    public IOutput Succeed()
-    {
-        ExitCode = ExitCode.Success;
+        Version = version;
         return this;
     }
 }
@@ -2157,15 +2126,12 @@ public sealed class CreateAccountCommand
             // Persist via repository
             await repository.SaveAsync(account);
 
-            // Return success output
-            var output = new CreateAccountOutput
-            {
-                AccountId = input.AccountId,
-                Version = account.Version
-            };
-            output.Succeed();
-            output.SetMessage($"Account {input.AccountId.Value} created successfully");
-            return output;
+            // Return success output (fluent API preserves the concrete type)
+            return CreateAccountOutput.Create()
+                .SetId(input.AccountId.Value)
+                .SetVersion(account.Version)
+                .SetMessage($"Account {input.AccountId.Value} created successfully")
+                .Succeed();
         }
         catch (InvalidOperationException ex)
         {
@@ -2176,30 +2142,33 @@ public sealed class CreateAccountCommand
 }
 
 // Additional command: DepositMoneyCommand
+// (IVersionedInput requires a settable Version property, so it cannot be an
+//  init-only positional record parameter)
 public sealed record DepositMoneyInput
 (
     AccountId AccountId,
-    Money Amount,
-    long ExpectedVersion
+    Money Amount
 ) : IVersionedInput
 {
-    long IVersionedInput.Version => ExpectedVersion;
+    public long Version { get; set; }
 }
 
-public sealed class DepositMoneyOutput : IOutput
+public sealed class DepositMoneyOutput : CqrsOutput<DepositMoneyOutput>
 {
-    public decimal NewBalance { get; init; }
-    public long Version { get; init; }
+    public decimal NewBalance { get; set; }
+    public long Version { get; set; }
 
-    public string Message { get; private set; } = string.Empty;
-    public ExitCode ExitCode { get; private set; }
-    public string Id { get; private set; } = string.Empty;
+    public DepositMoneyOutput SetNewBalance(decimal newBalance)
+    {
+        NewBalance = newBalance;
+        return this;
+    }
 
-    public IOutput SetMessage(string message) { Message = message; return this; }
-    public IOutput SetExitCode(ExitCode exitCode) { ExitCode = exitCode; return this; }
-    public IOutput SetId(string id) { Id = id; return this; }
-    public IOutput Fail() { ExitCode = ExitCode.Failure; return this; }
-    public IOutput Succeed() { ExitCode = ExitCode.Success; return this; }
+    public DepositMoneyOutput SetVersion(long version)
+    {
+        Version = version;
+        return this;
+    }
 }
 
 public sealed class DepositMoneyCommand
@@ -2217,10 +2186,10 @@ public sealed class DepositMoneyCommand
         }
 
         // Check version (optimistic locking)
-        if (account.Version != input.ExpectedVersion)
+        if (account.Version != input.Version)
         {
             throw new UseCaseFailureException(
-                $"Version mismatch: expected {input.ExpectedVersion}, " +
+                $"Version mismatch: expected {input.Version}, " +
                 $"actual {account.Version}");
         }
 
@@ -2231,14 +2200,11 @@ public sealed class DepositMoneyCommand
         await repository.SaveAsync(account);
 
         // Return success
-        var output = new DepositMoneyOutput
-        {
-            NewBalance = account.Balance.Amount,
-            Version = account.Version
-        };
-        output.Succeed();
-        output.SetMessage($"Deposited {input.Amount}");
-        return output;
+        return DepositMoneyOutput.Create()
+            .SetNewBalance(account.Balance.Amount)
+            .SetVersion(account.Version)
+            .SetMessage($"Deposited {input.Amount}")
+            .Succeed();
     }
 }
 
@@ -2271,10 +2237,10 @@ public static async Task DemoCommandsAsync()
 
     // Execute DepositMoney command
     Console.WriteLine("\nCommand 2: DepositMoney");
-    var depositInput = new DepositMoneyInput(
-        accountId,
-        new Money(500m),
-        createOutput.Version);
+    var depositInput = new DepositMoneyInput(accountId, new Money(500m))
+    {
+        Version = createOutput.Version
+    };
 
     var depositOutput = await depositCommand.ExecuteAsync(depositInput);
     Console.WriteLine($"Result: {depositOutput.ExitCode}");
@@ -2288,10 +2254,10 @@ await DemoCommandsAsync();
 
 **Explanation**:
 
-1. **ICommand**: Extends `IUseCase` for write operations
+1. **ICommand**: Extends `IUseCase` for write operations; its output type must extend `CqrsOutput<TOutput>`
 2. **Input/Output**: Define contracts for command data
 3. **Repository**: Commands use repository to persist changes
-4. **Optimistic Locking**: Use `IVersionedInput` for concurrency control
+4. **Optimistic Locking**: Use `IVersionedInput` for concurrency control (settable `Version` property)
 5. **Error Handling**: Throw `UseCaseFailureException` for business rule violations
 
 **Output**:
@@ -2301,13 +2267,13 @@ await DemoCommandsAsync();
 Command 1: CreateAccount
 Result: Success
 Message: Account ACC-CMD-001 created successfully
-Version: 1
+Version: 0
 
 Command 2: DepositMoney
 Result: Success
 Message: Deposited 500.00 USD
 New Balance: $1500.00
-Version: 2
+Version: 1
 ```
 
 **Notes**:
@@ -2332,11 +2298,39 @@ Version: 2
 **Complete Code**:
 
 ```csharp
+using System.Collections.Concurrent;
+using EzDdd.Cqrs;
 using EzDdd.Cqrs.Query;
 using EzDdd.Entity;
 using EzDdd.UseCase.Exceptions;
 using EzDdd.UseCase.Port.In;
-using EzDdd.UseCase.Tests.Integration.TestDomain;
+
+// Simple in-memory IArchive implementation for the demos
+public sealed class InMemoryArchive<TData, TId>(Func<TData, TId> idSelector)
+    : IArchive<TData, TId>
+    where TData : class
+    where TId : notnull
+{
+    private readonly ConcurrentDictionary<TId, TData> _store = new();
+
+    public Task<TData?> FindByIdAsync(TId id)
+    {
+        _store.TryGetValue(id, out TData? data);
+        return Task.FromResult(data);
+    }
+
+    public Task SaveAsync(TData data)
+    {
+        _store[idSelector(data)] = data;
+        return Task.CompletedTask;
+    }
+
+    public Task DeleteAsync(TData data)
+    {
+        _store.TryRemove(idSelector(data), out _);
+        return Task.CompletedTask;
+    }
+}
 
 // Read model (denormalized for queries)
 public sealed record AccountSummaryReadModel
@@ -2352,27 +2346,21 @@ public sealed record AccountSummaryReadModel
     AccountId IEntity<AccountId>.Id => AccountId;
 }
 
-// Query input
+// Query input (IQuery requires TInput : IInput)
 public sealed record GetAccountSummaryInput
 (
     AccountId AccountId
-) : IProjectionInput;
+) : IInput;
 
-// Query output
-public sealed class GetAccountSummaryOutput : IOutput
+// Query output (IQuery requires TOutput : CqrsOutput<TOutput>, new())
+public sealed class GetAccountSummaryOutput : CqrsOutput<GetAccountSummaryOutput>
 {
-    public static GetAccountSummaryOutput Create() => new();
-
-    public string AccountId { get; private set; } = string.Empty;
-    public string Owner { get; private set; } = string.Empty;
-    public decimal Balance { get; private set; }
-    public DateTimeOffset CreatedOn { get; private set; }
-    public DateTimeOffset LastTransactionDate { get; private set; }
-    public int TransactionCount { get; private set; }
-
-    public string Message { get; private set; } = string.Empty;
-    public ExitCode ExitCode { get; private set; }
-    public string Id { get; private set; } = string.Empty;
+    public string AccountId { get; set; } = string.Empty;
+    public string Owner { get; set; } = string.Empty;
+    public decimal Balance { get; set; }
+    public DateTimeOffset CreatedOn { get; set; }
+    public DateTimeOffset LastTransactionDate { get; set; }
+    public int TransactionCount { get; set; }
 
     public GetAccountSummaryOutput SetAccountId(string accountId)
     {
@@ -2407,22 +2395,6 @@ public sealed class GetAccountSummaryOutput : IOutput
     public GetAccountSummaryOutput SetTransactionCount(int count)
     {
         TransactionCount = count;
-        return this;
-    }
-
-    public GetAccountSummaryOutput SetMessage(string message)
-    {
-        Message = message;
-        return this;
-    }
-
-    public IOutput SetExitCode(ExitCode exitCode) { ExitCode = exitCode; return this; }
-    public IOutput SetId(string id) { Id = id; return this; }
-    public IOutput Fail() { ExitCode = ExitCode.Failure; return this; }
-
-    public GetAccountSummaryOutput Succeed()
-    {
-        ExitCode = ExitCode.Success;
         return this;
     }
 }
@@ -2460,24 +2432,14 @@ public sealed record GetAccountHistoryInput
     AccountId AccountId,
     int PageNumber,
     int PageSize
-) : IProjectionInput;
+) : IInput;
 
-public sealed class GetAccountHistoryOutput : IOutput
+public sealed class GetAccountHistoryOutput : CqrsOutput<GetAccountHistoryOutput>
 {
-    public List<TransactionHistoryItem> Transactions { get; init; } = [];
-    public int TotalCount { get; init; }
-    public int PageNumber { get; init; }
-    public int PageSize { get; init; }
-
-    public string Message { get; private set; } = string.Empty;
-    public ExitCode ExitCode { get; private set; }
-    public string Id { get; private set; } = string.Empty;
-
-    public IOutput SetMessage(string message) { Message = message; return this; }
-    public IOutput SetExitCode(ExitCode exitCode) { ExitCode = exitCode; return this; }
-    public IOutput SetId(string id) { Id = id; return this; }
-    public IOutput Fail() { ExitCode = ExitCode.Failure; return this; }
-    public IOutput Succeed() { ExitCode = ExitCode.Success; return this; }
+    public List<TransactionHistoryItem> Transactions { get; set; } = [];
+    public int TotalCount { get; set; }
+    public int PageNumber { get; set; }
+    public int PageSize { get; set; }
 }
 
 public sealed record TransactionHistoryItem
@@ -2523,10 +2485,10 @@ Console.WriteLine($"Transactions: {output.TransactionCount}");
 
 **Explanation**:
 
-1. **IQuery**: Extends `IUseCase` for read operations
+1. **IQuery**: Extends `IUseCase` for read operations; input must implement `IInput`, output must extend `CqrsOutput<TOutput>`
 2. **Read Model**: Denormalized data structure optimized for queries
 3. **IArchive**: Query database interface (query-side counterpart to IRepository)
-4. **Fluent Output**: Builder pattern for constructing output
+4. **Fluent Output**: `CqrsOutput<T>` base class provides `Create()`/`SetId()`/`SetMessage()`/`Succeed()`/`Fail()`
 5. **No Modifications**: Queries NEVER modify state
 
 **Output**:
@@ -2558,8 +2520,8 @@ Transactions: 5
 **Scenario**: Build and maintain read models from domain events.
 
 **Key Concepts**:
-- IProjector marker
-- IReactor for event handling
+- IProjector<TInput> (a specialized IReactor<TInput>)
+- ExecuteAsync for event handling
 - Event-driven updates
 - Eventually consistent reads
 
@@ -2570,10 +2532,12 @@ using EzDdd.Cqrs.Query;
 using EzDdd.Entity;
 using EzDdd.UseCase.Port.In;
 using EzDdd.UseCase.Port.InOut;
-using EzDdd.UseCase.Tests.Integration.TestDomain;
 
-// Projector implementation
-public sealed class AccountProjector : IProjector, IReactor<DomainEventData>
+// Uses BankAccount events, AccountSummaryReadModel and InMemoryArchive
+// from the previous examples.
+
+// Projector implementation (IProjector<TInput> inherits ExecuteAsync from IReactor<TInput>)
+public sealed class AccountProjector : IProjector<DomainEventData>
 {
     private readonly IArchive<AccountSummaryReadModel, AccountId> _archive;
 
@@ -2618,7 +2582,7 @@ public sealed class AccountProjector : IProjector, IReactor<DomainEventData>
     private async Task _HandleAccountCreatedAsync(AccountCreated @event)
     {
         var readModel = new AccountSummaryReadModel(
-            @event.AccountId,
+            @event.Source, // positional AccountId parameter of the event record
             @event.Owner,
             @event.InitialBalance.Amount,
             @event.OccurredOn,
@@ -2630,7 +2594,7 @@ public sealed class AccountProjector : IProjector, IReactor<DomainEventData>
 
     private async Task _HandleMoneyDepositedAsync(MoneyDeposited @event)
     {
-        var existing = await _archive.FindByIdAsync(@event.AccountId);
+        var existing = await _archive.FindByIdAsync(@event.Source);
         if (existing == null) return;
 
         var updated = existing with
@@ -2645,7 +2609,7 @@ public sealed class AccountProjector : IProjector, IReactor<DomainEventData>
 
     private async Task _HandleMoneyWithdrawnAsync(MoneyWithdrawn @event)
     {
-        var existing = await _archive.FindByIdAsync(@event.AccountId);
+        var existing = await _archive.FindByIdAsync(@event.Source);
         if (existing == null) return;
 
         var updated = existing with
@@ -2660,7 +2624,7 @@ public sealed class AccountProjector : IProjector, IReactor<DomainEventData>
 
     private async Task _HandleAccountClosedAsync(AccountClosed @event)
     {
-        var existing = await _archive.FindByIdAsync(@event.AccountId);
+        var existing = await _archive.FindByIdAsync(@event.Source);
         if (existing == null) return;
 
         await _archive.DeleteAsync(existing);
@@ -2725,8 +2689,8 @@ await DemoProjectorAsync();
 
 **Explanation**:
 
-1. **IProjector**: Marker interface for projectors
-2. **IReactor<DomainEventData>**: Handles events from message bus
+1. **IProjector<DomainEventData>**: Projector interface, a specialized `IReactor<TInput>` (ADR-0028)
+2. **ExecuteAsync**: Handles events delivered by infrastructure (e.g., an event store relay)
 3. **Event Handlers**: Update read models based on events
 4. **Immutable Updates**: Use `with` expressions for record updates
 5. **Error Handling**: Log errors but don't crash projector
@@ -2758,7 +2722,7 @@ Transaction count: 1
 
 **Key Concepts**:
 - Command → Aggregate → Events → Repository
-- Events → MessageBus → Projector → Archive
+- Events → Relay → Projector → Archive
 - Archive → Query → Output
 - Eventual consistency
 
@@ -2769,9 +2733,10 @@ using EzDdd.Cqrs.Command;
 using EzDdd.Cqrs.Query;
 using EzDdd.Entity;
 using EzDdd.UseCase.Port.InOut;
-using EzDdd.UseCase.Port.InOut.Messaging;
 using EzDdd.UseCase.Port.Out;
-using EzDdd.UseCase.Tests.Integration.TestDomain;
+
+// Reuses BankAccount, the commands, the query, the projector and the
+// in-memory peer/archive from the previous examples.
 
 // Complete CQRS infrastructure setup
 public static async Task DemoCompleteCqrsFlowAsync()
@@ -2787,25 +2752,35 @@ public static async Task DemoCompleteCqrsFlowAsync()
     var eventStorePeer = new InMemoryEventStorePeer();
     var repository = new EsRepository<BankAccount, AccountId>(eventStorePeer);
 
-    // Setup message bus
-    var messageBus = new BlockingMessageBus<DomainEventData>();
-    var eventProducer = new EventBusProducer(messageBus);
-
     // Setup read side (query)
     var archive = new InMemoryArchive<AccountSummaryReadModel, AccountId>(m => m.AccountId);
     var projector = new AccountProjector(archive);
-
-    // Register projector with message bus
-    messageBus.Register(projector);
 
     // Create commands and queries
     var createCommand = new CreateAccountCommand(repository);
     var depositCommand = new DepositMoneyCommand(repository);
     var query = new GetAccountSummaryQuery(archive);
 
+    var accountId = new AccountId("ACC-CQRS-001");
+
+    // Simulated Relay: poll the event store and deliver new events to the
+    // projector, tracking the delivery position. In production this is a
+    // background service — see examples/EventInfrastructure/EventStoreRelay.cs.
+    var relayPosition = 0;
+    async Task RelayPendingEventsAsync()
+    {
+        var stored = await eventStorePeer.FindByIdAsync(accountId);
+        var events = stored!.Events;
+        for (; relayPosition < events.Count; relayPosition++)
+        {
+            var eventData = DomainEventMapper.ToData(
+                (IInternalDomainEvent)events[relayPosition]);
+            await projector.ExecuteAsync(eventData);
+        }
+    }
+
     // STEP 1: Execute CreateAccount command
     Console.WriteLine("STEP 1: Execute CreateAccount Command");
-    var accountId = new AccountId("ACC-CQRS-001");
     var createInput = new CreateAccountInput(
         accountId,
         "CQRS User",
@@ -2815,16 +2790,8 @@ public static async Task DemoCompleteCqrsFlowAsync()
     Console.WriteLine($"✅ Command executed: {createOutput.Message}");
     Console.WriteLine($"   Version: {createOutput.Version}");
 
-    // Publish events to message bus
-    var account1 = await repository.FindByIdAsync(accountId);
-    foreach (var evt in account1!.GetDomainEvents())
-    {
-        await eventProducer.PostAsync(DomainEventMapper.ToData(evt));
-    }
-    account1.ClearDomainEvents();
-
-    // Wait for async projection
-    await Task.Delay(50);
+    // Relay stored events to the read side
+    await RelayPendingEventsAsync();
 
     // STEP 2: Query account (read model)
     Console.WriteLine("\nSTEP 2: Query Account (Read Model)");
@@ -2837,26 +2804,18 @@ public static async Task DemoCompleteCqrsFlowAsync()
 
     // STEP 3: Execute DepositMoney command
     Console.WriteLine("\nSTEP 3: Execute DepositMoney Command");
-    var depositInput = new DepositMoneyInput(
-        accountId,
-        new Money(800m),
-        createOutput.Version);
+    var depositInput = new DepositMoneyInput(accountId, new Money(800m))
+    {
+        Version = createOutput.Version
+    };
 
     var depositOutput = await depositCommand.ExecuteAsync(depositInput);
     Console.WriteLine($"✅ Command executed: {depositOutput.Message}");
     Console.WriteLine($"   New Balance (write model): ${depositOutput.NewBalance:F2}");
     Console.WriteLine($"   Version: {depositOutput.Version}");
 
-    // Publish events
-    var account2 = await repository.FindByIdAsync(accountId);
-    foreach (var evt in account2!.GetDomainEvents())
-    {
-        await eventProducer.PostAsync(DomainEventMapper.ToData(evt));
-    }
-    account2.ClearDomainEvents();
-
-    // Wait for async projection
-    await Task.Delay(50);
+    // Relay stored events to the read side
+    await RelayPendingEventsAsync();
 
     // STEP 4: Query again (eventual consistency)
     Console.WriteLine("\nSTEP 4: Query Again (Eventually Consistent)");
@@ -2889,7 +2848,7 @@ await DemoCompleteCqrsFlowAsync();
 **Explanation**:
 
 1. **Write Side**: Commands → Aggregates → Events → Repository
-2. **Event Bus**: Events published to message bus after persistence
+2. **Relay**: A background relay polls the event store and delivers stored events to reactors (Transactional Outbox; simulated inline here)
 3. **Read Side**: Projectors → Read Models → Archive
 4. **Query Side**: Queries read from archive (optimized read models)
 5. **Eventual Consistency**: Read models updated asynchronously
@@ -2900,7 +2859,7 @@ await DemoCompleteCqrsFlowAsync();
 
 STEP 1: Execute CreateAccount Command
 ✅ Command executed: Account ACC-CQRS-001 created successfully
-   Version: 1
+   Version: 0
 
 STEP 2: Query Account (Read Model)
 ✅ Query executed: Account summary retrieved successfully
@@ -2911,7 +2870,7 @@ STEP 2: Query Account (Read Model)
 STEP 3: Execute DepositMoney Command
 ✅ Command executed: Deposited 800.00 USD
    New Balance (write model): $2800.00
-   Version: 2
+   Version: 1
 
 STEP 4: Query Again (Eventually Consistent)
 ✅ Query executed: Account summary retrieved successfully
@@ -2937,27 +2896,40 @@ STEP 6: CQRS Benefits Demonstrated
 - ✅ Each side optimized for purpose
 - ✅ Scales independently
 - ✅ Eventually consistent
-- ⚠️ Requires message bus infrastructure
+- ⚠️ Requires relay infrastructure (event store polling; see examples/EventInfrastructure)
 - ⚠️ Complexity cost vs. benefits
 
 ---
 
 ### CqrsOutput Fluent API
 
-**Scenario**: Use CqrsOutput's fluent builder API for unified outputs.
+**Scenario**: Use CqrsOutput's self-referential fluent API for unified outputs.
 
 **Key Concepts**:
-- CqrsOutput<T> builder
-- Fluent method chaining
-- Success/failure handling
-- Message and data
-- Pagination support
+- CqrsOutput<T> self-referential generic base class
+- Fluent method chaining that preserves the concrete type
+- Success/failure handling via ExitCode
+- Domain-specific payload via subclass properties
 
 **Complete Code**:
 
 ```csharp
 using EzDdd.Cqrs;
 using EzDdd.UseCase.Port.In;
+
+// The generic parameter T is the concrete output type itself
+// (self-referential constraint: T : CqrsOutput<T>, new()).
+// Payload data lives in subclass properties, added with fluent setters.
+public sealed class GetBalanceOutput : CqrsOutput<GetBalanceOutput>
+{
+    public decimal Balance { get; set; }
+
+    public GetBalanceOutput SetBalance(decimal balance)
+    {
+        Balance = balance;
+        return this;
+    }
+}
 
 // Demo: CqrsOutput fluent API
 public static void DemoCqrsOutputApi()
@@ -2966,116 +2938,61 @@ public static void DemoCqrsOutputApi()
 
     // Example 1: Simple success output
     Console.WriteLine("Example 1: Simple Success");
-    var output1 = CqrsOutput<string>.Create()
-        .SetData("Operation completed")
-        .Success()
-        .SetMessage("Account created successfully");
+    var output1 = GetBalanceOutput.Create()
+        .SetBalance(1500.00m)
+        .Succeed()
+        .SetMessage("Balance retrieved");
 
     Console.WriteLine($"ExitCode: {output1.ExitCode}");
     Console.WriteLine($"Message: {output1.Message}");
-    Console.WriteLine($"Data: {output1.Data}");
-    Console.WriteLine($"HasData: {output1.HasData}");
+    Console.WriteLine($"Balance: ${output1.Balance:F2}");
 
     // Example 2: Success with ID
     Console.WriteLine("\nExample 2: Success with ID");
-    var output2 = CqrsOutput<decimal>.Create()
-        .SetData(1500.00m)
-        .Success()
+    var output2 = GetBalanceOutput.Create()
+        .SetBalance(1500.00m)
+        .Succeed()
         .SetMessage("Balance retrieved")
         .SetId("ACC-123");
 
     Console.WriteLine($"ExitCode: {output2.ExitCode}");
     Console.WriteLine($"ID: {output2.Id}");
-    Console.WriteLine($"Balance: ${output2.Data:F2}");
+    Console.WriteLine($"Balance: ${output2.Balance:F2}");
 
     // Example 3: Failure output
     Console.WriteLine("\nExample 3: Failure");
-    var output3 = CqrsOutput<string>.Create()
+    var output3 = GetBalanceOutput.Create()
         .Fail()
         .SetMessage("Account not found");
 
     Console.WriteLine($"ExitCode: {output3.ExitCode}");
     Console.WriteLine($"Message: {output3.Message}");
-    Console.WriteLine($"HasData: {output3.HasData}");
 
-    // Example 4: Paginated output
-    Console.WriteLine("\nExample 4: Paginated Results");
-    var transactions = new List<string>
-    {
-        "Transaction 1",
-        "Transaction 2",
-        "Transaction 3"
-    };
-
-    var output4 = CqrsOutput<List<string>>.Create()
-        .SetData(transactions)
-        .SetPagination(totalCount: 100, pageNumber: 1, pageSize: 3)
-        .Success()
-        .SetMessage("Transactions retrieved");
-
-    Console.WriteLine($"ExitCode: {output4.ExitCode}");
-    Console.WriteLine($"Transactions: {output4.Data!.Count}");
-    Console.WriteLine($"TotalCount: {output4.TotalCount}");
-    Console.WriteLine($"PageNumber: {output4.PageNumber}");
-    Console.WriteLine($"PageSize: {output4.PageSize}");
-    Console.WriteLine($"HasMorePages: {output4.HasMorePages}");
-
-    // Example 5: Complex data object
-    Console.WriteLine("\nExample 5: Complex Data Object");
-    var accountSummary = new
-    {
-        AccountId = "ACC-456",
-        Owner = "John Doe",
-        Balance = 2500.00m,
-        TransactionCount = 15
-    };
-
-    var output5 = CqrsOutput<object>.Create()
-        .SetData(accountSummary)
-        .Success()
-        .SetMessage("Account summary retrieved")
-        .SetId(accountSummary.AccountId);
-
-    Console.WriteLine($"ExitCode: {output5.ExitCode}");
-    Console.WriteLine($"Message: {output5.Message}");
-    Console.WriteLine($"ID: {output5.Id}");
-    Console.WriteLine($"Data Type: {output5.Data!.GetType().Name}");
-
-    // Example 6: Method chaining patterns
-    Console.WriteLine("\nExample 6: Method Chaining Patterns");
-
-    // Pattern 1: Success flow
-    var successOutput = CqrsOutput<int>.Create()
-        .SetData(42)
-        .Success()
-        .SetMessage("Success");
-    Console.WriteLine($"Success: {successOutput.ExitCode} = {successOutput.Data}");
-
-    // Pattern 2: Failure flow
-    var failureOutput = CqrsOutput<int>.Create()
-        .Fail()
-        .SetMessage("Validation failed");
-    Console.WriteLine($"Failure: {failureOutput.ExitCode}, HasData = {failureOutput.HasData}");
-
-    // Pattern 3: Conditional success/failure
+    // Example 4: Conditional success/failure with SetExitCode
+    Console.WriteLine("\nExample 4: Conditional Exit Code");
     bool operationSucceeded = true;
-    var conditionalOutput = CqrsOutput<string>.Create()
-        .SetData(operationSucceeded ? "Data" : null!)
+    var output4 = GetBalanceOutput.Create()
         .SetExitCode(operationSucceeded ? ExitCode.Success : ExitCode.Failure)
         .SetMessage(operationSucceeded ? "Success" : "Failed");
-    Console.WriteLine($"Conditional: {conditionalOutput.ExitCode}");
+    Console.WriteLine($"Conditional: {output4.ExitCode}");
+    Console.WriteLine($"Integer code: {output4.ExitCode.Code()}");
 
-    // Example 7: Empty data handling
-    Console.WriteLine("\nExample 7: Empty Data Handling");
+    // Example 5: Type-safe chaining
+    Console.WriteLine("\nExample 5: Type-Safe Chaining");
+    // Every fluent call - including the inherited SetId/SetMessage/Succeed -
+    // returns GetBalanceOutput, not CqrsOutput, so custom setters can be
+    // chained in any order:
+    GetBalanceOutput chained = GetBalanceOutput.Create()
+        .SetId("ACC-456")
+        .SetBalance(42m)
+        .Succeed();
+    Console.WriteLine($"Chained: {chained.Id}, ${chained.Balance:F2}, {chained.ExitCode}");
 
-    var emptyOutput = CqrsOutput<List<string>>.Create()
-        .SetData(new List<string>())
-        .Success()
-        .SetMessage("No results found");
-
-    Console.WriteLine($"HasData: {emptyOutput.HasData}");
-    Console.WriteLine($"Data Count: {emptyOutput.Data!.Count}");
-    Console.WriteLine($"ExitCode: {emptyOutput.ExitCode}");
+    // Example 6: Used through the IOutput interface
+    Console.WriteLine("\nExample 6: IOutput Interoperability");
+    IOutput asInterface = chained; // CqrsOutput<T> implements IOutput
+    Console.WriteLine($"IOutput.Message: '{asInterface.Message}'");
+    Console.WriteLine($"IOutput.ExitCode: {asInterface.ExitCode}");
 }
 
 DemoCqrsOutputApi();
@@ -3083,13 +3000,12 @@ DemoCqrsOutputApi();
 
 **Explanation**:
 
-1. **Create()**: Factory method to start building
-2. **SetData()**: Set the output payload
-3. **Success()/Fail()**: Set exit code
-4. **SetMessage()**: Add human-readable message
-5. **SetId()**: Associate with entity ID
-6. **SetPagination()**: Add pagination metadata
-7. **Method Chaining**: All methods return `this` for fluent API
+1. **Create()**: Static factory method to start building (requires `new()` constraint)
+2. **Succeed()/Fail()**: Set exit code to Success/Failure
+3. **SetExitCode()**: Set exit code explicitly
+4. **SetMessage()/SetId()**: Add human-readable message and associated identifier
+5. **Method Chaining**: All fluent methods return the concrete type `T` — subclass setters stay chainable
+6. **Payload**: Domain data is expressed as subclass properties (there is no generic `Data` payload on `CqrsOutput`)
 
 **Output**:
 ```
@@ -3097,9 +3013,8 @@ DemoCqrsOutputApi();
 
 Example 1: Simple Success
 ExitCode: Success
-Message: Account created successfully
-Data: Operation completed
-HasData: True
+Message: Balance retrieved
+Balance: $1500.00
 
 Example 2: Success with ID
 ExitCode: Success
@@ -3109,40 +3024,26 @@ Balance: $1500.00
 Example 3: Failure
 ExitCode: Failure
 Message: Account not found
-HasData: False
 
-Example 4: Paginated Results
-ExitCode: Success
-Transactions: 3
-TotalCount: 100
-PageNumber: 1
-PageSize: 3
-HasMorePages: True
-
-Example 5: Complex Data Object
-ExitCode: Success
-Message: Account summary retrieved
-ID: ACC-456
-Data Type: <>f__AnonymousType0`4
-
-Example 6: Method Chaining Patterns
-Success: Success = 42
-Failure: Failure, HasData = False
+Example 4: Conditional Exit Code
 Conditional: Success
+Integer code: 0
 
-Example 7: Empty Data Handling
-HasData: True
-Data Count: 0
-ExitCode: Success
+Example 5: Type-Safe Chaining
+Chained: ACC-456, $42.00, Success
+
+Example 6: IOutput Interoperability
+IOutput.Message: ''
+IOutput.ExitCode: Success
 ```
 
 **Notes**:
-- ✅ Fluent API for clean code
-- ✅ Generic data payload
-- ✅ Built-in pagination support
-- ✅ Exit code + message pattern
+- ✅ Fluent API preserves the concrete subclass type (self-referential generic)
+- ✅ Exit code + message pattern (`ExitCode.Success` / `ExitCode.Failure` only)
 - ✅ Optional ID field
-- ⚠️ Check HasData before accessing Data
+- ✅ Implements `IOutput` for interface interoperability
+- ⚠️ `T` must be the subclass itself: `class MyOutput : CqrsOutput<MyOutput>`
+- ⚠️ No built-in `Data`/pagination members — model the payload as subclass properties
 
 ---
 
@@ -3390,9 +3291,9 @@ Alice's final balance: 3500.00 USD
 Bob's final balance: 4500.00 USD
 
 Step 5: Event Sourcing Audit Trail
-Alice's aggregate version: 2
+Alice's aggregate version: 1
 Alice's transaction history: reconstructable from events
-Bob's aggregate version: 2
+Bob's aggregate version: 1
 Bob's transaction history: reconstructable from events
 ```
 
@@ -3793,4 +3694,4 @@ builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
 ---
 
-*Last updated: 2026-01-07*
+*Last updated: 2026-07-05*

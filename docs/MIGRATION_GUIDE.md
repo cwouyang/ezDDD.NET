@@ -3,8 +3,8 @@
 Complete guide for migrating from Java ezddd to .NET ezDDD.NET.
 
 > **Version**: 1.0.0-alpha.1
-> **Last Updated**: 2025-11-22
-> **Java Version**: ezddd 2.x
+> **Last Updated**: 2026-07-05
+> **Java Version**: ezddd 6.0.1
 > **Target Audience**: Java developers familiar with ezddd
 
 ---
@@ -57,7 +57,7 @@ ezDDD.NET is a faithful .NET port of Java ezddd with **~98% semantic parity**. C
 ✅ **Same Patterns**
 - Bridge Pattern (IRepository ↔ IRepositoryPeer)
 - Template Method (EsAggregateRoot)
-- Observer Pattern (MessageBus)
+- Reactor Pattern (IReactor / IProjector / INotifier)
 - Command Pattern (IUseCase)
 
 ✅ **.NET Platform Improvements**
@@ -308,10 +308,12 @@ List<string> names = accounts.Values
 | `IRepositoryPeer<D, ID>` | `IRepositoryPeer<TData, TId>` | **Async methods** |
 | `EsRepository<A, ID, E>` | `EsRepository<TAggregate, TId>` | Async + Reflection |
 | `OutboxRepository<A, ID, E>` | `OutboxRepository<TAggregate, TData, TId>` | Async |
-| `BlockingMessageBus` | `BlockingMessageBus` | Thread-safe |
-| `IMessageBus.send(event)` | `IMessageBus.SendAsync(event)` | **Async** |
+| `Reactor<Input>` | `IReactor<TInput>` | `Task ExecuteAsync(TInput)` |
+| `ExternalDomainEventPublisher<E>` | `IExternalDomainEventPublisher<TEvent>` | **Async**: `PublishAsync` |
 
 **Critical Change**: All repository methods are **async** in .NET.
+
+> **Note**: The in-process message bus/producer types that older ezddd versions shipped (`MessageBus`, `BlockingMessageBus`, `MessageProducer`) are gone on both sides: Java 6.0.0 moved the producer abstraction to the external `ezddd-gateway` artifact, and ezDDD.NET defers its counterpart to the ezDDD.Gateway package (post-1.0; see ADR-0029). Event publication follows the Relay pattern — see `examples/EventInfrastructure` for a reference implementation.
 
 ### Cqrs Module
 
@@ -321,7 +323,8 @@ List<string> names = accounts.Values
 | `IQuery<I, O>` | `IQuery<TInput, TOutput>` | Marker interface |
 | `IInquiry<I, O>` | `IInquiry<TInput, TOutput>` | Marker interface |
 | `IProjection<I, O>` | `IProjection<TInput, TOutput>` | Async |
-| `IProjector` | `IProjector` | Background service marker |
+| `Projector<Input>` | `IProjector<TInput>` | Extends `IReactor<TInput>` (ADR-0028) |
+| `Notifier<Input>` | `INotifier<TInput>` | Extends `IReactor<TInput>` (ADR-0028) |
 | `IArchive<D, ID>` | `IArchive<TData, TId>` | **Async methods** |
 | `CqrsOutput<T>` | `CqrsOutput<T>` | Fluent API with records |
 
@@ -390,6 +393,12 @@ protected override void _When(IInternalDomainEvent @event)
 
 ### Repository Pattern (sync → async)
 
+> **Note on `ExitCode`**: Both Java ezddd 6.0.1 and ezDDD.NET use a two-state `ExitCode`
+> (`SUCCESS`/`FAILURE` in Java, `Success = 0`/`Failure = 1` in C#). Earlier drafts of this
+> guide showed richer members (`RESOURCE_NOT_FOUND_FAILURE`, `CONFLICT_FAILURE`,
+> `VALIDATION_FAILURE`, …) which do not exist in the current API — failure detail is
+> conveyed via `Message` (`fail()` + `setMessage()` / `Fail()` + `SetMessage()`).
+
 **Java (Synchronous)**:
 ```java
 public class DepositMoneyCommand implements Command<DepositInput, DepositOutput> {
@@ -400,7 +409,7 @@ public class DepositMoneyCommand implements Command<DepositInput, DepositOutput>
         // Load aggregate (blocking)
         Optional<BankAccount> accountOpt = repository.findById(input.getAccountId());
         if (accountOpt.isEmpty()) {
-            return new DepositOutput().setExitCode(ExitCode.RESOURCE_NOT_FOUND_FAILURE);
+            return new DepositOutput().fail().setMessage("Account not found");
         }
 
         BankAccount account = accountOpt.get();
@@ -412,7 +421,7 @@ public class DepositMoneyCommand implements Command<DepositInput, DepositOutput>
         try {
             repository.save(account);
         } catch (RepositorySaveException e) {
-            return new DepositOutput().setExitCode(ExitCode.CONFLICT_FAILURE);
+            return new DepositOutput().fail().setMessage("Concurrent modification detected");
         }
 
         return new DepositOutput().succeed();
@@ -432,7 +441,7 @@ public class DepositMoneyCommand : ICommand<DepositInput, DepositOutput>
         BankAccount? account = await _repository.FindByIdAsync(input.AccountId);
         if (account is null)
         {
-            return new DepositOutput().SetExitCode(ExitCode.ResourceNotFoundFailure);
+            return new DepositOutput().Fail().SetMessage("Account not found");
         }
 
         // Execute domain logic (same as Java)
@@ -445,7 +454,7 @@ public class DepositMoneyCommand : ICommand<DepositInput, DepositOutput>
         }
         catch (RepositorySaveException)
         {
-            return new DepositOutput().SetExitCode(ExitCode.ConflictFailure);
+            return new DepositOutput().Fail().SetMessage("Concurrent modification detected");
         }
 
         return new DepositOutput().Succeed();
@@ -492,6 +501,8 @@ catch (RepositorySaveException ex)
 - `logger.LogError()` instead of `logger.error()`
 
 ### Threading and Concurrency
+
+> **Historical example**: `BlockingMessageBus` below was removed from both codebases (Java 6.0.0 moved messaging to `ezddd-gateway`; ezDDD.NET removed it in the Phase 6/7 sync — see ADR-0029). The snippet is retained solely to illustrate how a Java `CopyOnWriteArrayList` idiom translates to a C# lock + snapshot idiom; apply the same technique to your own thread-safe collections.
 
 **Java (CopyOnWriteArrayList)**:
 ```java
@@ -872,7 +883,7 @@ public class DepositMoneyCommand implements Command<DepositInput, DepositOutput>
         Optional<BankAccount> accountOpt = repository.findById(input.getAccountId());
         if (accountOpt.isEmpty()) {
             return new DepositOutput()
-                .setExitCode(ExitCode.RESOURCE_NOT_FOUND_FAILURE)
+                .fail()
                 .setMessage("Account not found");
         }
 
@@ -883,7 +894,7 @@ public class DepositMoneyCommand implements Command<DepositInput, DepositOutput>
             account.deposit(input.getAmount());
         } catch (IllegalArgumentException e) {
             return new DepositOutput()
-                .setExitCode(ExitCode.VALIDATION_FAILURE)
+                .fail()
                 .setMessage(e.getMessage());
         }
 
@@ -892,7 +903,7 @@ public class DepositMoneyCommand implements Command<DepositInput, DepositOutput>
             repository.save(account);
         } catch (RepositorySaveException e) {
             return new DepositOutput()
-                .setExitCode(ExitCode.CONFLICT_FAILURE)
+                .fail()
                 .setMessage("Concurrent modification detected");
         }
 
@@ -923,7 +934,7 @@ public class DepositMoneyCommand : ICommand<DepositInput, DepositOutput>
         if (account is null)
         {
             return new DepositOutput()
-                .SetExitCode(ExitCode.ResourceNotFoundFailure)
+                .Fail()
                 .SetMessage("Account not found");
         }
 
@@ -935,7 +946,7 @@ public class DepositMoneyCommand : ICommand<DepositInput, DepositOutput>
         catch (InvalidOperationException ex)
         {
             return new DepositOutput()
-                .SetExitCode(ExitCode.ValidationFailure)
+                .Fail()
                 .SetMessage(ex.Message);
         }
 
@@ -947,7 +958,7 @@ public class DepositMoneyCommand : ICommand<DepositInput, DepositOutput>
         catch (RepositorySaveException)
         {
             return new DepositOutput()
-                .SetExitCode(ExitCode.ConflictFailure)
+                .Fail()
                 .SetMessage("Concurrent modification detected");
         }
 
@@ -1089,13 +1100,13 @@ public class CreateAccountCommand implements Command<CreateAccountInput, CreateA
         // Validate input
         if (input.getOwner() == null || input.getOwner().isEmpty()) {
             return new CreateAccountOutput()
-                .setExitCode(ExitCode.VALIDATION_FAILURE)
+                .fail()
                 .setMessage("Owner name is required");
         }
 
         if (input.getInitialBalance().compareTo(BigDecimal.ZERO) < 0) {
             return new CreateAccountOutput()
-                .setExitCode(ExitCode.VALIDATION_FAILURE)
+                .fail()
                 .setMessage("Initial balance cannot be negative");
         }
 
@@ -1112,7 +1123,7 @@ public class CreateAccountCommand implements Command<CreateAccountInput, CreateA
             repository.save(account);
         } catch (RepositorySaveException e) {
             return new CreateAccountOutput()
-                .setExitCode(ExitCode.DATABASE_FAILURE)
+                .fail()
                 .setMessage("Failed to create account");
         }
 
@@ -1136,14 +1147,14 @@ public class CreateAccountCommand : ICommand<CreateAccountInput, CreateAccountOu
         if (string.IsNullOrWhiteSpace(input.Owner))
         {
             return new CreateAccountOutput()
-                .SetExitCode(ExitCode.ValidationFailure)
+                .Fail()
                 .SetMessage("Owner name is required");
         }
 
         if (input.InitialBalance.Amount < 0)
         {
             return new CreateAccountOutput()
-                .SetExitCode(ExitCode.ValidationFailure)
+                .Fail()
                 .SetMessage("Initial balance cannot be negative");
         }
 
@@ -1163,7 +1174,7 @@ public class CreateAccountCommand : ICommand<CreateAccountInput, CreateAccountOu
         catch (RepositorySaveException)
         {
             return new CreateAccountOutput()
-                .SetExitCode(ExitCode.DatabaseFailure)
+                .Fail()
                 .SetMessage("Failed to create account");
         }
 

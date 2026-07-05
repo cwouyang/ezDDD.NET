@@ -3,7 +3,7 @@
 Complete reference for all public APIs in ezDDD.NET tactical Domain-Driven Design framework.
 
 > **Version**: 1.0.0-alpha.1
-> **Last Updated**: 2025-11-22
+> **Last Updated**: 2026-07-05
 
 ---
 
@@ -18,6 +18,7 @@ Complete reference for all public APIs in ezDDD.NET tactical Domain-Driven Desig
   - [IValueObject](#ivalueobject)
   - [IDomainEvent](#idomainevent)
   - [IInternalDomainEvent](#iinternaldomainevent)
+  - [IDomainEventSource<TEvent>](#idomaineventsource)
   - [AggregateRoot<TId, TEvent>](#aggregateroot)
   - [EsAggregateRoot<TId, TEvent>](#esaggregateroot)
   - [DomainEventTypeMapper](#domaineventtypemapper)
@@ -27,7 +28,10 @@ Complete reference for all public APIs in ezDDD.NET tactical Domain-Driven Desig
     - [IOutput](#ioutput)
     - [IVersionedInput](#iversionedinput)
     - [ExitCode](#exitcode)
-    - [IReactor](#ireactor)
+    - [ExitCodeExtensions](#exitcodeextensions)
+    - [IReactor<TInput>](#ireactor)
+    - [IReconciler<TContext, TReport>](#ireconciler)
+    - [NullContext](#nullcontext)
   - [Use Case Pattern](#use-case-pattern)
     - [IUseCase<TInput, TOutput>](#iusecase)
     - [UseCaseFailureException](#usecasefailureexception)
@@ -40,6 +44,7 @@ Complete reference for all public APIs in ezDDD.NET tactical Domain-Driven Desig
   - [Event Infrastructure](#event-infrastructure)
     - [IExternalDomainEvent](#iexternaldomainevent)
     - [DomainEventData](#domaineventdata)
+    - [DomainEventDataBuilder](#domaineventdatabuilder)
     - [DomainEventMapper](#domaineventmapper)
     - [InternalDomainEventDto](#internaldomaineventdto)
   - [Event Sourcing](#event-sourcing)
@@ -48,14 +53,11 @@ Complete reference for all public APIs in ezDDD.NET tactical Domain-Driven Desig
     - [EsRepository<TAggregate, TId>](#esrepository)
   - [State Sourcing](#state-sourcing)
     - [IOutboxData<TId>](#ioutboxdata)
-    - [OutboxMapper](#outboxmapper)
-    - [OutboxRepository<TAggregate, TId>](#outboxrepository)
-  - [Message Bus](#message-bus)
-    - [IMessageBus<TMessage>](#imessagebus)
-    - [IMessageProducer](#imessageproducer)
-    - [BlockingMessageBus<TMessage>](#blockingmessagebus)
-    - [EventBusProducer](#eventbusproducer)
-    - [GenericReactor<TMessage>](#genericreactor)
+    - [OutboxMapper<TAggregate, TData, TId>](#outboxmapper)
+    - [OutboxRepository<TAggregate, TData, TId>](#outboxrepository)
+  - [Messaging](#messaging)
+    - [IExternalDomainEventPublisher<TEvent>](#iexternaldomaineventpublisher)
+    - [PostEventFailureException](#posteventfailureexception)
 - [EzDdd.Cqrs](#ezdddcqrs)
   - [Command Side](#command-side)
     - [ICommand<TInput, TOutput>](#icommand)
@@ -64,7 +66,8 @@ Complete reference for all public APIs in ezDDD.NET tactical Domain-Driven Desig
   - [Query Side](#query-side)
     - [IQuery<TInput, TOutput>](#iquery)
     - [IProjection<TInput, TOutput>](#iprojection)
-    - [IProjector](#iprojector)
+    - [IProjector<TInput>](#iprojector)
+    - [INotifier<TInput>](#inotifier)
     - [IProjectionInput](#iprojectioninput)
     - [IArchive<TData, TId>](#iarchive)
   - [CqrsOutput<T>](#cqrsoutput)
@@ -630,13 +633,46 @@ public record AccountClosed(
 
 ---
 
+### IDomainEventSource
+
+**Namespace:** `EzDdd.Entity`
+
+**Signature:**
+```csharp
+public interface IDomainEventSource<TEvent>
+    where TEvent : class, IInternalDomainEvent
+{
+    void Apply(TEvent @event);
+    IReadOnlyList<TEvent> GetDomainEvents();
+    TEvent? GetLastDomainEvent();
+    int GetDomainEventSize();
+    void ClearDomainEvents();
+}
+```
+
+**Description:**
+Interface for objects that raise and collect internal domain events. Implemented by `AggregateRoot<TId, TEvent>`, which provides the event-collection behavior; most applications interact with these members through their aggregates rather than implementing this interface directly.
+
+**Type Parameters:**
+- `TEvent`: The type of internal domain events (must be a class implementing `IInternalDomainEvent`)
+
+**Notes:**
+- ✅ Defines the event sourcing capability contract used by repositories
+- ✅ `AggregateRoot<TId, TEvent>` implements this interface
+
+**Related:**
+- [AggregateRoot](#aggregateroot)
+- [IInternalDomainEvent](#iinternaldomainevent)
+
+---
+
 ### AggregateRoot
 
 **Namespace:** `EzDdd.Entity`
 
 **Signature:**
 ```csharp
-public abstract class AggregateRoot<TId, TEvent> : IEntity<TId>
+public abstract class AggregateRoot<TId, TEvent> : IEntity<TId>, IDomainEventSource<TEvent>
     where TEvent : class, IInternalDomainEvent
 {
     public TId Id { get; protected set; }
@@ -648,6 +684,8 @@ public abstract class AggregateRoot<TId, TEvent> : IEntity<TId>
     public TEvent? GetLastDomainEvent();
     public int GetDomainEventSize();
     public void ClearDomainEvents();
+
+    protected void _AddDomainEvent(TEvent @event);
 }
 ```
 
@@ -667,7 +705,7 @@ Abstract base class for aggregate roots. An aggregate root is the entry point to
 - Initial state: `Version = -1` (not yet persisted)
 - After first event: `Version = 0`
 - After second event: `Version = 1`
-- Version = number of events applied
+- After N events: `Version = N - 1`
 
 **Methods:**
 
@@ -727,6 +765,9 @@ Gets the number of domain events currently in the collection.
 #### ClearDomainEvents
 Clears all domain events from the collection (called by repository after save).
 
+#### _AddDomainEvent (protected)
+Adds a domain event to the collection and increments `Version`. Non-virtual so subclasses cannot bypass event collection or version management; called by `Apply`.
+
 **Notes:**
 - ✅ Thread-safe event collection via lock-based synchronization
 - ✅ Supports both state sourcing and event sourcing
@@ -754,6 +795,7 @@ public abstract class EsAggregateRoot<TId, TEvent> : AggregateRoot<TId, TEvent>
     public sealed override void Apply(TEvent @event);
     protected abstract void _When(TEvent @event);
     protected virtual void _EnsureInvariant();
+    protected virtual void _ReplayEvents(IEnumerable<TEvent> events);
 
     public abstract string GetCategory();
     public string GetStreamName();
@@ -856,6 +898,12 @@ protected override void _When(IInternalDomainEvent @event)
     }
 }
 ```
+
+#### _ReplayEvents (virtual)
+Replays a sequence of events (via `Apply`) to reconstruct aggregate state. Called by the event replay constructor; override to customize replay behavior.
+
+**Parameters:**
+- `events` (IEnumerable<TEvent>): The events to replay in chronological order
 
 #### _EnsureInvariant (virtual)
 Checks business invariants for this aggregate.
@@ -1274,7 +1322,7 @@ var output = new CreateAccountOutput()
 ```csharp
 public interface IVersionedInput : IInput
 {
-    long Version { get; }
+    long Version { get; set; }
 }
 ```
 
@@ -1282,15 +1330,17 @@ public interface IVersionedInput : IInput
 Marker interface for inputs that carry version information for optimistic locking.
 
 **Properties:**
-- `Version`: Expected version number of the aggregate
+- `Version`: Expected version number of the aggregate (read/write; the interface requires a `set` accessor, so implement it with a settable property, not an init-only positional record parameter)
 
 **Example:**
 ```csharp
 public record UpdateAccountInput(
     Guid AccountId,
-    long Version,
     string NewOwner
-) : IVersionedInput;
+) : IVersionedInput
+{
+    public long Version { get; set; }
+}
 
 // Usage in command:
 var account = await _repository.FindByIdAsync(input.AccountId);
@@ -1320,31 +1370,25 @@ if (account.Version != input.Version)
 public enum ExitCode
 {
     Success = 0,
-    Failure = 1,
-    ResourceNotFoundFailure = 404,
-    ConflictFailure = 409,
-    ValidationFailure = 422
+    Failure = 1
 }
 ```
 
 **Description:**
-Enumeration of standard exit codes for use case execution results.
+Enumeration representing the execution status of a use case. Mirrors upstream Java ezddd's two-state result model; richer failure semantics (not-found, conflict, validation) are conveyed via `IOutput.Message` or by throwing `UseCaseFailureException`.
 
 **Values:**
 - `Success (0)`: Operation completed successfully
-- `Failure (1)`: General failure
-- `ResourceNotFoundFailure (404)`: Requested resource not found
-- `ConflictFailure (409)`: Conflict detected (e.g., optimistic locking)
-- `ValidationFailure (422)`: Input validation failed
+- `Failure (1)`: Operation failed
 
 **Example:**
 ```csharp
 var account = await _repository.FindByIdAsync(input.AccountId);
 if (account == null)
 {
-    return output
-        .SetExitCode(ExitCode.ResourceNotFoundFailure)
-        .SetMessage("Account not found");
+    output.Fail();
+    output.SetMessage("Account not found");
+    return output;
 }
 
 try
@@ -1354,24 +1398,57 @@ try
 catch (RepositorySaveException ex)
     when (ex.Message == RepositorySaveException.OptimisticLockingFailure)
 {
-    return output
-        .SetExitCode(ExitCode.ConflictFailure)
-        .SetMessage("Concurrent modification detected");
+    output.Fail();
+    output.SetMessage("Concurrent modification detected");
+    return output;
 }
 
-return output
-    .SetExitCode(ExitCode.Success)
-    .SetMessage("Operation completed");
+output.Succeed();
+output.SetMessage("Operation completed");
+return output;
 ```
 
 **Notes:**
-- ✅ HTTP-aligned status codes (404, 409, 422)
-- ✅ Standardized semantics across use cases
-- ✅ Enables consistent error handling
+- ✅ Two-state result model (parity with Java ezddd)
+- ✅ Use `IOutput.Message` to convey failure details
+- ✅ `ExitCodeExtensions.Code()` yields the underlying integer value
 
 **Related:**
+- [ExitCodeExtensions](#exitcodeextensions)
 - [IOutput](#ioutput)
 - [UseCaseFailureException](#usecasefailureexception)
+
+---
+
+#### ExitCodeExtensions
+
+**Namespace:** `EzDdd.UseCase.Port.In`
+
+**Signature:**
+```csharp
+public static class ExitCodeExtensions
+{
+    public static int Code(this ExitCode exitCode);
+}
+```
+
+**Description:**
+Extension methods for `ExitCode`.
+
+**Methods:**
+
+##### Code
+Gets the integer code value of the exit code.
+
+**Returns:** int - `0` for `Success`, `1` for `Failure`
+
+**Example:**
+```csharp
+int code = ExitCode.Failure.Code(); // 1
+```
+
+**Related:**
+- [ExitCode](#exitcode)
 
 ---
 
@@ -1381,46 +1458,133 @@ return output
 
 **Signature:**
 ```csharp
-public interface IReactor
+public interface IReactor<in TInput>
 {
-    Task ExecuteAsync();
+    Task ExecuteAsync(TInput input);
 }
 ```
 
 **Description:**
-Marker interface for reactors that respond to domain events without input.
+In-port for services that take care of specific business rules whenever they receive a message. According to the received message, a reactor triggers a side effect such as notifying frontend clients or another bounded context. Reactors should handle messages idempotently. `IProjector<TInput>` and `INotifier<TInput>` in EzDdd.Cqrs are specialized reactors (see ADR-0028).
+
+**Type Parameters:**
+- `TInput`: The type of input message this reactor processes (contravariant)
 
 **Example:**
 ```csharp
-public class AccountCreatedReactor : IReactor
+public class WelcomeEmailReactor : IReactor<DomainEventData>
 {
-    private readonly IExternalDomainEvent _event;
     private readonly IEmailService _emailService;
 
-    public AccountCreatedReactor(
-        IExternalDomainEvent @event,
-        IEmailService emailService)
+    public WelcomeEmailReactor(IEmailService emailService)
     {
-        _event = @event;
         _emailService = emailService;
     }
 
-    public async Task ExecuteAsync()
+    public async Task ExecuteAsync(DomainEventData input)
     {
-        var accountCreated = (AccountCreated)_event;
-        await _emailService.SendWelcomeEmailAsync(accountCreated.Owner);
+        var domainEvent = DomainEventMapper.ToDomain<AccountCreated>(input);
+        await _emailService.SendWelcomeEmailAsync(domainEvent.Owner);
     }
 }
 ```
 
 **Notes:**
-- ✅ Used with IMessageBus for event-driven reactions
+- ✅ Receives messages delivered by infrastructure (e.g., an event store relay)
 - ✅ No return value (fire-and-forget semantics)
 - ✅ Asynchronous execution
+- ✅ Should be idempotent (same message processed twice yields same result)
 
 **Related:**
-- [IMessageBus](#imessagebus)
-- [GenericReactor](#genericreactor)
+- [IProjector<TInput>](#iprojector)
+- [INotifier<TInput>](#inotifier)
+- [DomainEventData](#domaineventdata)
+
+---
+
+#### IReconciler
+
+**Namespace:** `EzDdd.UseCase.Port.In`
+
+**Signature:**
+```csharp
+public interface IReconciler<in TContext, TReport>
+{
+    Task<TReport> ReconcileAsync(TContext context);
+}
+```
+
+**Description:**
+In-port for system reconciliation tasks: periodic maintenance, data-consistency checks, and cleanup operations. Unlike use cases (triggered by user actions), reconcilers are typically invoked by scheduled jobs or administrative tools.
+
+**Type Parameters:**
+- `TContext`: The input parameters for the reconciliation (contravariant); use [NullContext](#nullcontext) when no parameters are needed
+- `TReport`: The report type describing the reconciliation results
+
+**Example:**
+```csharp
+public record OrderCleanupContext(int ExpirationDays);
+public record OrderCleanupReport(int TotalChecked, int DeletedCount);
+
+public class CleanUpExpiredOrdersReconciler
+    : IReconciler<OrderCleanupContext, OrderCleanupReport>
+{
+    public async Task<OrderCleanupReport> ReconcileAsync(OrderCleanupContext context)
+    {
+        // Find and delete expired draft orders, then report the results
+        // ...
+    }
+}
+```
+
+**Notes:**
+- ✅ Returns a report instead of an `IOutput` (administrative result, not a use case output)
+- ✅ Schedule with `BackgroundService`, Hangfire, Quartz.NET, etc.
+
+**Related:**
+- [NullContext](#nullcontext)
+- [IUseCase](#iusecase)
+
+---
+
+#### NullContext
+
+**Namespace:** `EzDdd.UseCase.Port.In`
+
+**Signature:**
+```csharp
+public sealed class NullContext
+{
+    public static readonly NullContext Instance;
+}
+```
+
+**Description:**
+Null-object context for reconcilers that need no input parameters. Provides type safety instead of `null` or `object`.
+
+**Example:**
+```csharp
+public class GlobalSystemCleanupReconciler
+    : IReconciler<NullContext, GlobalCleanupReport>
+{
+    public async Task<GlobalCleanupReport> ReconcileAsync(NullContext context)
+    {
+        // Perform system-wide cleanup (no parameters needed)
+        // ...
+    }
+}
+
+// Usage:
+var report = await reconciler.ReconcileAsync(NullContext.Instance);
+```
+
+**Notes:**
+- ✅ Singleton (`NullContext.Instance`)
+- ✅ Counterpart of `IInput.NullInput` for the reconciliation side
+
+**Related:**
+- [IReconciler](#ireconciler)
+- [IInput](#iinput)
 
 ---
 
@@ -1474,13 +1638,15 @@ public class DepositMoneyUseCase : IUseCase<DepositInput, DepositOutput>
 
     public async Task<DepositOutput> ExecuteAsync(DepositInput input)
     {
+        var output = new DepositOutput();
+
         // 1. Load aggregate
         var account = await _repository.FindByIdAsync(input.AccountId);
         if (account == null)
         {
-            return new DepositOutput()
-                .SetExitCode(ExitCode.ResourceNotFoundFailure)
-                .SetMessage("Account not found");
+            output.Fail();
+            output.SetMessage("Account not found");
+            return output;
         }
 
         // 2. Execute domain logic
@@ -1493,15 +1659,15 @@ public class DepositMoneyUseCase : IUseCase<DepositInput, DepositOutput>
         }
         catch (RepositorySaveException ex)
         {
-            return new DepositOutput()
-                .SetExitCode(ExitCode.Failure)
-                .SetMessage(ex.Message);
+            output.Fail();
+            output.SetMessage(ex.Message);
+            return output;
         }
 
-        return new DepositOutput()
-            .SetId(account.Id.ToString())
-            .SetMessage($"Deposited {input.Amount}")
-            .Succeed();
+        output.SetId(account.Id.ToString());
+        output.SetMessage($"Deposited {input.Amount}");
+        output.Succeed();
+        return output;
     }
 }
 ```
@@ -1526,6 +1692,7 @@ public class DepositMoneyUseCase : IUseCase<DepositInput, DepositOutput>
 ```csharp
 public class UseCaseFailureException : Exception
 {
+    public UseCaseFailureException();
     public UseCaseFailureException(string message);
     public UseCaseFailureException(string message, Exception innerException);
 }
@@ -1619,9 +1786,9 @@ Finds an aggregate by its identifier.
 var account = await _repository.FindByIdAsync(accountId);
 if (account == null)
 {
-    return new DepositOutput()
-        .SetExitCode(ExitCode.ResourceNotFoundFailure)
-        .SetMessage("Account not found");
+    output.Fail();
+    output.SetMessage("Account not found");
+    return output;
 }
 ```
 
@@ -1645,9 +1812,9 @@ try
 catch (RepositorySaveException ex)
     when (ex.Message == RepositorySaveException.OptimisticLockingFailure)
 {
-    return new DepositOutput()
-        .SetExitCode(ExitCode.ConflictFailure)
-        .SetMessage("Concurrent modification detected");
+    output.Fail();
+    output.SetMessage("Concurrent modification detected");
+    return output;
 }
 ```
 
@@ -1841,26 +2008,33 @@ Removes data from storage.
 
 **Signature:**
 ```csharp
-public interface IStoreData<out TId>
+public interface IStoreData<TId>
 {
-    TId Id { get; }
-    long Version { get; }
-    string StreamName { get; }
-    IReadOnlyList<IInternalDomainEvent> Events { get; }
+    TId Id { get; set; }
+    long Version { get; set; }
+    string StreamName { get; set; }
+    IReadOnlyList<IDomainEvent> Events { get; set; }
+
+    long GetOptimisticLockVersion(); // default implementation: Version + Events.Count
 }
 ```
 
 **Description:**
-Base interface for persistence data structures used by IRepositoryPeer.
+Base interface for persistence data structures used by IRepositoryPeer. Supports both event sourcing and state sourcing.
 
 **Type Parameters:**
-- `TId`: The type of identifier (covariant)
+- `TId`: The type of identifier
 
 **Properties:**
-- `Id`: The identifier
-- `Version`: Version number for optimistic locking
-- `StreamName`: Event stream name (for event sourcing)
-- `Events`: Domain events to persist
+- `Id`: The identifier (read/write)
+- `Version`: Version number for optimistic locking (`-1` for new aggregates, `0+` for existing)
+- `StreamName`: Event stream name (convention: `{category}-{id}`)
+- `Events`: Pending domain events to persist (Transactional Outbox pattern)
+
+**Methods:**
+
+#### GetOptimisticLockVersion
+Gets the expected version after save. Default interface implementation returns `Version + Events.Count`; used for optimistic locking in database UPDATE operations.
 
 **Example:**
 ```csharp
@@ -1871,15 +2045,15 @@ public class BankAccountData : IStoreData<Guid>
     public string StreamName { get; set; } = string.Empty;
     public string Owner { get; set; } = string.Empty;
     public decimal Balance { get; set; }
-    public IReadOnlyList<IInternalDomainEvent> Events { get; set; }
-        = Array.Empty<IInternalDomainEvent>();
+    public IReadOnlyList<IDomainEvent> Events { get; set; }
+        = Array.Empty<IDomainEvent>();
 }
 ```
 
 **Notes:**
 - ✅ DTO for persistence layer
-- ✅ Covariant identifier for flexibility
 - ✅ Includes both state and events
+- ✅ Default `GetOptimisticLockVersion()` implementation (override only if needed)
 
 **Related:**
 - [IRepositoryPeer](#irepositorypeer)
@@ -1898,8 +2072,10 @@ public class RepositorySaveException : Exception
 {
     public const string OptimisticLockingFailure = "Optimistic locking failure";
 
+    public RepositorySaveException();
     public RepositorySaveException(string message);
     public RepositorySaveException(string message, Exception innerException);
+    public RepositorySaveException(Exception innerException);
 }
 ```
 
@@ -1919,16 +2095,16 @@ catch (RepositorySaveException ex)
     when (ex.Message == RepositorySaveException.OptimisticLockingFailure)
 {
     // Handle optimistic locking conflict
-    return output
-        .SetExitCode(ExitCode.ConflictFailure)
-        .SetMessage("Concurrent modification detected. Please retry.");
+    output.Fail();
+    output.SetMessage("Concurrent modification detected. Please retry.");
+    return output;
 }
 catch (RepositorySaveException ex)
 {
     // Handle other save failures
-    return output
-        .SetExitCode(ExitCode.Failure)
-        .SetMessage(ex.Message);
+    output.Fail();
+    output.SetMessage(ex.Message);
+    return output;
 }
 ```
 
@@ -1951,8 +2127,10 @@ catch (RepositorySaveException ex)
 ```csharp
 public class RepositoryPeerSaveException : Exception
 {
+    public RepositoryPeerSaveException();
     public RepositoryPeerSaveException(string message);
     public RepositoryPeerSaveException(string message, Exception innerException);
+    public RepositoryPeerSaveException(Exception innerException);
 }
 ```
 
@@ -2030,7 +2208,8 @@ var integrationEvent = new AccountCreatedIntegrationEvent(
         { "BoundedContext", "Banking" }
     });
 
-await _eventBusProducer.ProduceAsync(integrationEvent);
+// Publish through the out-port (typically from an INotifier implementation)
+await _externalDomainEventPublisher.PublishAsync(integrationEvent);
 ```
 
 **Notes:**
@@ -2040,7 +2219,7 @@ await _eventBusProducer.ProduceAsync(integrationEvent);
 
 **Related:**
 - [IInternalDomainEvent](#iinternaldomainevent)
-- [EventBusProducer](#eventbusproducer)
+- [IExternalDomainEventPublisher](#iexternaldomaineventpublisher)
 
 ---
 
@@ -2053,49 +2232,129 @@ await _eventBusProducer.ProduceAsync(integrationEvent);
 public record DomainEventData(
     Guid Id,
     string EventType,
-    DateTimeOffset OccurredOn,
-    string Source,
-    string EventData,
-    IReadOnlyDictionary<string, string> Metadata
-);
+    string ContentType,
+    byte[] EventBody,
+    byte[] UserMetadata
+)
+{
+    public virtual bool Equals(DomainEventData? other); // JSON-aware semantic equality
+    public override int GetHashCode();
+}
 ```
 
 **Description:**
-Serializable record representing a domain event for persistence or transmission. Contains event metadata and JSON-serialized payload.
+Immutable record for persisted domain events. Stores the event payload and metadata as byte arrays to support flexible serialization formats (JSON, Avro, Protobuf). Equality is JSON-aware for JSON content (key order independent), matching Java ezddd's `JSONObject.similar()` semantics; non-JSON content falls back to byte-level comparison.
 
 **Properties:**
-- `Id`: Event unique identifier
-- `EventType`: Event type name (from DomainEventTypeMapper)
-- `OccurredOn`: Timestamp when event occurred
-- `Source`: Aggregate identifier that produced the event
-- `EventData`: JSON-serialized event payload
-- `Metadata`: Event metadata dictionary
+- `Id`: Event unique identifier (not aggregate ID)
+- `EventType`: Mapped event type name (from DomainEventTypeMapper, e.g. `"AccountCreated"`)
+- `ContentType`: Serialization format (e.g. `"application/json"`)
+- `EventBody`: Serialized event payload as byte array
+- `UserMetadata`: Serialized event metadata as byte array
 
 **Example:**
 ```csharp
 var @event = new AccountCreated(/* ... */);
 
-// Convert to DomainEventData for persistence
-var eventData = new DomainEventData(
-    Id: @event.Id,
-    EventType: DomainEventTypeMapper.GetTypeName(@event),
-    OccurredOn: @event.OccurredOn,
-    Source: @event.Source,
-    EventData: JsonUtil.AsString(@event),
-    Metadata: @event.Metadata
-);
+// Recommended: convert via DomainEventMapper (uses the builder internally)
+DomainEventData eventData = DomainEventMapper.ToData(@event);
 
-// Store eventData in database...
+// Or construct via the fluent builder
+var built = DomainEventDataBuilder
+    .Json("AccountCreated", @event)
+    .EventId(@event.Id)
+    .MetadataAsJson(@event.Metadata)
+    .Build();
+
+// Or construct directly (full control, common in test code)
+var direct = new DomainEventData(
+    Guid.NewGuid(),
+    "AccountCreated",
+    "application/json",
+    JsonSerializer.SerializeToUtf8Bytes(@event),
+    "{}"u8.ToArray()
+);
 ```
 
 **Notes:**
 - ✅ Immutable record type
-- ✅ JSON-serialized payload
-- ✅ Database-friendly structure
+- ✅ Byte arrays support any serialization format
+- ✅ JSON-aware equality (key order independent); hash code from `Id`/`EventType`/`ContentType`
 
 **Related:**
+- [DomainEventDataBuilder](#domaineventdatabuilder)
 - [DomainEventMapper](#domaineventmapper)
 - [EventStoreData](#eventstoredata)
+
+---
+
+#### DomainEventDataBuilder
+
+**Namespace:** `EzDdd.UseCase.Port.InOut`
+
+**Signature:**
+```csharp
+public class DomainEventDataBuilder
+{
+    public static DomainEventDataBuilder Json<T>(string eventType, T payload);
+    public static DomainEventDataBuilder Binary(string eventType, byte[] payload);
+
+    public DomainEventDataBuilder EventId(Guid id);
+    public DomainEventDataBuilder MetadataAsJson<T>(T metadata);
+    public DomainEventDataBuilder MetadataAsBytes(byte[] metadata);
+    public DomainEventData Build();
+}
+```
+
+**Description:**
+Fluent builder for constructing [DomainEventData](#domaineventdata) instances with smart defaults and automatic serialization. Start with a factory method (`Json` or `Binary`), optionally set the event ID and metadata, then call `Build()`.
+
+**Methods:**
+
+##### Json<T> (static factory)
+Creates a builder for a JSON-serialized payload; sets `ContentType` to `"application/json"` and serializes `payload` with System.Text.Json.
+
+##### Binary (static factory)
+Creates a builder for a pre-serialized binary payload (e.g., Avro, Protobuf); sets `ContentType` to `"application/octet-stream"`.
+
+##### EventId
+Sets the event ID (optional — defaults to `Guid.NewGuid()`).
+
+##### MetadataAsJson<T> / MetadataAsBytes
+Sets metadata as a JSON-serialized object or pre-serialized bytes (optional — defaults to `"{}"`).
+
+##### Build
+Builds the `DomainEventData`. Throws `InvalidOperationException` if no factory method was used.
+
+**Example:**
+```csharp
+// Minimal (event ID auto-generated, metadata defaults to "{}")
+var eventData = DomainEventDataBuilder
+    .Json("OrderCreated", orderEvent)
+    .Build();
+
+// With all options
+var eventData2 = DomainEventDataBuilder
+    .Json("MoneyDeposited", depositEvent)
+    .EventId(depositEvent.Id)
+    .MetadataAsJson(new Dictionary<string, string> { ["CorrelationId"] = "123" })
+    .Build();
+
+// Binary payload
+var eventData3 = DomainEventDataBuilder
+    .Binary("LegacyEvent", avroBytes)
+    .MetadataAsBytes(metadataBytes)
+    .Build();
+```
+
+**Notes:**
+- ✅ Auto-generates event ID and empty metadata when not provided
+- ✅ `ContentType` managed by the factory methods
+- ⚠️ Constructor is private — always start from `Json()` or `Binary()`
+
+**Related:**
+- [DomainEventData](#domaineventdata)
+- [DomainEventMapper](#domaineventmapper)
 
 ---
 
@@ -2107,54 +2366,63 @@ var eventData = new DomainEventData(
 ```csharp
 public static class DomainEventMapper
 {
-    public static Converter<IInternalDomainEvent, DomainEventData> ToData { get; }
-    public static Converter<DomainEventData, IInternalDomainEvent> ToDomain { get; }
+    public static DomainEventData ToData(IInternalDomainEvent @event);
+    public static IReadOnlyList<DomainEventData> ToData(IEnumerable<IInternalDomainEvent> events);
+
+    public static T ToDomain<T>(DomainEventData data)
+        where T : IInternalDomainEvent;
+    public static IReadOnlyList<T> ToDomain<T>(IEnumerable<DomainEventData> datas)
+        where T : IInternalDomainEvent;
 }
 ```
 
 **Description:**
-Static mapper providing converters between domain events and serialized event data.
+Static utility for converting between domain events and [DomainEventData](#domaineventdata). Event types must be registered with `DomainEventTypeMapper` before use.
 
-**Converters:**
+**Methods:**
 
 #### ToData
-Converts an IInternalDomainEvent to DomainEventData.
+Converts a domain event (or a collection of events) to `DomainEventData` for persistence. Serializes the event body and metadata as JSON via `DomainEventDataBuilder`.
+
+**Exceptions:**
+- `InvalidOperationException`: Serialization fails or event type not registered
 
 **Example:**
 ```csharp
 var @event = new AccountCreated(/* ... */);
 DomainEventData eventData = DomainEventMapper.ToData(@event);
+
+// Batch conversion
+IReadOnlyList<DomainEventData> dataList =
+    DomainEventMapper.ToData(aggregate.GetDomainEvents());
 ```
 
-#### ToDomain
-Converts a DomainEventData back to IInternalDomainEvent.
+#### ToDomain<T>
+Converts `DomainEventData` (or a collection) back to strongly-typed domain events. Resolves the CLR type via `DomainEventTypeMapper.GetType(data.EventType)`.
+
+**Exceptions:**
+- `InvalidOperationException`: Deserialization fails, event type not registered, or the deserialized event cannot be cast to `T`
 
 **Example:**
 ```csharp
-IInternalDomainEvent @event = DomainEventMapper.ToDomain(eventData);
-```
+AccountCreated @event = DomainEventMapper.ToDomain<AccountCreated>(eventData);
 
-**Usage:**
-```csharp
-// Serialization (for persistence)
-var events = aggregate.GetDomainEvents();
-var eventDataList = events.Select(DomainEventMapper.ToData).ToList();
-
-// Deserialization (for replay)
-var eventDataList = await LoadEventsFromDatabaseAsync(streamName);
-var events = eventDataList.Select(DomainEventMapper.ToDomain).ToList();
+// Deserialize a stream as the common interface type
+IReadOnlyList<IInternalDomainEvent> events =
+    DomainEventMapper.ToDomain<IInternalDomainEvent>(dataList);
 var aggregate = new Account(events);
 ```
 
 **Notes:**
 - ✅ Uses DomainEventTypeMapper for type resolution
-- ✅ Uses JsonUtil for serialization
-- ✅ Thread-safe static converters
+- ✅ System.Text.Json serialization (no third-party dependencies)
+- ✅ Thread-safe static methods
+- ⚠️ Register all event types at startup before mapping
 
 **Related:**
 - [DomainEventData](#domaineventdata)
 - [DomainEventTypeMapper](#domaineventtypemapper)
-- [EventStoreMapper](#eventstorem apper)
+- [EventStoreMapper](#eventstoremapper)
 
 ---
 
@@ -2164,46 +2432,48 @@ var aggregate = new Account(events);
 
 **Signature:**
 ```csharp
-public record InternalDomainEventDto(
-    Guid Id,
-    string EventType,
-    DateTimeOffset OccurredOn,
-    string Source,
-    string EventData,
-    Dictionary<string, string> Metadata
-);
+public class InternalDomainEventDto
+{
+    public Guid Id { get; set; }
+    public DateTimeOffset OccurredOn { get; set; }
+    public string BoundedContext { get; set; }
+    public string EventSimpleName { get; set; }
+    public string JsonEvent { get; set; }
+    public IDictionary<string, string> Metadata { get; set; }
+}
 ```
 
 **Description:**
-DTO record for internal domain event serialization. Similar to DomainEventData but with mutable Metadata for deserialization compatibility.
+Mutable DTO for transmitting internal domain events to frontends or external systems (REST responses, WebSocket/SignalR notifications, event log queries). The structure matches Java ezddd's `InternalDomainEventDto` for cross-platform integration.
 
 **Properties:**
-- `Id`: Event unique identifier
-- `EventType`: Event type name
-- `OccurredOn`: Timestamp
-- `Source`: Aggregate identifier
-- `EventData`: JSON-serialized payload
-- `Metadata`: Mutable metadata dictionary
+- `Id`: Event unique identifier (not aggregate ID)
+- `OccurredOn`: Timestamp when the event occurred (UTC with timezone)
+- `BoundedContext`: Bounded context name where the event originated (e.g., `"banking"`)
+- `EventSimpleName`: Simple event type name without namespace (e.g., `"MoneyDeposited"`)
+- `JsonEvent`: Event data serialized as a JSON string
+- `Metadata`: Key-value string metadata (userId, correlationId, etc.)
 
 **Example:**
 ```csharp
-var dto = new InternalDomainEventDto(
-    Id: Guid.NewGuid(),
-    EventType: "AccountCreated",
-    OccurredOn: DateTimeOffset.UtcNow,
-    Source: "account-123",
-    EventData: jsonPayload,
-    Metadata: new Dictionary<string, string>
+var dto = new InternalDomainEventDto
+{
+    Id = domainEvent.Id,
+    OccurredOn = domainEvent.OccurredOn,
+    BoundedContext = "banking",
+    EventSimpleName = "AccountCreated",
+    JsonEvent = JsonUtil.AsString(domainEvent),
+    Metadata = new Dictionary<string, string>
     {
         { "CorrelationId", correlationId }
     }
-);
+};
 ```
 
 **Notes:**
-- ✅ Record type for immutability
-- ✅ Mutable Metadata for deserialization
-- ⚠️ Internal use (not exposed to domain)
+- ✅ Mutable properties for easy JSON (de)serialization
+- ✅ Cross-platform compatible with Java ezddd
+- ⚠️ DTO for the boundary — not a substitute for strongly-typed domain events
 
 **Related:**
 - [DomainEventData](#domaineventdata)
@@ -2219,48 +2489,57 @@ var dto = new InternalDomainEventDto(
 
 **Signature:**
 ```csharp
-public sealed record EventStoreData<TId>(
-    TId Id,
-    long Version,
-    string StreamName,
-    IReadOnlyList<IInternalDomainEvent> Events
-) : IStoreData<TId>;
+public class EventStoreData<TId> : IStoreData<TId>
+{
+    public TId Id { get; set; }
+    public long Version { get; set; }
+    public string StreamName { get; set; }
+    public IReadOnlyList<IDomainEvent> Events { get; set; }
+
+    public long GetOptimisticLockVersion(); // Version + Events.Count
+}
 ```
 
 **Description:**
-Immutable record representing event stream data for event sourcing. Contains all events for a single aggregate instance.
+Data structure for event sourcing persistence. Stores only events (no aggregate state); the aggregate is reconstructed by replaying the events through its event replay constructor.
 
 **Type Parameters:**
 - `TId`: The type of identifier
 
 **Properties:**
 - `Id`: Aggregate identifier
-- `Version`: Current version (number of events - 1)
+- `Version`: Number of events persisted before the current batch (used for optimistic locking)
 - `StreamName`: Event stream name (format: `{category}-{id}`)
-- `Events`: All events in the stream
+- `Events`: Domain events, in chronological order
+
+**Methods:**
+
+#### GetOptimisticLockVersion
+Returns `Version + Events.Count` — the expected total number of persisted events after the current batch is saved. Used by the event store to detect concurrent modifications.
 
 **Example:**
 ```csharp
-var eventStoreData = new EventStoreData<Guid>(
-    Id: accountId,
-    Version: 2, // 3 events total (0, 1, 2)
-    StreamName: "account-550e8400-e29b-41d4-a716-446655440000",
-    Events: new List<IInternalDomainEvent>
+var eventStoreData = new EventStoreData<Guid>
+{
+    Id = accountId,
+    Version = 2, // 3 events already persisted (versions 0, 1, 2 → Version = 2)
+    StreamName = "account-550e8400-e29b-41d4-a716-446655440000",
+    Events = new List<IDomainEvent>
     {
-        new AccountCreated(/* ... */),
-        new MoneyDeposited(/* ... */),
-        new MoneyDeposited(/* ... */)
-    }
-);
+        new MoneyDeposited(/* ... */), // new, not-yet-persisted event
+    },
+};
+
+long expected = eventStoreData.GetOptimisticLockVersion(); // 3
 ```
 
 **Notes:**
-- ✅ Immutable record type
+- ✅ Mutable data class with object-initializer construction
 - ✅ Used by IRepositoryPeer<EventStoreData<TId>, TId>
-- ✅ Contains complete event history for aggregate
+- ✅ On save, `Events` contains the aggregate's *pending* events; the peer appends them to the stored stream
 
 **Related:**
-- [EventStoreMapper](#eventstorem apper)
+- [EventStoreMapper](#eventstoremapper)
 - [EsRepository](#esrepository)
 - [IStoreData](#istoredata)
 
@@ -2274,67 +2553,50 @@ var eventStoreData = new EventStoreData<Guid>(
 ```csharp
 public static class EventStoreMapper
 {
-    public static Converter<EventStoreData<TId>, TAggregate> ToDomain<TAggregate, TId>()
-        where TAggregate : EsAggregateRoot<TId, IInternalDomainEvent>;
+    public static EventStoreData<TId> ToData<TId>(
+        EsAggregateRoot<TId, IInternalDomainEvent> aggregate);
 
-    public static Converter<TAggregate, EventStoreData<TId>> ToData<TAggregate, TId>()
-        where TAggregate : EsAggregateRoot<TId, IInternalDomainEvent>;
+    public static T ToDomain<T, TId>(EventStoreData<TId> data)
+        where T : EsAggregateRoot<TId, IInternalDomainEvent>;
+        // Always throws NotSupportedException — see below
 }
 ```
 
 **Description:**
-Static mapper providing generic converters between event-sourced aggregates and event store data.
+Static utility for converting event-sourced aggregates to `EventStoreData` for persistence. The reverse direction is intentionally **not supported**: event-sourced aggregates are reconstructed through their event replay constructor (which enforces the R1/R2/R3 invariant rules), never through state hydration.
 
 **Methods:**
 
-#### ToDomain<TAggregate, TId>
-Creates a converter from EventStoreData to aggregate (via event replay).
-
-**Returns:** Converter<EventStoreData<TId>, TAggregate>
+#### ToData<TId>
+Converts an aggregate to `EventStoreData` — takes a defensive copy of the aggregate's pending domain events plus `Id`, `Version`, and `GetStreamName()`.
 
 **Example:**
 ```csharp
-var converter = EventStoreMapper.ToDomain<Account, Guid>();
-Account account = converter(eventStoreData);
+var account = new BankAccount(accountId, "Jane Doe", new Money(500m));
+account.Deposit(new Money(200m));
+
+EventStoreData<AccountId> data = EventStoreMapper.ToData(account);
+// data.Events: [AccountCreated, MoneyDeposited]
+// data.StreamName: "account-{accountId}"
 ```
 
-#### ToData<TAggregate, TId>
-Creates a converter from aggregate to EventStoreData (extracts events).
-
-**Returns:** Converter<TAggregate, EventStoreData<TId>>
+#### ToDomain<T, TId>
+**Always throws `NotSupportedException`.** Exists only for type-signature symmetry; use the aggregate's event replay constructor instead.
 
 **Example:**
 ```csharp
-var converter = EventStoreMapper.ToData<Account, Guid>();
-EventStoreData<Guid> data = converter(account);
-```
+// ❌ WRONG: throws NotSupportedException
+var aggregate = EventStoreMapper.ToDomain<BankAccount, AccountId>(data);
 
-**Usage:**
-```csharp
-// In EsRepository:
-private readonly Converter<EventStoreData<TId>, TAggregate> _toDomain
-    = EventStoreMapper.ToDomain<TAggregate, TId>();
-private readonly Converter<TAggregate, EventStoreData<TId>> _toData
-    = EventStoreMapper.ToData<TAggregate, TId>();
-
-public async Task<TAggregate?> FindByIdAsync(TId id)
-{
-    var data = await _peer.FindByIdAsync(id);
-    return data == null ? null : _toDomain(data);
-}
-
-public async Task SaveAsync(TAggregate aggregate)
-{
-    var data = _toData(aggregate);
-    await _peer.SaveAsync(data);
-    aggregate.ClearDomainEvents();
-}
+// ✅ CORRECT: event replay constructor
+var internalEvents = data.Events.Cast<IInternalDomainEvent>();
+var reconstructed = new BankAccount(internalEvents);
 ```
 
 **Notes:**
-- ✅ Generic converters for any aggregate type
-- ✅ Handles event replay automatically
-- ✅ Used internally by EsRepository
+- ✅ One-way mapping by design (save direction only)
+- ✅ Defensive copy of the event list
+- ✅ Used internally by EsRepository (which reconstructs via the replay constructor)
 
 **Related:**
 - [EventStoreData](#eventstoredata)
@@ -2412,7 +2674,7 @@ Constructor reflection information is cached per aggregate type using Concurrent
 **Related:**
 - [EsAggregateRoot](#esaggregateroot)
 - [EventStoreData](#eventstoredata)
-- [EventStoreMapper](#eventstorem apper)
+- [EventStoreMapper](#eventstoremapper)
 - [IRepository](#irepository)
 
 ---
@@ -2425,7 +2687,7 @@ Constructor reflection information is cached per aggregate type using Concurrent
 
 **Signature:**
 ```csharp
-public interface IOutboxData<out TId> : IStoreData<TId>
+public interface IOutboxData<TId> : IStoreData<TId>
 {
     // Marker interface extending IStoreData for state sourcing
 }
@@ -2448,8 +2710,8 @@ public class BankAccountOutboxData : IOutboxData<Guid>
     public bool IsDeleted { get; set; }
 
     // Domain events (Transactional Outbox)
-    public IReadOnlyList<IInternalDomainEvent> Events { get; set; }
-        = Array.Empty<IInternalDomainEvent>();
+    public IReadOnlyList<IDomainEvent> Events { get; set; }
+        = Array.Empty<IDomainEvent>();
 }
 ```
 
@@ -2471,59 +2733,63 @@ public class BankAccountOutboxData : IOutboxData<Guid>
 
 **Signature:**
 ```csharp
-public static class OutboxMapper
+public abstract class OutboxMapper<TAggregate, TData, TId>
+    where TAggregate : AggregateRoot<TId, IInternalDomainEvent>
+    where TData : IOutboxData<TId>
 {
-    public static Converter<TData, TAggregate> ToDomain<TData, TAggregate, TId>()
-        where TData : IOutboxData<TId>
-        where TAggregate : AggregateRoot<TId, IInternalDomainEvent>;
-
-    public static Converter<TAggregate, TData> ToData<TData, TAggregate, TId>()
-        where TData : IOutboxData<TId>, new()
-        where TAggregate : AggregateRoot<TId, IInternalDomainEvent>;
+    public abstract TData ToData(TAggregate aggregate);
+    public abstract TAggregate ToDomain(TData data);
 }
 ```
 
 **Description:**
-Static mapper providing generic converters between state-sourced aggregates and outbox data.
+Abstract base class for mapping between state-sourced aggregates and outbox data. Applications subclass it per aggregate and implement both directions; `OutboxRepository` receives the mapper via constructor injection.
+
+**Type Parameters:**
+- `TAggregate`: The aggregate type
+- `TData`: The outbox data type (must implement `IOutboxData<TId>`)
+- `TId`: The type of identifier
 
 **Methods:**
 
-#### ToDomain<TData, TAggregate, TId>
-Creates a converter from outbox data to aggregate (via parameterless constructor + reflection).
+#### ToData (abstract)
+Converts an aggregate to outbox data: copy state, set `Id`/`Version`/`StreamName`, and include the pending events from `GetDomainEvents()`.
 
-**Returns:** Converter<TData, TAggregate>
-
-#### ToData<TData, TAggregate, TId>
-Creates a converter from aggregate to outbox data (extracts state + events).
-
-**Returns:** Converter<TAggregate, TData>
+#### ToDomain (abstract)
+Converts outbox data back to an aggregate: typically create the aggregate via a parameterless constructor and restore state (public setters, or reflection for protected members like `Id`/`Version`). Domain events are not restored.
 
 **Example:**
 ```csharp
-// In OutboxRepository:
-private readonly Converter<BankAccountOutboxData, BankAccount> _toDomain
-    = OutboxMapper.ToDomain<BankAccountOutboxData, BankAccount, Guid>();
-private readonly Converter<BankAccount, BankAccountOutboxData> _toData
-    = OutboxMapper.ToData<BankAccountOutboxData, BankAccount, Guid>();
-
-public async Task<BankAccount?> FindByIdAsync(Guid id)
+public sealed class BankAccountMapper
+    : OutboxMapper<BankAccount, BankAccountOutboxData, Guid>
 {
-    var data = await _peer.FindByIdAsync(id);
-    return data == null ? null : _toDomain(data);
-}
+    public override BankAccountOutboxData ToData(BankAccount aggregate)
+    {
+        return new BankAccountOutboxData
+        {
+            Id = aggregate.Id,
+            Version = aggregate.Version,
+            StreamName = $"account-{aggregate.Id}",
+            Owner = aggregate.Owner,
+            Balance = aggregate.Balance,
+            Events = aggregate.GetDomainEvents().ToList(),
+        };
+    }
 
-public async Task SaveAsync(BankAccount aggregate)
-{
-    var data = _toData(aggregate);
-    await _peer.SaveAsync(data);
-    aggregate.ClearDomainEvents();
+    public override BankAccount ToDomain(BankAccountOutboxData data)
+    {
+        var account = new BankAccount(); // parameterless constructor
+        // Restore state (use reflection for protected Id/Version if needed)
+        // ...
+        return account;
+    }
 }
 ```
 
 **Notes:**
-- ✅ Generic converters for any aggregate type
-- ✅ Uses reflection to copy state
-- ✅ Extracts events for outbox pattern
+- ✅ Explicit, per-aggregate mapping (no hidden reflection magic in the framework)
+- ✅ `ToDomain` returns an aggregate with an empty event collection
+- ⚠️ Aggregate needs a parameterless constructor for reconstruction
 
 **Related:**
 - [IOutboxData](#ioutboxdata)
@@ -2537,12 +2803,14 @@ public async Task SaveAsync(BankAccount aggregate)
 
 **Signature:**
 ```csharp
-public class OutboxRepository<TAggregate, TId>
+public class OutboxRepository<TAggregate, TData, TId>
     : IRepository<TAggregate, TId, IInternalDomainEvent>
     where TAggregate : AggregateRoot<TId, IInternalDomainEvent>
+    where TData : IOutboxData<TId>
 {
-    public OutboxRepository(IRepositoryPeer<TData, TId> peer)
-        where TData : IOutboxData<TId>;
+    public OutboxRepository(
+        IRepositoryPeer<TData, TId> peer,
+        OutboxMapper<TAggregate, TData, TId> mapper);
 
     public async Task<TAggregate?> FindByIdAsync(TId id);
     public async Task SaveAsync(TAggregate aggregate);
@@ -2551,10 +2819,11 @@ public class OutboxRepository<TAggregate, TId>
 ```
 
 **Description:**
-Generic state sourcing repository with Transactional Outbox pattern. Persists both current aggregate state AND domain events atomically in the same transaction.
+Generic state sourcing repository with Transactional Outbox pattern. Persists both current aggregate state AND domain events atomically in the same transaction. Conversion between aggregate and data is delegated to the injected [OutboxMapper](#outboxmapper).
 
 **Type Parameters:**
 - `TAggregate`: The aggregate type
+- `TData`: The outbox data type (must implement `IOutboxData<TId>`)
 - `TId`: The type of identifier
 
 **Transactional Outbox Pattern:**
@@ -2567,7 +2836,8 @@ Generic state sourcing repository with Transactional Outbox pattern. Persists bo
 ```csharp
 // Setup
 var outboxPeer = new SqlBankAccountOutboxPeer();
-var repository = new OutboxRepository<BankAccount, Guid>(outboxPeer);
+var mapper = new BankAccountMapper(); // OutboxMapper<BankAccount, BankAccountOutboxData, Guid>
+var repository = new OutboxRepository<BankAccount, BankAccountOutboxData, Guid>(outboxPeer, mapper);
 
 // Save aggregate (stores state + events)
 var account = new BankAccount(accountId, "Jane Doe", 2000m);
@@ -2595,7 +2865,8 @@ var loaded = await repository.FindByIdAsync(accountId);
 **Notes:**
 - ✅ Generic implementation for any aggregate
 - ✅ Atomic persistence via transaction at IRepositoryPeer layer
-- ✅ Compatible with both event-sourced and state-sourced aggregates
+- ✅ Soft-delete filtering: `FindByIdAsync` returns `null` when the reconstructed aggregate has `IsDeleted == true` (the row stays in storage so its events can still be relayed)
+- ✅ `DeleteAsync` performs a physical delete; use a destruction event + `SaveAsync` for soft delete
 
 **Related:**
 - [IOutboxData](#ioutboxdata)
@@ -2604,308 +2875,136 @@ var loaded = await repository.FindByIdAsync(accountId);
 
 ---
 
-### Message Bus
+### Messaging
 
-#### IMessageBus
+> **Removed APIs**: The in-process message bus and producer types that earlier pre-release versions shipped (`IMessageBus<TMessage>`, `IMessageProducer`, `BlockingMessageBus<TMessage>`, `EventBusProducer`, `GenericReactor<TMessage>`) are **no longer part of the core packages**. Upstream Java ezddd 6.0.0 moved the producer abstraction to the external `ezddd-gateway` artifact; the .NET counterpart is deferred to the ezDDD.Gateway package (post-1.0). See [ADR-0029](../adr/0029-messageproducer-removal-gateway-deferral.md).
+>
+> Event publication now follows the **Relay pattern** (Transactional Outbox): a background relay polls the event store and forwards stored events to reactors or a message broker. A reference implementation, including a minimal example-scoped producer abstraction, lives in [`examples/EventInfrastructure`](../../examples/EventInfrastructure/EventStoreRelay.cs).
+
+#### IExternalDomainEventPublisher
 
 **Namespace:** `EzDdd.UseCase.Port.InOut.Messaging`
 
 **Signature:**
 ```csharp
-public interface IMessageBus<TMessage> : IDisposable
+public interface IExternalDomainEventPublisher<in TEvent>
+    where TEvent : IExternalDomainEvent
 {
-    Task ProduceAsync(TMessage message);
-    void Subscribe(Func<TMessage, Task> reactor);
+    Task PublishAsync(TEvent @event);
 }
 ```
 
 **Description:**
-Intra-process message bus for domain event distribution. Supports asynchronous message production and subscription-based consumption.
+Out-port abstraction for publishing external domain events (integration events) to external systems, such as a message broker (e.g., Kafka), downstream bounded contexts, or front-ends. A typical publisher is invoked by an [INotifier<TInput>](#inotifier), which converts internal domain events into `IExternalDomainEvent` instances before dispatching them outward. Keeping publication behind this out-port upholds the cross-layer principle of Clean Architecture: use cases depend on the abstraction, while concrete messaging adapters live in the frameworks and drivers layer.
 
 **Type Parameters:**
-- `TMessage`: The type of messages (typically IInternalDomainEvent or IExternalDomainEvent)
+- `TEvent`: The type of external domain event this publisher publishes (contravariant, must implement `IExternalDomainEvent`)
 
 **Methods:**
 
-#### ProduceAsync
-Publishes a message to all subscribers asynchronously.
+#### PublishAsync
+Publishes the given external domain event to an external system asynchronously.
 
 **Parameters:**
-- `message` (TMessage): The message to publish
-
-**Returns:** Task - Async operation
-
-#### Subscribe
-Registers a reactor function to receive messages.
-
-**Parameters:**
-- `reactor` (Func<TMessage, Task>): Async function that processes messages
-
-**Example:**
-```csharp
-// Setup message bus
-IMessageBus<IInternalDomainEvent> messageBus =
-    new BlockingMessageBus<IInternalDomainEvent>();
-
-// Subscribe reactors
-messageBus.Subscribe(async @event =>
-{
-    if (@event is AccountCreated accountCreated)
-    {
-        await SendWelcomeEmail(accountCreated.Owner);
-    }
-});
-
-messageBus.Subscribe(async @event =>
-{
-    if (@event is MoneyDeposited deposited)
-    {
-        await UpdateBalanceProjection(deposited);
-    }
-});
-
-// Produce events
-await messageBus.ProduceAsync(new AccountCreated(/* ... */));
-```
-
-**Notes:**
-- ✅ In-process pub/sub (not distributed)
-- ✅ Asynchronous message handling
-- ✅ Multiple subscribers supported
-- ✅ Observer pattern
-
-**Related:**
-- [BlockingMessageBus](#blockingmessagebus)
-- [IReactor](#ireactor)
-- [GenericReactor](#genericreactor)
-
----
-
-#### IMessageProducer
-
-**Namespace:** `EzDdd.UseCase.Port.InOut.Messaging`
-
-**Signature:**
-```csharp
-public interface IMessageProducer : IDisposable
-{
-    Task ProduceAsync(IInternalDomainEvent @event);
-}
-```
-
-**Description:**
-Interface for producing internal domain events (for IMessageBus) or external events (for external message brokers).
-
-**Methods:**
-
-#### ProduceAsync
-Produces a domain event.
-
-**Parameters:**
-- `@event` (IInternalDomainEvent): The event to produce
+- `@event` (TEvent): The external domain event to publish
 
 **Returns:** Task - Async operation
 
 **Example:**
 ```csharp
-public class AccountEventProducer : IMessageProducer
+// Adapter in the frameworks and drivers layer
+public class KafkaAccountEventPublisher
+    : IExternalDomainEventPublisher<AccountCreatedIntegrationEvent>
 {
-    private readonly IMessageBus<IInternalDomainEvent> _messageBus;
+    private readonly IKafkaProducer _producer;
 
-    public async Task ProduceAsync(IInternalDomainEvent @event)
+    public KafkaAccountEventPublisher(IKafkaProducer producer)
     {
-        await _messageBus.ProduceAsync(@event);
+        _producer = producer;
     }
 
-    public void Dispose()
+    public async Task PublishAsync(AccountCreatedIntegrationEvent @event)
     {
-        // Cleanup if needed
+        await _producer.SendAsync("banking.account-created", @event);
+    }
+}
+
+// Used from a notifier in the use cases layer
+public class AccountNotifier : INotifier<DomainEventData>
+{
+    private readonly IExternalDomainEventPublisher<AccountCreatedIntegrationEvent> _publisher;
+
+    public AccountNotifier(
+        IExternalDomainEventPublisher<AccountCreatedIntegrationEvent> publisher)
+    {
+        _publisher = publisher;
+    }
+
+    public async Task ExecuteAsync(DomainEventData input)
+    {
+        var internalEvent = DomainEventMapper.ToDomain<AccountCreated>(input);
+        var integrationEvent = new AccountCreatedIntegrationEvent(
+            internalEvent.Id,
+            internalEvent.OccurredOn,
+            internalEvent.Source,
+            internalEvent.AccountNumber,
+            internalEvent.Owner,
+            internalEvent.Metadata);
+
+        await _publisher.PublishAsync(integrationEvent);
     }
 }
 ```
 
 **Notes:**
-- ✅ Abstraction for event production
-- ✅ Supports both internal and external messaging
-- ✅ IDisposable for resource cleanup
+- ✅ Asynchronous (publishing to external systems is I/O-bound)
+- ✅ Corresponds to Java `ExternalDomainEventPublisher.publish(E)`
+- ✅ Concrete adapters (Kafka, RabbitMQ, etc.) live outside the core packages
 
 **Related:**
-- [IMessageBus](#imessagebus)
-- [EventBusProducer](#eventbusproducer)
-
----
-
-#### BlockingMessageBus
-
-**Namespace:** `EzDdd.UseCase.Port.InOut.Messaging`
-
-**Signature:**
-```csharp
-public sealed class BlockingMessageBus<TMessage> : IMessageBus<TMessage>
-{
-    public async Task ProduceAsync(TMessage message);
-    public void Subscribe(Func<TMessage, Task> reactor);
-    public void Dispose();
-}
-```
-
-**Description:**
-Blocking implementation of IMessageBus. Messages are delivered to all subscribers before ProduceAsync returns. Thread-safe via snapshot-based subscription list.
-
-**Type Parameters:**
-- `TMessage`: The type of messages
-
-**Characteristics:**
-- **Blocking**: ProduceAsync waits for all reactors to complete
-- **Thread-safe**: Subscription list snapshot prevents concurrent modification
-- **Order guaranteed**: Reactors execute in subscription order
-- **Error handling**: Reactor exceptions logged but don't stop other reactors
-
-**Example:**
-```csharp
-var messageBus = new BlockingMessageBus<IInternalDomainEvent>();
-
-// Subscribe multiple reactors
-messageBus.Subscribe(async @event =>
-{
-    Console.WriteLine($"Reactor 1: {@event.GetType().Name}");
-    await Task.Delay(100);
-});
-
-messageBus.Subscribe(async @event =>
-{
-    Console.WriteLine($"Reactor 2: {@event.GetType().Name}");
-    await Task.Delay(50);
-});
-
-// Produce event - blocks until both reactors complete
-await messageBus.ProduceAsync(new AccountCreated(/* ... */));
-Console.WriteLine("All reactors completed");
-```
-
-**Notes:**
-- ✅ Synchronous delivery (blocking)
-- ✅ Thread-safe subscription management
-- ✅ Exception isolation per reactor
-- ⚠️ Performance scales with number of reactors
-
-**Related:**
-- [IMessageBus](#imessagebus)
-- [GenericReactor](#genericreactor)
-
----
-
-#### EventBusProducer
-
-**Namespace:** `EzDdd.UseCase.Port.InOut.Messaging`
-
-**Signature:**
-```csharp
-public sealed class EventBusProducer : IMessageProducer
-{
-    public EventBusProducer(IMessageBus<IExternalDomainEvent> messageBus);
-
-    public async Task ProduceAsync(IInternalDomainEvent @event);
-    public void Dispose();
-}
-```
-
-**Description:**
-Adapter that converts internal domain events to external domain events and publishes them to an external message bus. Bridges internal and external event systems.
-
-**Constructor:**
-**Parameters:**
-- `messageBus` (IMessageBus<IExternalDomainEvent>): The external event message bus
-
-**Example:**
-```csharp
-// Setup
-var externalMessageBus = new RabbitMqMessageBus();
-var eventBusProducer = new EventBusProducer(externalMessageBus);
-
-// Produce internal event (automatically converted to external)
-var accountCreated = new AccountCreated(/* internal event */);
-await eventBusProducer.ProduceAsync(accountCreated);
-
-// External systems receive AccountCreatedIntegrationEvent
-```
-
-**Conversion Strategy:**
-- Maps internal events to external events (integration events)
-- Preserves event metadata
-- Suitable for cross-bounded-context communication
-
-**Notes:**
-- ✅ Adapter pattern for internal → external event conversion
-- ✅ Used with OutboxRepository for reliable event publishing
-- ✅ IDisposable for cleanup
-
-**Related:**
-- [IMessageProducer](#imessageproducer)
 - [IExternalDomainEvent](#iexternaldomainevent)
-- [IInternalDomainEvent](#iinternaldomainevent)
+- [INotifier<TInput>](#inotifier)
+- [IReactor<TInput>](#ireactor)
 
 ---
 
-#### GenericReactor
+#### PostEventFailureException
 
-**Namespace:** `EzDdd.UseCase.Port.InOut.Messaging`
+**Namespace:** `EzDdd.UseCase.Exceptions`
 
 **Signature:**
 ```csharp
-public sealed class GenericReactor<TMessage> : IReactor
+public class PostEventFailureException : Exception
 {
-    public GenericReactor(
-        TMessage message,
-        Func<TMessage, Task> handler);
-
-    public async Task ExecuteAsync();
+    public PostEventFailureException();
+    public PostEventFailureException(string message);
+    public PostEventFailureException(string message, Exception innerException);
 }
 ```
 
 **Description:**
-Generic implementation of IReactor that wraps a message and handler function. Simplifies creating reactors from lambda expressions.
-
-**Type Parameters:**
-- `TMessage`: The type of message
-
-**Constructor:**
-**Parameters:**
-- `message` (TMessage): The message to react to
-- `handler` (Func<TMessage, Task>): Async handler function
+Exception thrown when a message producer fails to post a message to the message bus. Wraps infrastructure-level failures from message broker clients (network loss, broker unavailable, serialization or auth failures) behind a consistent exception type.
 
 **Example:**
 ```csharp
-// Create reactor from lambda
-var accountCreated = new AccountCreated(/* ... */);
-var reactor = new GenericReactor<AccountCreated>(
-    accountCreated,
-    async evt => await SendWelcomeEmail(evt.Owner));
-
-// Execute reactor
-await reactor.ExecuteAsync();
-
-// Or subscribe to message bus
-messageBus.Subscribe(async @event =>
+try
 {
-    if (@event is AccountCreated created)
-    {
-        var reactor = new GenericReactor<AccountCreated>(
-            created,
-            async evt => await SendWelcomeEmail(evt.Owner));
-        await reactor.ExecuteAsync();
-    }
-});
+    await eventProducer.PostAsync(eventData);
+}
+catch (PostEventFailureException ex)
+{
+    _logger.LogError(ex, "Failed to publish event to message bus");
+    // Handle failure (retry, compensate, alert)
+}
 ```
 
 **Notes:**
-- ✅ Simplifies reactor creation
-- ✅ Generic for any message type
-- ✅ Wraps lambda expressions as IReactor
+- ✅ Infrastructure-level exception (relay / producer adapters)
+- ✅ Wrap broker client exceptions as the inner exception
 
 **Related:**
-- [IReactor](#ireactor)
-- [IMessageBus](#imessagebus)
+- [IExternalDomainEventPublisher](#iexternaldomaineventpublisher)
+- [RepositoryPeerSaveException](#repositorypeersaveexception)
 
 ---
 
@@ -3013,20 +3112,23 @@ public class CreateAccountCommand
 
 **Signature:**
 ```csharp
-public interface IInquiry<in TInput, TOutput> : IUseCase<TInput, TOutput>
-    where TInput : IInquiryInput
-    where TOutput : CqrsOutput<TOutput>, new()
+public interface IInquiry<in TInput, TOutput>
 {
-    // Marker interface - inherits ExecuteAsync from IUseCase
+    Task<TOutput> QueryAsync(TInput input);
 }
 ```
 
 **Description:**
-Validation queries usable within commands. Inquiries are read-only operations that validate conditions before command execution.
+Validation queries usable within commands. Inquiries are read-only operations that validate conditions before command execution. Intentionally independent of `IUseCase` (no `ExecuteAsync`, no constraints) to avoid use case infrastructure overhead for quick validation checks; by convention inputs implement [IInquiryInput](#iinquiryinput).
 
 **Type Parameters:**
-- `TInput`: The input type (must extend IInquiryInput)
-- `TOutput`: The output type
+- `TInput`: The input type (contravariant; conventionally an `IInquiryInput`)
+- `TOutput`: The output type (unconstrained)
+
+**Methods:**
+
+#### QueryAsync
+Executes the inquiry and returns the result.
 
 **Example:**
 ```csharp
@@ -3050,11 +3152,10 @@ public class CheckAccountExistsInquiry
 {
     private readonly IArchive<AccountReadModel, string> _archive;
 
-    public async Task<CheckAccountExistsOutput> ExecuteAsync(
+    public async Task<CheckAccountExistsOutput> QueryAsync(
         CheckAccountExistsInput input)
     {
-        var account = await _archive.FindByAccountNumberAsync(
-            input.AccountNumber);
+        var account = await _archive.FindByIdAsync(input.AccountNumber);
 
         return CheckAccountExistsOutput.Create()
             .SetExists(account != null)
@@ -3070,7 +3171,7 @@ public class CreateAccountCommand : ICommand<CreateAccountInput, CreateAccountOu
     public async Task<CreateAccountOutput> ExecuteAsync(CreateAccountInput input)
     {
         // Validate before creating aggregate
-        var checkResult = await _checkExists.ExecuteAsync(
+        var checkResult = await _checkExists.QueryAsync(
             new CheckAccountExistsInput(input.AccountNumber));
 
         if (checkResult.Exists)
@@ -3089,6 +3190,7 @@ public class CreateAccountCommand : ICommand<CreateAccountInput, CreateAccountOu
 - ✅ Read-only validation queries
 - ✅ Used within commands for validation
 - ✅ Access read models via IArchive
+- ✅ Own `QueryAsync` contract — NOT an `IUseCase` (no `ExecuteAsync`)
 
 **Related:**
 - [IInquiryInput](#iinquiryinput)
@@ -3103,14 +3205,14 @@ public class CreateAccountCommand : ICommand<CreateAccountInput, CreateAccountOu
 
 **Signature:**
 ```csharp
-public interface IInquiryInput : IInput
+public interface IInquiryInput
 {
-    // Marker interface for inquiry inputs
+    // Pure marker interface - no methods
 }
 ```
 
 **Description:**
-Marker interface for inputs to validation inquiries.
+Marker interface for inputs to validation inquiries. Standalone marker — it does **not** extend `IInput` (inquiries are independent of the use case infrastructure).
 
 **Example:**
 ```csharp
@@ -3127,7 +3229,7 @@ public record ValidateTransferInput(
 
 **Notes:**
 - ✅ Semantic marker for inquiry inputs
-- ✅ Extends IInput
+- ✅ Standalone marker (does not extend IInput)
 
 **Related:**
 - [IInquiry](#iinquiry)
@@ -3237,20 +3339,24 @@ public class GetAccountSummaryQuery
 
 **Signature:**
 ```csharp
-public interface IProjection<in TInput, TOutput> : IUseCase<TInput, TOutput>
+public interface IProjection<in TInput, TOutput>
     where TInput : IProjectionInput
-    where TOutput : CqrsOutput<TOutput>, new()
 {
-    // Marker interface - inherits ExecuteAsync from IUseCase
+    Task<TOutput> QueryAsync(TInput input);
 }
 ```
 
 **Description:**
-Read model builder that generates view models from query database. Projections transform raw read model data into presentation-friendly formats.
+Read model builder that generates view models from the query database. Projections transform raw read model data into presentation-friendly formats. Independent of `IUseCase`: it declares its own `QueryAsync` method.
 
 **Type Parameters:**
-- `TInput`: The input type (must extend IProjectionInput)
-- `TOutput`: The output type
+- `TInput`: The input type (must implement IProjectionInput)
+- `TOutput`: The output type (unconstrained)
+
+**Methods:**
+
+#### QueryAsync
+Executes the projection query to build a read model view.
 
 **Example:**
 ```csharp
@@ -3278,7 +3384,7 @@ public class AccountTransactionHistoryProjection
 {
     private readonly IArchive<TransactionReadModel, Guid> _archive;
 
-    public async Task<AccountTransactionHistoryOutput> ExecuteAsync(
+    public async Task<AccountTransactionHistoryOutput> QueryAsync(
         AccountTransactionHistoryInput input)
     {
         // Query raw read model data
@@ -3310,6 +3416,7 @@ public class AccountTransactionHistoryProjection
 - ✅ Builds complex view models
 - ✅ Transforms read model data
 - ✅ Used for reporting and analytics
+- ✅ Own `QueryAsync` contract — NOT an `IUseCase` (no `ExecuteAsync`)
 
 **Related:**
 - [IProjectionInput](#iprojectioninput)
@@ -3325,38 +3432,41 @@ public class AccountTransactionHistoryProjection
 
 **Signature:**
 ```csharp
-public interface IProjector
+public interface IProjector<in TInput> : IReactor<TInput>
 {
-    // Marker interface for background projector services
+    // Inherits Task ExecuteAsync(TInput input) from IReactor<TInput>
 }
 ```
 
 **Description:**
-Marker interface for background services that build and maintain read models. Projectors listen to domain events and update read models accordingly.
+A kind of [IReactor<TInput>](#ireactor) that writes read models in a query database. Projectors receive domain events published by the write model and project them into denormalized read models in [IArchive](#iarchive), keeping the query side eventually consistent with the write side. Formerly a non-generic marker interface; genericized in ADR-0028 to mirror upstream `Projector<Input> extends Reactor<Input>`.
+
+**Type Parameters:**
+- `TInput`: The type of input message (typically domain event data) this projector processes (contravariant)
+
+**CQRS Flow:**
+```
+Command → Aggregate → Events → Repository → Relay → Projector → Archive → Query
+```
 
 **Example:**
 ```csharp
-public class AccountSummaryProjector : IProjector
+public class AccountSummaryProjector : IProjector<DomainEventData>
 {
-    private readonly IMessageBus<IInternalDomainEvent> _messageBus;
     private readonly IArchive<AccountSummaryReadModel, Guid> _archive;
 
     public AccountSummaryProjector(
-        IMessageBus<IInternalDomainEvent> messageBus,
         IArchive<AccountSummaryReadModel, Guid> archive)
     {
-        _messageBus = messageBus;
         _archive = archive;
-
-        // Subscribe to domain events
-        _messageBus.Subscribe(async @event => await HandleEventAsync(@event));
     }
 
-    private async Task HandleEventAsync(IInternalDomainEvent @event)
+    public async Task ExecuteAsync(DomainEventData input)
     {
-        switch (@event)
+        switch (input.EventType)
         {
-            case AccountCreated created:
+            case "AccountCreated":
+                var created = DomainEventMapper.ToDomain<AccountCreated>(input);
                 await _archive.SaveAsync(new AccountSummaryReadModel
                 {
                     Id = Guid.Parse(created.Source),
@@ -3366,7 +3476,8 @@ public class AccountSummaryProjector : IProjector
                 });
                 break;
 
-            case MoneyDeposited deposited:
+            case "MoneyDeposited":
+                var deposited = DomainEventMapper.ToDomain<MoneyDeposited>(input);
                 var account = await _archive.FindByIdAsync(
                     Guid.Parse(deposited.Source));
                 if (account != null)
@@ -3379,20 +3490,89 @@ public class AccountSummaryProjector : IProjector
     }
 }
 
-// Startup configuration:
-services.AddSingleton<IProjector, AccountSummaryProjector>();
+// Startup configuration (events delivered by a relay; see
+// examples/EventInfrastructure for a reference relay implementation):
+services.AddSingleton<IProjector<DomainEventData>, AccountSummaryProjector>();
 ```
 
 **Notes:**
-- ✅ Background service for read model maintenance
-- ✅ Listens to domain events
+- ✅ Reactor for read model maintenance (event handling contract inherited from IReactor<TInput>)
+- ✅ Receives domain events from infrastructure (e.g., an event store relay)
 - ✅ Updates read models asynchronously
 - ✅ Maintains eventual consistency
+- ✅ Lifecycle (Start/Stop) stays an infrastructure concern — combine with `IHostedService`/`BackgroundService`
+- ⚠️ Handle events idempotently (same event processed twice yields same result)
 
 **Related:**
 - [IProjection](#iprojection)
-- [IMessageBus](#imessagebus)
+- [IReactor<TInput>](#ireactor)
+- [INotifier<TInput>](#inotifier)
 - [IArchive](#iarchive)
+
+---
+
+#### INotifier
+
+**Namespace:** `EzDdd.Cqrs.Query`
+
+**Signature:**
+```csharp
+public interface INotifier<in TInput> : IReactor<TInput>
+{
+    // Inherits Task ExecuteAsync(TInput input) from IReactor<TInput>
+}
+```
+
+**Description:**
+A kind of [IReactor<TInput>](#ireactor) that receives internal domain events, converts them into external domain events (integration events), and dispatches them through an out-port to front-ends, downstream bounded contexts, or external systems (such as Kafka), in order to notify others of aggregate state changes. The notifier upholds the cross-layer principle of Clean Architecture: objects from the entities layer must not leave the use cases layer and travel outward directly.
+
+**Type Parameters:**
+- `TInput`: The type of input message (typically internal domain event data) this notifier processes (contravariant)
+
+**Example:**
+```csharp
+public class AccountNotifier : INotifier<DomainEventData>
+{
+    private readonly IExternalDomainEventPublisher<AccountCreatedIntegrationEvent> _publisher;
+
+    public AccountNotifier(
+        IExternalDomainEventPublisher<AccountCreatedIntegrationEvent> publisher)
+    {
+        _publisher = publisher;
+    }
+
+    public async Task ExecuteAsync(DomainEventData input)
+    {
+        if (input.EventType != "AccountCreated")
+        {
+            return;
+        }
+
+        var internalEvent = DomainEventMapper.ToDomain<AccountCreated>(input);
+        var integrationEvent = new AccountCreatedIntegrationEvent(
+            internalEvent.Id,
+            internalEvent.OccurredOn,
+            internalEvent.Source,
+            internalEvent.AccountNumber,
+            internalEvent.Owner,
+            internalEvent.Metadata);
+
+        await _publisher.PublishAsync(integrationEvent);
+    }
+}
+```
+
+**Notes:**
+- ✅ Converts internal domain events to integration events at the layer boundary
+- ✅ Dispatches through IExternalDomainEventPublisher (out-port)
+- ✅ Mirrors upstream `Notifier<Input>` (since Java ezddd 5.0.0)
+- ⚠️ Handle events idempotently, like all reactors
+
+**Related:**
+- [IReactor<TInput>](#ireactor)
+- [IProjector<TInput>](#iprojector)
+- [IExternalDomainEventPublisher](#iexternaldomaineventpublisher)
+- [IExternalDomainEvent](#iexternaldomainevent)
 
 ---
 
@@ -3402,14 +3582,14 @@ services.AddSingleton<IProjector, AccountSummaryProjector>();
 
 **Signature:**
 ```csharp
-public interface IProjectionInput : IInput
+public interface IProjectionInput
 {
-    // Marker interface for projection inputs
+    // Pure marker interface - no methods
 }
 ```
 
 **Description:**
-Marker interface for inputs to projections.
+Marker interface for inputs to projections. Standalone marker — it does **not** extend `IInput` (projections are independent of the use case infrastructure).
 
 **Example:**
 ```csharp
@@ -3428,7 +3608,7 @@ public record CustomerOrderSummaryInput(
 
 **Notes:**
 - ✅ Semantic marker for projection inputs
-- ✅ Extends IInput
+- ✅ Standalone marker (does not extend IInput)
 
 **Related:**
 - [IProjection](#iprojection)
@@ -3671,4 +3851,4 @@ Self-referential generic with fluent builder API. The `T` parameter ensures that
 
 ---
 
-*Last updated: 2025-11-22*
+*Last updated: 2026-07-05*

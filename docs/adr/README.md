@@ -174,24 +174,6 @@ AGENTS.md
 
 ---
 
-## ADR Planning
-
-**28 ADRs planned** covering all major architectural decisions. See detailed planning in:
-
-📋 **[ADR_PLANNING.md](ADR_PLANNING.md)** - Complete ADR roadmap with priorities and dependencies
-
-**Planning Summary**:
-- **Priority 1**: Core Architecture (ADR-0001 to 0006) - Foundation (updated 2025-10-31)
-  - Includes uContract.NET integration for Design by Contract
-- **Priority 2**: Core DDD Patterns (ADR-0007 to 0011) - Tactical DDD
-- **Priority 3**: .NET Platform Adaptations (ADR-0012 to 0015) - Platform features
-- **Priority 4**: Implementation Details (ADR-0016 to 0019) - Technical choices
-- **Priority 5**: CQRS Specific (ADR-0020 to 0023) - CQRS patterns
-- **Priority 6**: Cross-Language Considerations (ADR-0024 to 0026) - Java vs .NET
-- **Priority 7**: Testing and Quality (ADR-0027 to 0028) - Test strategy
-
----
-
 ## ADR Index
 
 > This section will be updated as ADRs are created.
@@ -247,9 +229,9 @@ AGENTS.md
 
 ## Quality Assurance
 
-### ADR Maintenance Checklist
+### ADR Quality Checklist
 
-Before writing or updating any ADR, **consult the [ADR_MAINTENANCE_CHECKLIST.md](ADR_MAINTENANCE_CHECKLIST.md)** to avoid common issues:
+Before writing or updating any ADR, check for these common issues:
 
 - ✅ Generic constraint correctness (especially for aggregate types)
 - ✅ Cross-reference accuracy (verify ADR numbers exist)
@@ -286,12 +268,11 @@ done
 
 ### Adding a New ADR
 
-1. Check [ADR_PLANNING.md](ADR_PLANNING.md) for planned ADRs
-2. Copy `ADR.template.md` to `NNNN-your-title.md` (use next sequence number)
-3. Fill in all sections
-4. Set initial Status to "Proposed" or "Accepted"
-5. Update this README's [ADR Index](#adr-index)
-6. Follow the [maintenance workflow](#standard-workflow-after-decision-confirmation)
+1. Copy `ADR.template.md` to `NNNN-your-title.md` (use next sequence number)
+2. Fill in all sections
+3. Set initial Status to "Proposed" or "Accepted"
+4. Update this README's [ADR Index](#adr-index)
+5. Follow the [maintenance workflow](#standard-workflow-after-decision-confirmation)
 
 ### Updating ADR Status
 
@@ -312,9 +293,7 @@ done
 
 ## References
 
-- [ADR Planning Document](ADR_PLANNING.md) - Roadmap of planned ADRs
 - [ADR Template](ADR.template.md) - Standard ADR format
-- [ADR Maintenance Checklist](ADR_MAINTENANCE_CHECKLIST.md) - Quality guidelines
 - [AGENTS.md](../../AGENTS.md) - Development guidance
 - [Java ezddd](https://gitlab.com/TeddyChen/ezddd) - Original implementation
 - [uContract.NET ADRs](https://github.com/cwouyang/uContract.NET/tree/master/docs/adr) - Reference implementation

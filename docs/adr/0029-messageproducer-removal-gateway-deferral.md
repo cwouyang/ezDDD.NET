@@ -189,7 +189,7 @@ adds release overhead without present value; it can ship post-1.0 as a non-break
 - **Java ezddd commit `67686ac`** (6.0.0): "[Refactoring] Move MessageProducer interface to
   ezddd-gateway" — deletes `ezddd-usecase/.../port/inout/messaging/MessageProducer.java`
 - **Java ezddd HEAD `3aac0f5`**: core contains no message producer abstraction
-- **[PHASE7_SYNC_PLAN.md](../PHASE7_SYNC_PLAN.md)** — P.2 decision D3, iteration I3
+- Phase 7 synchronization plan (internal working note, not retained) — P.2 decision D3, iteration I3
 - Prior decoupling of repositories from the producer port was recorded in an internal
   session handoff note (superseded by this ADR)
 

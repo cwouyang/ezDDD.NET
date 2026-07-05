@@ -62,14 +62,14 @@ namespace EzDdd.UseCase.Port.Out;
 /// // In Use Case (Application Service)
 /// public class DepositMoneyCommand : ICommand&lt;DepositInput, DepositOutput&gt;
 /// {
-///     private readonly IRepository&lt;BankAccount, AccountId&gt; _repository;
+///     private readonly IRepository&lt;BankAccount, AccountId, IInternalDomainEvent&gt; _repository;
 ///
 ///     public async Task&lt;DepositOutput&gt; ExecuteAsync(DepositInput input)
 ///     {
 ///         // 1. Load aggregate from repository
 ///         var account = await _repository.FindByIdAsync(input.AccountId);
 ///         if (account == null)
-///             return new DepositOutput { ExitCode = ExitCode.ResourceNotFoundFailure };
+///             return new DepositOutput { ExitCode = ExitCode.Failure, Message = "Account not found" };
 ///
 ///         // 2. Execute domain logic
 ///         account.Deposit(input.Amount);
@@ -82,7 +82,7 @@ namespace EzDdd.UseCase.Port.Out;
 ///         catch (RepositorySaveException ex)
 ///             when (ex.Message == RepositorySaveException.OptimisticLockingFailure)
 ///         {
-///             return new DepositOutput { ExitCode = ExitCode.ConflictFailure };
+///             return new DepositOutput { ExitCode = ExitCode.Failure, Message = "Concurrent modification detected" };
 ///         }
 ///
 ///         return new DepositOutput { ExitCode = ExitCode.Success };
@@ -124,7 +124,7 @@ public interface IRepository<TAggregate, in TId, TEvent>
     /// var account = await _repository.FindByIdAsync(accountId);
     /// if (account == null)
     /// {
-    ///     return new Output { ExitCode = ExitCode.ResourceNotFoundFailure };
+    ///     return new Output { ExitCode = ExitCode.Failure, Message = "Account not found" };
     /// }
     /// </code>
     /// </example>
@@ -213,7 +213,7 @@ public interface IRepository<TAggregate, in TId, TEvent>
     ///     when (ex.Message == RepositorySaveException.OptimisticLockingFailure)
     /// {
     ///     // Retry logic or return conflict error
-    ///     return new Output { ExitCode = ExitCode.ConflictFailure };
+    ///     return new Output { ExitCode = ExitCode.Failure, Message = "Concurrent modification detected" };
     /// }
     /// </code>
     /// </example>
