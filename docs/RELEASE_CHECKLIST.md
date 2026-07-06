@@ -18,10 +18,14 @@ of CONTRIBUTING.md for the narrative version of this process.
 Must exist before the first release (see CONTRIBUTING.md "One-Time Setup"):
 
 - [ ] NuGet account created at <https://www.nuget.org> (with 2FA enabled)
-- [ ] API key generated with "Push new packages" permission, scoped to `ezDDD.*`
+- [ ] [Trusted Publishing](https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing)
+      policy added on nuget.org (your username > Trusted Publishing):
+      Repository Owner `cwouyang`, Repository `ezDDD.NET`, Workflow File
+      `publish.yml`, Environment `nuget`
 - [ ] GitHub Environment `nuget` created (Settings > Environments) with
       "Required reviewers" enabled
-- [ ] Key stored as the `NUGET_API_KEY` secret in the `nuget` environment
+- [ ] `NUGET_USER` secret (your nuget.org username, not email) stored in the
+      `nuget` environment
 
 ---
 

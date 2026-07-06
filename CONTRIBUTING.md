@@ -97,8 +97,14 @@ The same two-step procedure applies to `Meziantou.Analyzer` (also referenced in 
 
 ### One-Time Setup
 
-Before the first release, configure the GitHub Environment:
+Publishing uses [NuGet Trusted Publishing](https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing)
+(OIDC) -- the workflow exchanges a short-lived GitHub token for a one-hour NuGet
+API key at publish time, so no long-lived API key is stored. Before the first release:
 
 1. GitHub repo > Settings > Environments > create `nuget`
 2. Enable "Required reviewers" > add yourself
-3. Add `NUGET_API_KEY` as an environment secret (generate at https://www.nuget.org/account/apikeys)
+3. On nuget.org, go to your username > **Trusted Publishing** and add a policy:
+   Repository Owner `cwouyang`, Repository `ezDDD.NET`, Workflow File `publish.yml`,
+   Environment `nuget`
+4. Add `NUGET_USER` as an environment secret in the `nuget` environment -- your
+   nuget.org username (profile name), not your email address
