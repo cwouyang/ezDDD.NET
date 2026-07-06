@@ -1,1 +1,138 @@
 #nullable enable
+abstract EzDdd.UseCase.Port.Out.OutboxMapper<TAggregate, TData, TId>.ToData(TAggregate! aggregate) -> TData
+abstract EzDdd.UseCase.Port.Out.OutboxMapper<TAggregate, TData, TId>.ToDomain(TData data) -> TAggregate!
+const EzDdd.UseCase.Exceptions.RepositorySaveException.OptimisticLockingFailure = "Optimistic locking failure" -> string!
+EzDdd.UseCase.Exceptions.PostEventFailureException
+EzDdd.UseCase.Exceptions.PostEventFailureException.PostEventFailureException() -> void
+EzDdd.UseCase.Exceptions.PostEventFailureException.PostEventFailureException(string! message) -> void
+EzDdd.UseCase.Exceptions.PostEventFailureException.PostEventFailureException(string! message, System.Exception! innerException) -> void
+EzDdd.UseCase.Exceptions.RepositoryPeerSaveException
+EzDdd.UseCase.Exceptions.RepositoryPeerSaveException.RepositoryPeerSaveException() -> void
+EzDdd.UseCase.Exceptions.RepositoryPeerSaveException.RepositoryPeerSaveException(string! message) -> void
+EzDdd.UseCase.Exceptions.RepositoryPeerSaveException.RepositoryPeerSaveException(string! message, System.Exception! innerException) -> void
+EzDdd.UseCase.Exceptions.RepositoryPeerSaveException.RepositoryPeerSaveException(System.Exception! innerException) -> void
+EzDdd.UseCase.Exceptions.RepositorySaveException
+EzDdd.UseCase.Exceptions.RepositorySaveException.RepositorySaveException() -> void
+EzDdd.UseCase.Exceptions.RepositorySaveException.RepositorySaveException(string! message) -> void
+EzDdd.UseCase.Exceptions.RepositorySaveException.RepositorySaveException(string! message, System.Exception! innerException) -> void
+EzDdd.UseCase.Exceptions.RepositorySaveException.RepositorySaveException(System.Exception! innerException) -> void
+EzDdd.UseCase.Exceptions.UseCaseFailureException
+EzDdd.UseCase.Exceptions.UseCaseFailureException.UseCaseFailureException() -> void
+EzDdd.UseCase.Exceptions.UseCaseFailureException.UseCaseFailureException(string! message) -> void
+EzDdd.UseCase.Exceptions.UseCaseFailureException.UseCaseFailureException(string! message, System.Exception! innerException) -> void
+EzDdd.UseCase.Port.In.ExitCode
+EzDdd.UseCase.Port.In.ExitCode.Failure = 1 -> EzDdd.UseCase.Port.In.ExitCode
+EzDdd.UseCase.Port.In.ExitCode.Success = 0 -> EzDdd.UseCase.Port.In.ExitCode
+EzDdd.UseCase.Port.In.ExitCodeExtensions
+EzDdd.UseCase.Port.In.IInput
+EzDdd.UseCase.Port.In.IInput.NullInput
+EzDdd.UseCase.Port.In.IInput.OfNull() -> EzDdd.UseCase.Port.In.IInput.NullInput!
+EzDdd.UseCase.Port.In.IOutput
+EzDdd.UseCase.Port.In.IOutput.ExitCode.get -> EzDdd.UseCase.Port.In.ExitCode
+EzDdd.UseCase.Port.In.IOutput.Fail() -> EzDdd.UseCase.Port.In.IOutput!
+EzDdd.UseCase.Port.In.IOutput.Id.get -> string!
+EzDdd.UseCase.Port.In.IOutput.Message.get -> string!
+EzDdd.UseCase.Port.In.IOutput.SetExitCode(EzDdd.UseCase.Port.In.ExitCode exitCode) -> EzDdd.UseCase.Port.In.IOutput!
+EzDdd.UseCase.Port.In.IOutput.SetId(string! id) -> EzDdd.UseCase.Port.In.IOutput!
+EzDdd.UseCase.Port.In.IOutput.SetMessage(string! message) -> EzDdd.UseCase.Port.In.IOutput!
+EzDdd.UseCase.Port.In.IOutput.Succeed() -> EzDdd.UseCase.Port.In.IOutput!
+EzDdd.UseCase.Port.In.IReactor<TInput>
+EzDdd.UseCase.Port.In.IReactor<TInput>.ExecuteAsync(TInput input) -> System.Threading.Tasks.Task!
+EzDdd.UseCase.Port.In.IReconciler<TContext, TReport>
+EzDdd.UseCase.Port.In.IReconciler<TContext, TReport>.ReconcileAsync(TContext context) -> System.Threading.Tasks.Task<TReport>!
+EzDdd.UseCase.Port.In.IUseCase<TInput, TOutput>
+EzDdd.UseCase.Port.In.IUseCase<TInput, TOutput>.ExecuteAsync(TInput input) -> System.Threading.Tasks.Task<TOutput>!
+EzDdd.UseCase.Port.In.IVersionedInput
+EzDdd.UseCase.Port.In.IVersionedInput.Version.get -> long
+EzDdd.UseCase.Port.In.IVersionedInput.Version.set -> void
+EzDdd.UseCase.Port.In.NullContext
+EzDdd.UseCase.Port.InOut.DomainEventData
+EzDdd.UseCase.Port.InOut.DomainEventData.ContentType.get -> string!
+EzDdd.UseCase.Port.InOut.DomainEventData.ContentType.init -> void
+EzDdd.UseCase.Port.InOut.DomainEventData.DomainEventData(System.Guid Id, string! EventType, string! ContentType, byte[]! EventBody, byte[]! UserMetadata) -> void
+EzDdd.UseCase.Port.InOut.DomainEventData.EventBody.get -> byte[]!
+EzDdd.UseCase.Port.InOut.DomainEventData.EventBody.init -> void
+EzDdd.UseCase.Port.InOut.DomainEventData.EventType.get -> string!
+EzDdd.UseCase.Port.InOut.DomainEventData.EventType.init -> void
+EzDdd.UseCase.Port.InOut.DomainEventData.Id.get -> System.Guid
+EzDdd.UseCase.Port.InOut.DomainEventData.Id.init -> void
+EzDdd.UseCase.Port.InOut.DomainEventData.UserMetadata.get -> byte[]!
+EzDdd.UseCase.Port.InOut.DomainEventData.UserMetadata.init -> void
+EzDdd.UseCase.Port.InOut.DomainEventDataBuilder
+EzDdd.UseCase.Port.InOut.DomainEventDataBuilder.Build() -> EzDdd.UseCase.Port.InOut.DomainEventData!
+EzDdd.UseCase.Port.InOut.DomainEventDataBuilder.EventId(System.Guid id) -> EzDdd.UseCase.Port.InOut.DomainEventDataBuilder!
+EzDdd.UseCase.Port.InOut.DomainEventDataBuilder.MetadataAsBytes(byte[]! metadata) -> EzDdd.UseCase.Port.InOut.DomainEventDataBuilder!
+EzDdd.UseCase.Port.InOut.DomainEventDataBuilder.MetadataAsJson<T>(T metadata) -> EzDdd.UseCase.Port.InOut.DomainEventDataBuilder!
+EzDdd.UseCase.Port.InOut.DomainEventMapper
+EzDdd.UseCase.Port.InOut.IExternalDomainEvent
+EzDdd.UseCase.Port.InOut.InternalDomainEventDto
+EzDdd.UseCase.Port.InOut.InternalDomainEventDto.BoundedContext.get -> string!
+EzDdd.UseCase.Port.InOut.InternalDomainEventDto.BoundedContext.set -> void
+EzDdd.UseCase.Port.InOut.InternalDomainEventDto.EventSimpleName.get -> string!
+EzDdd.UseCase.Port.InOut.InternalDomainEventDto.EventSimpleName.set -> void
+EzDdd.UseCase.Port.InOut.InternalDomainEventDto.Id.get -> System.Guid
+EzDdd.UseCase.Port.InOut.InternalDomainEventDto.Id.set -> void
+EzDdd.UseCase.Port.InOut.InternalDomainEventDto.InternalDomainEventDto() -> void
+EzDdd.UseCase.Port.InOut.InternalDomainEventDto.JsonEvent.get -> string!
+EzDdd.UseCase.Port.InOut.InternalDomainEventDto.JsonEvent.set -> void
+EzDdd.UseCase.Port.InOut.InternalDomainEventDto.Metadata.get -> System.Collections.Generic.IDictionary<string!, string!>!
+EzDdd.UseCase.Port.InOut.InternalDomainEventDto.Metadata.set -> void
+EzDdd.UseCase.Port.InOut.InternalDomainEventDto.OccurredOn.get -> System.DateTimeOffset
+EzDdd.UseCase.Port.InOut.InternalDomainEventDto.OccurredOn.set -> void
+EzDdd.UseCase.Port.InOut.Messaging.IExternalDomainEventPublisher<TEvent>
+EzDdd.UseCase.Port.InOut.Messaging.IExternalDomainEventPublisher<TEvent>.PublishAsync(TEvent event) -> System.Threading.Tasks.Task!
+EzDdd.UseCase.Port.Out.EsRepository<TAggregate, TId>
+EzDdd.UseCase.Port.Out.EsRepository<TAggregate, TId>.DeleteAsync(TAggregate! aggregate) -> System.Threading.Tasks.Task!
+EzDdd.UseCase.Port.Out.EsRepository<TAggregate, TId>.EsRepository(EzDdd.UseCase.Port.Out.IRepositoryPeer<EzDdd.UseCase.Port.Out.EventStoreData<TId>!, TId>! peer) -> void
+EzDdd.UseCase.Port.Out.EsRepository<TAggregate, TId>.FindByIdAsync(TId id) -> System.Threading.Tasks.Task<TAggregate?>!
+EzDdd.UseCase.Port.Out.EsRepository<TAggregate, TId>.SaveAsync(TAggregate! aggregate) -> System.Threading.Tasks.Task!
+EzDdd.UseCase.Port.Out.EventStoreData<TId>
+EzDdd.UseCase.Port.Out.EventStoreData<TId>.Events.get -> System.Collections.Generic.IReadOnlyList<EzDdd.Entity.IDomainEvent!>!
+EzDdd.UseCase.Port.Out.EventStoreData<TId>.Events.set -> void
+EzDdd.UseCase.Port.Out.EventStoreData<TId>.EventStoreData() -> void
+EzDdd.UseCase.Port.Out.EventStoreData<TId>.GetOptimisticLockVersion() -> long
+EzDdd.UseCase.Port.Out.EventStoreData<TId>.Id.get -> TId
+EzDdd.UseCase.Port.Out.EventStoreData<TId>.Id.set -> void
+EzDdd.UseCase.Port.Out.EventStoreData<TId>.StreamName.get -> string!
+EzDdd.UseCase.Port.Out.EventStoreData<TId>.StreamName.set -> void
+EzDdd.UseCase.Port.Out.EventStoreData<TId>.Version.get -> long
+EzDdd.UseCase.Port.Out.EventStoreData<TId>.Version.set -> void
+EzDdd.UseCase.Port.Out.EventStoreMapper
+EzDdd.UseCase.Port.Out.IOutboxData<TId>
+EzDdd.UseCase.Port.Out.IRepository<TAggregate, TId, TEvent>
+EzDdd.UseCase.Port.Out.IRepository<TAggregate, TId, TEvent>.DeleteAsync(TAggregate! aggregate) -> System.Threading.Tasks.Task!
+EzDdd.UseCase.Port.Out.IRepository<TAggregate, TId, TEvent>.FindByIdAsync(TId id) -> System.Threading.Tasks.Task<TAggregate?>!
+EzDdd.UseCase.Port.Out.IRepository<TAggregate, TId, TEvent>.SaveAsync(TAggregate! aggregate) -> System.Threading.Tasks.Task!
+EzDdd.UseCase.Port.Out.IRepositoryPeer<TData, TId>
+EzDdd.UseCase.Port.Out.IRepositoryPeer<TData, TId>.DeleteAsync(TData data) -> System.Threading.Tasks.Task!
+EzDdd.UseCase.Port.Out.IRepositoryPeer<TData, TId>.FindByIdAsync(TId id) -> System.Threading.Tasks.Task<TData?>!
+EzDdd.UseCase.Port.Out.IRepositoryPeer<TData, TId>.SaveAsync(TData data) -> System.Threading.Tasks.Task!
+EzDdd.UseCase.Port.Out.IStoreData<TId>
+EzDdd.UseCase.Port.Out.IStoreData<TId>.Events.get -> System.Collections.Generic.IReadOnlyList<EzDdd.Entity.IDomainEvent!>!
+EzDdd.UseCase.Port.Out.IStoreData<TId>.Events.set -> void
+EzDdd.UseCase.Port.Out.IStoreData<TId>.GetOptimisticLockVersion() -> long
+EzDdd.UseCase.Port.Out.IStoreData<TId>.Id.get -> TId
+EzDdd.UseCase.Port.Out.IStoreData<TId>.Id.set -> void
+EzDdd.UseCase.Port.Out.IStoreData<TId>.StreamName.get -> string!
+EzDdd.UseCase.Port.Out.IStoreData<TId>.StreamName.set -> void
+EzDdd.UseCase.Port.Out.IStoreData<TId>.Version.get -> long
+EzDdd.UseCase.Port.Out.IStoreData<TId>.Version.set -> void
+EzDdd.UseCase.Port.Out.OutboxMapper<TAggregate, TData, TId>
+EzDdd.UseCase.Port.Out.OutboxMapper<TAggregate, TData, TId>.OutboxMapper() -> void
+EzDdd.UseCase.Port.Out.OutboxRepository<TAggregate, TData, TId>
+EzDdd.UseCase.Port.Out.OutboxRepository<TAggregate, TData, TId>.DeleteAsync(TAggregate! aggregate) -> System.Threading.Tasks.Task!
+EzDdd.UseCase.Port.Out.OutboxRepository<TAggregate, TData, TId>.FindByIdAsync(TId id) -> System.Threading.Tasks.Task<TAggregate?>!
+EzDdd.UseCase.Port.Out.OutboxRepository<TAggregate, TData, TId>.OutboxRepository(EzDdd.UseCase.Port.Out.IRepositoryPeer<TData, TId>! peer, EzDdd.UseCase.Port.Out.OutboxMapper<TAggregate!, TData, TId>! mapper) -> void
+EzDdd.UseCase.Port.Out.OutboxRepository<TAggregate, TData, TId>.SaveAsync(TAggregate! aggregate) -> System.Threading.Tasks.Task!
+override EzDdd.UseCase.Port.InOut.DomainEventData.GetHashCode() -> int
+static EzDdd.UseCase.Port.In.ExitCodeExtensions.Code(this EzDdd.UseCase.Port.In.ExitCode exitCode) -> int
+static EzDdd.UseCase.Port.InOut.DomainEventDataBuilder.Binary(string! eventType, byte[]! payload) -> EzDdd.UseCase.Port.InOut.DomainEventDataBuilder!
+static EzDdd.UseCase.Port.InOut.DomainEventDataBuilder.Json<T>(string! eventType, T payload) -> EzDdd.UseCase.Port.InOut.DomainEventDataBuilder!
+static EzDdd.UseCase.Port.InOut.DomainEventMapper.ToData(EzDdd.Entity.IInternalDomainEvent! event) -> EzDdd.UseCase.Port.InOut.DomainEventData!
+static EzDdd.UseCase.Port.InOut.DomainEventMapper.ToData(System.Collections.Generic.IEnumerable<EzDdd.Entity.IInternalDomainEvent!>! events) -> System.Collections.Generic.IReadOnlyList<EzDdd.UseCase.Port.InOut.DomainEventData!>!
+static EzDdd.UseCase.Port.InOut.DomainEventMapper.ToDomain<T>(EzDdd.UseCase.Port.InOut.DomainEventData! data) -> T
+static EzDdd.UseCase.Port.InOut.DomainEventMapper.ToDomain<T>(System.Collections.Generic.IEnumerable<EzDdd.UseCase.Port.InOut.DomainEventData!>! datas) -> System.Collections.Generic.IReadOnlyList<T>!
+static EzDdd.UseCase.Port.Out.EventStoreMapper.ToData<TId>(EzDdd.Entity.EsAggregateRoot<TId, EzDdd.Entity.IInternalDomainEvent!>! aggregate) -> EzDdd.UseCase.Port.Out.EventStoreData<TId>!
+static EzDdd.UseCase.Port.Out.EventStoreMapper.ToDomain<T, TId>(EzDdd.UseCase.Port.Out.EventStoreData<TId>! data) -> T!
+static readonly EzDdd.UseCase.Port.In.NullContext.Instance -> EzDdd.UseCase.Port.In.NullContext!
+virtual EzDdd.UseCase.Port.InOut.DomainEventData.Equals(EzDdd.UseCase.Port.InOut.DomainEventData? other) -> bool

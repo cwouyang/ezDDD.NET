@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased]
+## [1.0.0] - 2026-07-06
 
-Initial release (in preparation). .NET port of [Java ezddd 6.0.1](https://gitlab.com/TeddyChen/ezddd)
+Initial release. .NET port of [Java ezddd 6.0.1](https://gitlab.com/TeddyChen/ezddd)
 (commit `3aac0f5`) providing tactical Domain-Driven Design patterns, CQRS, and Clean Architecture
 support, with both **event sourcing** and **state sourcing** for aggregates and repositories.
 
@@ -158,4 +158,5 @@ MIT License — see [LICENSE](LICENSE). Third-party attributions are listed in
 
 ---
 
-[Unreleased]: https://github.com/cwouyang/ezDDD.NET/commits/master
+[Unreleased]: https://github.com/cwouyang/ezDDD.NET/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/cwouyang/ezDDD.NET/releases/tag/v1.0.0

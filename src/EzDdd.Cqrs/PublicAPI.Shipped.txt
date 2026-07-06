@@ -1,1 +1,29 @@
 #nullable enable
+EzDdd.Cqrs.Command.ICommand<TInput, TOutput>
+EzDdd.Cqrs.Command.IInquiry<TInput, TOutput>
+EzDdd.Cqrs.Command.IInquiry<TInput, TOutput>.QueryAsync(TInput input) -> System.Threading.Tasks.Task<TOutput>!
+EzDdd.Cqrs.Command.IInquiryInput
+EzDdd.Cqrs.CqrsOutput<T>
+EzDdd.Cqrs.CqrsOutput<T>.CqrsOutput() -> void
+EzDdd.Cqrs.CqrsOutput<T>.ExitCode.get -> EzDdd.UseCase.Port.In.ExitCode
+EzDdd.Cqrs.CqrsOutput<T>.ExitCode.set -> void
+EzDdd.Cqrs.CqrsOutput<T>.Fail() -> T!
+EzDdd.Cqrs.CqrsOutput<T>.Id.get -> string!
+EzDdd.Cqrs.CqrsOutput<T>.Id.set -> void
+EzDdd.Cqrs.CqrsOutput<T>.Message.get -> string!
+EzDdd.Cqrs.CqrsOutput<T>.Message.set -> void
+EzDdd.Cqrs.CqrsOutput<T>.SetExitCode(EzDdd.UseCase.Port.In.ExitCode exitCode) -> T!
+EzDdd.Cqrs.CqrsOutput<T>.SetId(string! id) -> T!
+EzDdd.Cqrs.CqrsOutput<T>.SetMessage(string! message) -> T!
+EzDdd.Cqrs.CqrsOutput<T>.Succeed() -> T!
+EzDdd.Cqrs.Query.IArchive<TData, TId>
+EzDdd.Cqrs.Query.IArchive<TData, TId>.DeleteAsync(TData data) -> System.Threading.Tasks.Task!
+EzDdd.Cqrs.Query.IArchive<TData, TId>.FindByIdAsync(TId id) -> System.Threading.Tasks.Task<TData?>!
+EzDdd.Cqrs.Query.IArchive<TData, TId>.SaveAsync(TData data) -> System.Threading.Tasks.Task!
+EzDdd.Cqrs.Query.INotifier<TInput>
+EzDdd.Cqrs.Query.IProjection<TInput, TOutput>
+EzDdd.Cqrs.Query.IProjection<TInput, TOutput>.QueryAsync(TInput input) -> System.Threading.Tasks.Task<TOutput>!
+EzDdd.Cqrs.Query.IProjectionInput
+EzDdd.Cqrs.Query.IProjector<TInput>
+EzDdd.Cqrs.Query.IQuery<TInput, TOutput>
+static EzDdd.Cqrs.CqrsOutput<T>.Create() -> T!
