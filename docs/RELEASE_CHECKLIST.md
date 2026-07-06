@@ -22,8 +22,12 @@ Must exist before the first release (see CONTRIBUTING.md "One-Time Setup"):
       policy added on nuget.org (your username > Trusted Publishing):
       Repository Owner `cwouyang`, Repository `ezDDD.NET`, Workflow File
       `publish.yml`, Environment `nuget`
+- [ ] Repository is **public** before enabling the approval gate below --
+      the "Required reviewers" environment rule needs a public repo (or GitHub
+      Pro/Team/Enterprise for a private one; the API returns HTTP 422 otherwise)
 - [ ] GitHub Environment `nuget` created (Settings > Environments) with
-      "Required reviewers" enabled
+      "Required reviewers" enabled (add yourself; leave "Prevent self-review"
+      off so a solo maintainer can approve their own release)
 - [ ] `NUGET_USER` secret (your nuget.org username, not email) stored in the
       `nuget` environment
 

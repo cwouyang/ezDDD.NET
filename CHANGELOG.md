@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+_No changes yet._
+
 ## [1.0.0] - 2026-07-06
 
 Initial release. .NET port of [Java ezddd 6.0.1](https://gitlab.com/TeddyChen/ezddd)

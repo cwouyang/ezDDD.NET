@@ -7,16 +7,16 @@
 A modern tactical DDD library for .NET with event sourcing, state sourcing, and CQRS patterns. This is a faithful .NET port of the **Java ezddd 6.0.1** library (GitLab commit: `3aac0f5`) with **~99% semantic parity** and .NET-specific improvements.
 
 [![Build and Test](https://github.com/cwouyang/ezDDD.NET/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/cwouyang/ezDDD.NET/actions/workflows/build-and-test.yml)
-[![NuGet](https://img.shields.io/nuget/vpre/ezDDD.Core?logo=nuget&label=NuGet&color=004880)](https://www.nuget.org/packages/ezDDD.Core/)
+[![NuGet](https://img.shields.io/nuget/v/ezDDD.Core?logo=nuget&label=NuGet&color=004880)](https://www.nuget.org/packages/ezDDD.Core/)
 [![.NET](https://img.shields.io/badge/.NET-8.0+-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/status-alpha-orange.svg)](#status)
+[![Status](https://img.shields.io/badge/status-stable-brightgreen.svg)](#status)
 
 ---
 
 ## Status
 
-ezDDD.NET follows [Semantic Versioning](https://semver.org/). The **first public release is in preparation** (not yet published to NuGet); once published, the current version is shown by the NuGet badge above. Changes between releases are tracked in [CHANGELOG.md](CHANGELOG.md).
+ezDDD.NET follows [Semantic Versioning](https://semver.org/) and is **published on NuGet** — the current version is shown by the NuGet badge above, and you can install it from the [Quick Start](#quick-start). Changes between releases are tracked in [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
