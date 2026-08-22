@@ -1,6 +1,6 @@
 version: 2
 updates:
-  # NuGet dependencies in src/, tests/, and Directory.Build.props
+  # NuGet dependencies in src/, tests/, Directory.Build.props, and .config/dotnet-tools.json
   - package-ecosystem: "nuget"
     directory: "/"
     schedule:
@@ -11,6 +11,41 @@ updates:
       include: "scope"
     labels:
       - "dependencies"
+    # Group minor/patch bumps so routine updates cost one PR instead of one each,
+    # and so a group PR rewrites every affected line in a single commit. Ungrouped
+    # bumps to neighbouring lines conflict with each other: Meziantou and Roslynator
+    # sit four lines apart in Directory.Build.props, and Test.Sdk and
+    # xunit.runner.visualstudio two lines apart across all five test projects.
+    #
+    # Major bumps stay ungrouped: they are the ones that actually break the build.
+    # uContract stays out of both groups — it is this project's own core dependency
+    # and every bump deserves an individual look.
+    groups:
+      code-quality:
+        patterns:
+          - "Meziantou.Analyzer"
+          - "Microsoft.CodeAnalysis.PublicApiAnalyzers"
+          - "Roslynator.*"
+          - "csharpier"
+        update-types:
+          - "minor"
+          - "patch"
+      test:
+        patterns:
+          - "Microsoft.NET.Test.Sdk"
+          - "xunit*"
+          - "coverlet.*"
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      # PublicApiAnalyzers 4.x+ ships analyzers compiled against Roslyn 4.12, which the
+      # SDK pinned in global.json (8.0.200 -> Roslyn 4.9) refuses to load (CS9057).
+      # Reproduced locally against 5.6.0 on 2026-08-22; uContract.NET hits the same wall.
+      # Lift this once the repo moves to a newer SDK.
+      - dependency-name: "Microsoft.CodeAnalysis.PublicApiAnalyzers"
+        update-types:
+          - "version-update:semver-major"
 
   # GitHub Actions used in .github/workflows/
   - package-ecosystem: "github-actions"
@@ -18,8 +53,13 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
+    # No 'include: scope' here: the prefix already carries one, and Dependabot would
+    # append a second, yielding 'chore(ci)(deps): ...' (see PR #5).
     commit-message:
       prefix: "chore(ci)"
-      include: "scope"
     labels:
       - "dependencies"
+    groups:
+      actions:
+        patterns:
+          - "*"
