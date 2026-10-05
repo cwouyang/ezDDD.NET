@@ -85,21 +85,23 @@ The same two-step procedure applies to `Meziantou.Analyzer` (also referenced in 
 
 ## Releasing
 
-1. Update `<Version>` in `Directory.Build.props` -- the single version source for all five packages (ezDDD.Common, ezDDD.Entity, ezDDD.UseCase, ezDDD.Cqrs, ezDDD.Core)
-2. Promote the public API baselines -- each of the five `src/` projects tracks its own baseline pair:
+1. Create a branch `chore/release-{version}` from an up-to-date `master`. `master` is protected, so the release preparation reaches it through a pull request
+2. Update `<Version>` in `Directory.Build.props` -- the single version source for all five packages (ezDDD.Common, ezDDD.Entity, ezDDD.UseCase, ezDDD.Cqrs, ezDDD.Core)
+3. Promote the public API baselines -- each of the five `src/` projects tracks its own baseline pair:
    - In every project (`src/EzDdd.Common`, `src/EzDdd.Entity`, `src/EzDdd.UseCase`, `src/EzDdd.Cqrs`, `src/EzDdd.Core`), move every entry from `PublicAPI.Unshipped.txt` to `PublicAPI.Shipped.txt`
    - Keep the `#nullable enable` header in both files; Unshipped retains only the header after promotion
    - This makes the five `PublicAPI.Shipped.txt` files the canonical record of the APIs committed at `v{version}`
-3. Update `CHANGELOG.md` -- move Unreleased items under the new version heading
-4. Commit: `release: prepare v{version}` (version bump, baseline promotions, and CHANGELOG in a single commit)
-5. Push to master
-6. On GitHub, create a Release with tag `v{version}` targeting master -- the tag must match `<Version>` in `Directory.Build.props`
-7. The publish workflow runs automatically:
+4. Update `CHANGELOG.md` -- move Unreleased items under the new version heading, leave `_No changes yet._` under a fresh `## [Unreleased]`, and update the link references at the bottom
+5. Run the tests in both configurations (`dotnet test` and `dotnet test -c Release`), as CI does, with no `DBC*` environment variable set (see [Daily Verification](#daily-verification))
+6. Commit: `chore: Prepare release {version}` (version bump, baseline promotions, and CHANGELOG in a single commit)
+7. Push the branch and open a pull request to `master`; merge it once the `build (ubuntu-latest)` and `build (windows-latest)` checks pass
+8. On GitHub, create a Release with tag `v{version}` targeting the merge commit on `master` -- the tag must match `<Version>` in `Directory.Build.props`
+9. The publish workflow runs automatically:
    - Validates the tag against the `Directory.Build.props` version
    - Runs tests and packs all five NuGet packages (fails if the count is not exactly 5)
    - Waits for manual approval (check the Actions tab)
-8. Approve the deployment in the Actions tab
-9. All five packages are published to NuGet.org and attached to the GitHub Release
+10. Approve the deployment in the Actions tab
+11. All five packages are published to NuGet.org and attached to the GitHub Release
 
 ### One-Time Setup
 
@@ -109,8 +111,9 @@ API key at publish time, so no long-lived API key is stored. Before the first re
 
 1. GitHub repo > Settings > Environments > create `nuget`
 2. Enable "Required reviewers" > add yourself
-3. On nuget.org, go to your username > **Trusted Publishing** and add a policy:
+3. Under "Deployment branches and tags", add a tag rule `v*` -- only release tags may deploy. The publish run is triggered by the Release, so its ref is the tag
+4. On nuget.org, go to your username > **Trusted Publishing** and add a policy:
    Repository Owner `cwouyang`, Repository `ezDDD.NET`, Workflow File `publish.yml`,
    Environment `nuget`
-4. Add `NUGET_USER` as an environment secret in the `nuget` environment -- your
+5. Add `NUGET_USER` as an environment secret in the `nuget` environment -- your
    nuget.org username (profile name), not your email address

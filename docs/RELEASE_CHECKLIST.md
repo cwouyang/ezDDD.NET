@@ -27,7 +27,9 @@ Must exist before the first release (see CONTRIBUTING.md "One-Time Setup"):
       Pro/Team/Enterprise for a private one; the API returns HTTP 422 otherwise)
 - [ ] GitHub Environment `nuget` created (Settings > Environments) with
       "Required reviewers" enabled (add yourself; leave "Prevent self-review"
-      off so a solo maintainer can approve their own release)
+      off so a solo maintainer can approve their own release); its deployment rule
+      is a tag rule `v*` (Deployment branches and tags), so only release tags may
+      deploy — the publish run is triggered by the Release, so its ref is the tag
 - [ ] `NUGET_USER` secret (your nuget.org username, not email) stored in the
       `nuget` environment
 
@@ -42,10 +44,13 @@ Must exist before the first release (see CONTRIBUTING.md "One-Time Setup"):
 
 ### 2. Version, Changelog, and API Baselines
 
+- [ ] Create the branch `chore/release-{VERSION}` from an up-to-date `master`
+      (`master` is protected; the changes below reach it through a pull request)
 - [ ] Update `<Version>` in `Directory.Build.props` — the single version source for
       all five packages
 - [ ] Move `[Unreleased]` items in `CHANGELOG.md` under the new version heading with
-      the release date
+      the release date, leave `_No changes yet._` under a fresh `## [Unreleased]`, and
+      update the `[Unreleased]` and version link references at the bottom
 - [ ] Promote the public API baselines in **all five** `src/` projects
       (`EzDdd.Common`, `EzDdd.Entity`, `EzDdd.UseCase`, `EzDdd.Cqrs`, `EzDdd.Core`):
       move every entry from `PublicAPI.Unshipped.txt` into `PublicAPI.Shipped.txt`,
@@ -57,10 +62,12 @@ Must exist before the first release (see CONTRIBUTING.md "One-Time Setup"):
 dotnet clean && dotnet tool restore
 dotnet csharpier check .
 dotnet test
+dotnet test -c Release
 dotnet pack ezDDD.sln -c Release -o ./artifacts
 ```
 
-- [ ] All tests pass
+- [ ] All tests pass in both Debug and Release, with no `DBC*` environment variable
+      set (see CONTRIBUTING.md "Daily Verification")
 - [ ] Exactly **5** `.nupkg` files in `./artifacts` (test projects are
       `IsPackable=false`; `publish.yml` fails the release on any other count)
 - [ ] Each package contains `lib/net8.0/EzDdd.*.dll` + `.xml`, `README.md`,
@@ -70,19 +77,22 @@ dotnet pack ezDDD.sln -c Release -o ./artifacts
       feed, build an aggregate with a domain event, confirm the transitive packages
       (Common, Entity, UseCase, Cqrs) resolve and IntelliSense/XML docs work
 
-### 4. Commit and Push
+### 4. Commit and Open a Pull Request
 
 ```bash
-git commit -m "release: prepare v{VERSION}"
-git push origin master
+git commit -m "chore: Prepare release {VERSION}"
+git push -u origin chore/release-{VERSION}
 ```
 
 Version bump, baseline promotions, and CHANGELOG go in this single commit
 (per CONTRIBUTING.md).
 
+- [ ] Open a pull request to `master`
+- [ ] Merge it once `build (ubuntu-latest)` and `build (windows-latest)` pass
+
 ### 5. Create the GitHub Release (this triggers publishing)
 
-- [ ] Create a GitHub Release with tag `v{VERSION}` targeting master, pasting the
+- [ ] Create a GitHub Release with tag `v{VERSION}` targeting the merge commit on `master`, pasting the
       changelog entry as notes
 - [ ] The tag must exactly match `<Version>` in `Directory.Build.props` —
       `publish.yml` validates this and fails the release otherwise
@@ -103,8 +113,25 @@ Version bump, baseline promotions, and CHANGELOG go in this single commit
       [ezDDD.Cqrs](https://www.nuget.org/packages/ezDDD.Cqrs/),
       [ezDDD.Core](https://www.nuget.org/packages/ezDDD.Core/)
 - [ ] Test install `ezDDD.Core` from NuGet.org in a fresh project
-- [ ] Add a fresh `[Unreleased]` section to `CHANGELOG.md`
 - [ ] Monitor GitHub Issues for bug reports
+
+---
+
+## Recovery
+
+- If a run fails before any package was pushed because of a transient problem (a flaky
+  test, a runner error), re-run the failed jobs. Re-running only the `publish` job
+  downloads the package artifact, which is kept for 7 days; after that, re-run all
+  jobs.
+- If the cause is in the repository (the tag does not match `<Version>`, a failing
+  test), re-running cannot help: the run always uses the commit the tag points to.
+  While nothing has been pushed, delete the Release and the tag, merge the fix through
+  a pull request, and create the Release again on the new merge commit.
+- The push uses `--skip-duplicate`: a package version that already exists on NuGet.org
+  is skipped and the push still succeeds, so re-running a run that stopped part-way
+  through the push publishes only the missing packages.
+- Once any package has been pushed, do not delete the tag or the Release — a version
+  number cannot be reused on NuGet.
 
 ---
 
