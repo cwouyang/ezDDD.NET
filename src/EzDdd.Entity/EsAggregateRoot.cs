@@ -63,6 +63,11 @@ namespace EzDdd.Entity;
 ///             </item>
 ///         </list>
 ///     </para>
+///     <para>
+///         The precondition checks described by <see cref="uContract.Exceptions.PreconditionViolationException" /> are skipped when preconditions are
+///         disabled through uContract's environment switches (<c>DBC_PRE</c>, or <c>DBC</c> when <c>DBC_PRE</c> is not set),
+///         and when the call is made while another uContract contract's condition is being evaluated.
+///     </para>
 /// </remarks>
 /// <typeparam name="TId">The type of the aggregate's unique identifier</typeparam>
 /// <typeparam name="TEvent">The type of internal domain events this aggregate produces</typeparam>
@@ -146,7 +151,7 @@ public abstract class EsAggregateRoot<TId, TEvent> : AggregateRoot<TId, TEvent>
     ///         to prevent re-publication of historical events.
     ///     </para>
     /// </remarks>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="events" /> is null</exception>
+    /// <exception cref="uContract.Exceptions.PreconditionViolationException">Thrown when <paramref name="events" /> is null</exception>
     /// <exception cref="InvalidOperationException">
     ///     Thrown when event replay violates invariants or encounters unknown event types
     /// </exception>

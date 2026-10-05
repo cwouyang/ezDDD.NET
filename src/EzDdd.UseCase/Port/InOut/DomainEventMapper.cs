@@ -75,7 +75,13 @@ public static class DomainEventMapper
     /// <typeparam name="T">The domain event type</typeparam>
     /// <param name="data">The persisted event data</param>
     /// <returns>The reconstructed domain event</returns>
+    /// <exception cref="uContract.Exceptions.PreconditionViolationException">Thrown when <c>data.EventType</c> is null, empty or whitespace</exception>
     /// <exception cref="InvalidOperationException">Thrown when deserialization fails or event type is not registered</exception>
+    /// <remarks>
+    ///     The blank event type check is skipped when preconditions are disabled through uContract's environment
+    ///     switches (<c>DBC_PRE</c>, or <c>DBC</c> when <c>DBC_PRE</c> is not set), and when the call is made while
+    ///     another uContract contract's condition is being evaluated.
+    /// </remarks>
     public static T ToDomain<T>(DomainEventData data)
         where T : IInternalDomainEvent
     {
@@ -110,6 +116,7 @@ public static class DomainEventMapper
     /// <typeparam name="T">The domain event type</typeparam>
     /// <param name="datas">Collection of event data</param>
     /// <returns>List of domain events</returns>
+    /// <exception cref="uContract.Exceptions.PreconditionViolationException">Thrown when an element's <c>EventType</c> is null, empty or whitespace</exception>
     public static IReadOnlyList<T> ToDomain<T>(IEnumerable<DomainEventData> datas)
         where T : IInternalDomainEvent
     {
