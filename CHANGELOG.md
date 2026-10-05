@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+_No changes yet._
+
+## [2.0.0] - 2026-10-05
+
 ### Changed
 
 - **BREAKING:** Moved the `uContract` dependency to 2.0.0. Five existing precondition checks (four in
@@ -203,5 +207,6 @@ MIT License — see [LICENSE](LICENSE). Third-party attributions are listed in
 
 ---
 
-[Unreleased]: https://github.com/cwouyang/ezDDD.NET/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/cwouyang/ezDDD.NET/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/cwouyang/ezDDD.NET/releases/tag/v2.0.0
 [1.0.0]: https://github.com/cwouyang/ezDDD.NET/releases/tag/v1.0.0
