@@ -1,6 +1,7 @@
 using System.Text.Json;
 using EzDdd.Entity;
 using EzDdd.UseCase.Port.InOut;
+using uContract.Exceptions;
 
 namespace EzDdd.UseCase.Tests.Port.InOut;
 
@@ -139,6 +140,16 @@ public class DomainEventMapperTests
     #endregion
 
     #region ToDomain Conversion Tests (Data → Domain)
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("  ")]
+    public void ToDomain_WithBlankEventType_ThrowsPreconditionViolation(string blankEventType)
+    {
+        DomainEventData data = new(Guid.NewGuid(), blankEventType, "application/json", [], []);
+
+        Assert.Throws<PreconditionViolationException>(() => DomainEventMapper.ToDomain<TestMoneyDeposited>(data));
+    }
 
     [Fact]
     public void ToDomain_ShouldConvertDomainEventDataToDomainEvent()
