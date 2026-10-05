@@ -843,6 +843,9 @@ For reconstructing aggregates from event history.
 **Parameters:**
 - `events` (IEnumerable<TEvent>): The event history to replay
 
+**Exceptions:**
+- `uContract.Exceptions.PreconditionViolationException`: When `events` is null (precondition check; on by default, disabled by `DBC_PRE=off`, or by `DBC=off` when `DBC_PRE` is not set)
+
 **Example:**
 ```csharp
 // Constructor for event replay (REQUIRED)
@@ -1047,7 +1050,7 @@ Registers a domain event type with its string identifier.
 - `typeName` (string): The string identifier for this event type
 
 **Exceptions:**
-- `ArgumentNullException`: When typeName is null or empty
+- `uContract.Exceptions.PreconditionViolationException`: When typeName is null or blank (precondition check; on by default in every build configuration, disabled by `DBC_PRE=off`, or by `DBC=off` when `DBC_PRE` is not set)
 - `ArgumentException`: When typeName is already registered to a different type
 
 **Example:**
@@ -1067,6 +1070,7 @@ Gets the string identifier for an event type.
 **Returns:** string - The registered string identifier
 
 **Exceptions:**
+- `uContract.Exceptions.PreconditionViolationException`: When `eventType` is null
 - `InvalidOperationException`: When the event type is not registered
 
 **Example:**
@@ -1082,6 +1086,10 @@ Gets the string identifier for an event instance.
 - `@event` (IInternalDomainEvent): The domain event instance
 
 **Returns:** string - The registered string identifier
+
+**Exceptions:**
+- `uContract.Exceptions.PreconditionViolationException`: When `@event` is null
+- `InvalidOperationException`: When the event's type is not registered
 
 **Example:**
 ```csharp
@@ -1099,6 +1107,7 @@ Gets the domain event type for a string identifier.
 **Returns:** Type - The registered event type
 
 **Exceptions:**
+- `uContract.Exceptions.PreconditionViolationException`: When `typeName` is null or blank
 - `InvalidOperationException`: When the type name is not registered
 
 **Example:**
@@ -2401,6 +2410,7 @@ IReadOnlyList<DomainEventData> dataList =
 Converts `DomainEventData` (or a collection) back to strongly-typed domain events. Resolves the CLR type via `DomainEventTypeMapper.GetType(data.EventType)`.
 
 **Exceptions:**
+- `uContract.Exceptions.PreconditionViolationException`: `data.EventType` is null or blank (raised by `DomainEventTypeMapper.GetType`)
 - `InvalidOperationException`: Deserialization fails, event type not registered, or the deserialized event cannot be cast to `T`
 
 **Example:**
