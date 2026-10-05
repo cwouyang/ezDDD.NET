@@ -144,6 +144,7 @@ AGENTS.md
 ```
 ┌─────────────────────┐
 │  Confirm Decision   │
+│  and implement it   │
 └──────────┬──────────┘
            ↓
 ┌─────────────────────────────────────┐
@@ -283,7 +284,7 @@ done
 
 ### Best Practices
 
-- Write ADRs **during** decision-making, not after implementation
+- Write ADRs **after** the implementation is done, so that what was learned while implementing is recorded
 - Keep ADRs **concise** but complete (1-3 pages max)
 - Focus on **WHY**, not just WHAT
 - Include **alternatives considered** to avoid future repetition
