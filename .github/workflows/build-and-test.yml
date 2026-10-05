@@ -46,3 +46,9 @@ jobs:
 
       - name: Test
         run: dotnet test --no-build --verbosity normal
+
+      - name: Build (Release)
+        run: dotnet build -c Release --no-restore -p:ContinuousIntegrationBuild=true
+
+      - name: Test (Release)
+        run: dotnet test -c Release --no-build --verbosity normal
