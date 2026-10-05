@@ -36,7 +36,11 @@ dotnet tool restore
 dotnet csharpier check .
 dotnet build -p:ContinuousIntegrationBuild=true
 dotnet test --no-build --verbosity normal
+dotnet build -c Release -p:ContinuousIntegrationBuild=true
+dotnet test -c Release --no-build --verbosity normal
 ```
+
+Run the tests with no `DBC*` environment variable set (`DBC`, `DBC_PRE`, `DBC_POST`, `DBC_INV`, `DBC_CHECK`). uContract, a dependency of this library, reads them from the process environment to switch contract checks on or off, so a value set in your shell changes what the tests observe.
 
 ### Reproducing CI Locally
 
@@ -47,9 +51,11 @@ dotnet tool restore
 dotnet csharpier check .
 dotnet build -p:ContinuousIntegrationBuild=true --no-restore
 dotnet test --no-build --verbosity normal
+dotnet build -c Release --no-restore -p:ContinuousIntegrationBuild=true
+dotnet test -c Release --no-build --verbosity normal
 ```
 
-If all four succeed locally, CI will succeed.
+If all of them succeed locally, CI will succeed.
 
 ### Upgrading CSharpier
 

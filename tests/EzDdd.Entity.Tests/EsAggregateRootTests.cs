@@ -1,4 +1,5 @@
 using System.Reflection;
+using uContract.Exceptions;
 
 namespace EzDdd.Entity.Tests;
 
@@ -280,6 +281,16 @@ public class EsAggregateRootTests
         Assert.Equal(120m, account.Balance);
         Assert.True(account.IsDeleted);
         Assert.Equal(3L, account.Version); // 4 events total (0, 1, 2, 3)
+    }
+
+    #endregion
+
+    #region Precondition Tests
+
+    [Fact]
+    public void EsAggregateRoot_ReplayConstructor_WithNullEvents_ThrowsPreconditionViolation()
+    {
+        Assert.Throws<PreconditionViolationException>(() => new Account((IEnumerable<IInternalDomainEvent>)null!));
     }
 
     #endregion

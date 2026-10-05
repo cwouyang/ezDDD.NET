@@ -196,7 +196,8 @@ Five NuGet packages with a unidirectional dependency chain (`Common → Entity �
 ## Requirements
 
 - **.NET 8.0 or later** (C# 12, nullable reference types enabled)
-- **[uContract](https://github.com/cwouyang/uContract.NET) 1.0.0+** — Design by Contract support (same ecosystem as Java ezddd's uContract); used by `EsAggregateRoot` invariant checking
+- **[uContract](https://github.com/cwouyang/uContract.NET) 2.0.0+** — Design by Contract support (same ecosystem as Java ezddd's uContract); used for the precondition checks in `DomainEventTypeMapper` and in the `EsAggregateRoot` replay constructor
+- **Contract enforcement** — these precondition checks are on by default in every build configuration (Debug and Release) and throw `uContract.Exceptions.PreconditionViolationException`, which is not an `ArgumentException`. Set the environment variable `DBC_PRE=off` — or `DBC=off` when `DBC_PRE` is not set — to disable them. These switches apply to the whole process, so they also switch any contracts your application declares with uContract; see the [uContract.NET README](https://github.com/cwouyang/uContract.NET#environment-variables) for the switches. The base-class `_EnsureInvariant` of `EsAggregateRoot` does not use uContract; an override that calls `Contract.Invariant` is governed by `DBC_INV`, or by `DBC` when `DBC_INV` is not set — not by `DBC_PRE`.
 - **No other dependencies** — production code uses only .NET built-in APIs (`System.Text.Json`, `System.Reflection`, `System.Collections.Concurrent`)
 
 ---

@@ -1,3 +1,5 @@
+using uContract.Exceptions;
+
 namespace EzDdd.Entity.Tests;
 
 [Collection("DomainEventTypeMapper")]
@@ -257,6 +259,70 @@ public class DomainEventTypeMapperTests
         await Task.WhenAll(tasks);
 
         Assert.True(DomainEventTypeMapper.Contains("TestEvent1"));
+    }
+
+    #endregion
+
+    #region Precondition Tests
+
+    [Fact]
+    public void Register_WithNullName_ThrowsPreconditionViolation()
+    {
+        DomainEventTypeMapper.Clear();
+
+        Assert.Throws<PreconditionViolationException>(() => DomainEventTypeMapper.Register<TestEvent1>(null!));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("  ")]
+    public void Register_WithBlankName_ThrowsPreconditionViolation(string blankName)
+    {
+        DomainEventTypeMapper.Clear();
+
+        Assert.Throws<PreconditionViolationException>(() => DomainEventTypeMapper.Register<TestEvent1>(blankName));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("  ")]
+    public void Register_WithBlankName_AddsNoMapping(string blankName)
+    {
+        DomainEventTypeMapper.Clear();
+
+        Assert.Throws<PreconditionViolationException>(() => DomainEventTypeMapper.Register<TestEvent1>(blankName));
+
+        Assert.Empty(DomainEventTypeMapper.GetAllMappings());
+    }
+
+    [Fact]
+    public void GetTypeName_FromNullType_ThrowsPreconditionViolation()
+    {
+        Assert.Throws<PreconditionViolationException>(() => DomainEventTypeMapper.GetTypeName((Type)null!));
+    }
+
+    [Fact]
+    public void GetTypeName_FromNullEvent_ThrowsPreconditionViolation()
+    {
+        Assert.Throws<PreconditionViolationException>(() =>
+            DomainEventTypeMapper.GetTypeName((IInternalDomainEvent)null!)
+        );
+    }
+
+    [Fact]
+    public void GetType_WithNullName_ThrowsPreconditionViolation()
+    {
+        Assert.Throws<PreconditionViolationException>(() => DomainEventTypeMapper.GetType(null!));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("  ")]
+    public void GetType_WithBlankName_ThrowsPreconditionViolation(string blankName)
+    {
+        DomainEventTypeMapper.Clear();
+
+        Assert.Throws<PreconditionViolationException>(() => DomainEventTypeMapper.GetType(blankName));
     }
 
     #endregion

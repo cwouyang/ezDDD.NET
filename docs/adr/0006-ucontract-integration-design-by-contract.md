@@ -2,11 +2,18 @@
 
 ## Status
 
-**Accepted**
+**Accepted (Amended by [ADR-0030](0030-ucontract-2-contracts-enforced-by-default.md))**
+
+> Partially amended: the uContract 1.0.0 package evaluated no contract unless the application
+> set `DBC=on`, so the checks this ADR relies on did not run by default. ezDDD.NET therefore
+> depends on uContract 2.0.0 or later, which enables contracts in every build configuration,
+> and its next release is a major version (see ADR-0030). The dependency version (1.0.0) and
+> the "ezDDD.NET 1.x will depend on uContract.NET 1.x" statement in this ADR are replaced. The
+> choice of uContract.NET for Design by Contract remains in force.
 
 - **Date**: 2025-10-31
 - **Deciders**: Project maintainers
-- **Status Date**: 2025-10-31
+- **Status Date**: 2026-10-05
 
 ---
 
@@ -504,5 +511,6 @@ If uContract.NET becomes unmaintained:
 | Date       | Status   | Notes                                  |
 |------------|----------|----------------------------------------|
 | 2025-10-31 | Accepted | Decision finalized and documented      |
+| 2026-10-05 | Amended  | Amended by ADR-0030: dependency moved to uContract 2.0.0; contracts enforced by default |
 
 ---

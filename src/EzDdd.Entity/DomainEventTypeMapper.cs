@@ -33,6 +33,11 @@ namespace EzDdd.Entity;
 ///             </item>
 ///         </list>
 ///     </para>
+///     <para>
+///         The precondition checks described by <see cref="uContract.Exceptions.PreconditionViolationException" /> are skipped when preconditions are
+///         disabled through uContract's environment switches (<c>DBC_PRE</c>, or <c>DBC</c> when <c>DBC_PRE</c> is not set),
+///         and when the call is made while another uContract contract's condition is being evaluated.
+///     </para>
 /// </remarks>
 /// <example>
 ///     <code>
@@ -72,8 +77,8 @@ public static class DomainEventTypeMapper
     ///         typically in a startup/configuration class or module initializer.
     ///     </para>
     /// </remarks>
-    /// <exception cref="ArgumentNullException">
-    ///     Thrown when <paramref name="typeName" /> is null or empty
+    /// <exception cref="uContract.Exceptions.PreconditionViolationException">
+    ///     Thrown when <paramref name="typeName" /> is null, empty or whitespace
     /// </exception>
     /// <exception cref="ArgumentException">
     ///     Thrown when:
@@ -142,7 +147,7 @@ public static class DomainEventTypeMapper
     /// </summary>
     /// <param name="eventType">The event type</param>
     /// <returns>The registered string identifier</returns>
-    /// <exception cref="ArgumentNullException">
+    /// <exception cref="uContract.Exceptions.PreconditionViolationException">
     ///     Thrown when <paramref name="eventType" /> is null
     /// </exception>
     /// <exception cref="InvalidOperationException">
@@ -175,7 +180,7 @@ public static class DomainEventTypeMapper
     /// </summary>
     /// <param name="event">The domain event instance</param>
     /// <returns>The registered string identifier</returns>
-    /// <exception cref="ArgumentNullException">
+    /// <exception cref="uContract.Exceptions.PreconditionViolationException">
     ///     Thrown when <paramref name="event" /> is null
     /// </exception>
     /// <exception cref="InvalidOperationException">
@@ -200,8 +205,8 @@ public static class DomainEventTypeMapper
     /// </summary>
     /// <param name="typeName">The string identifier</param>
     /// <returns>The registered event type</returns>
-    /// <exception cref="ArgumentNullException">
-    ///     Thrown when <paramref name="typeName" /> is null or empty
+    /// <exception cref="uContract.Exceptions.PreconditionViolationException">
+    ///     Thrown when <paramref name="typeName" /> is null, empty or whitespace
     /// </exception>
     /// <exception cref="InvalidOperationException">
     ///     Thrown when the type name is not registered

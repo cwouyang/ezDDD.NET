@@ -144,6 +144,7 @@ AGENTS.md
 ```
 ┌─────────────────────┐
 │  Confirm Decision   │
+│  and implement it   │
 └──────────┬──────────┘
            ↓
 ┌─────────────────────────────────────┐
@@ -187,7 +188,7 @@ AGENTS.md
 | [ADR-0003](0003-module-architecture-dependency-chain.md) | Module Architecture and Dependency Chain | 2025-10-31 | Accepted |
 | [ADR-0004](0004-zero-third-party-dependency-principle.md) | Zero Third-Party Dependency Principle | 2025-10-31 | Accepted |
 | [ADR-0005](0005-complete-reimplementation-approach.md) | Complete Reimplementation Approach | 2025-10-31 | Accepted |
-| [ADR-0006](0006-ucontract-integration-design-by-contract.md) | uContract.NET Integration for Design by Contract | 2025-10-31 | Accepted |
+| [ADR-0006](0006-ucontract-integration-design-by-contract.md) | uContract.NET Integration for Design by Contract | 2025-10-31 | Accepted (Amended by [ADR-0030](0030-ucontract-2-contracts-enforced-by-default.md)) |
 | [ADR-0007](0007-ientity-ivalueobject-design.md) | IEntity and IValueObject Design | 2025-11-01 | Accepted |
 | [ADR-0008](0008-idomain-event-hierarchy.md) | IDomainEvent Hierarchy Design | 2025-11-01 | Accepted |
 | [ADR-0009](0009-aggregate-root-base-class-design.md) | AggregateRoot Base Class Design | 2025-11-01 | Accepted |
@@ -210,6 +211,7 @@ AGENTS.md
 | [ADR-0027](0027-thread-null-safety-review.md) | Thread Safety and Null Safety Review (Java 4.1.0 Sync - Stage S5) | 2026-01-08 | Accepted |
 | [ADR-0028](0028-reactor-hierarchy-projector-notifier-genericization.md) | Reactor Type Hierarchy and Projector/Notifier Genericization | 2026-07-04 | Accepted |
 | [ADR-0029](0029-messageproducer-removal-gateway-deferral.md) | MessageProducer Removal from Core & Gateway Package Deferral | 2026-07-04 | Accepted |
+| [ADR-0030](0030-ucontract-2-contracts-enforced-by-default.md) | uContract 2.0.0 — Precondition Contracts Enforced by Default | 2026-10-05 | Accepted |
 
 ### Proposed
 
@@ -282,7 +284,7 @@ done
 
 ### Best Practices
 
-- Write ADRs **during** decision-making, not after implementation
+- Write ADRs **after** the implementation is done, so that what was learned while implementing is recorded
 - Keep ADRs **concise** but complete (1-3 pages max)
 - Focus on **WHY**, not just WHAT
 - Include **alternatives considered** to avoid future repetition
@@ -301,4 +303,4 @@ done
 ---
 
 *This README follows the ADR maintenance workflow defined above.*
-*Last Updated: 2026-07-04*
+*Last Updated: 2026-10-05*

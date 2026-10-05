@@ -9,7 +9,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_No changes yet._
+### Changed
+
+- **BREAKING:** Moved the `uContract` dependency to 2.0.0. Five existing precondition checks (four in
+  `DomainEventTypeMapper`, one in the `EsAggregateRoot` replay constructor) now run by default, in every build
+  configuration, and throw `uContract.Exceptions.PreconditionViolationException`. It derives from
+  `uContract.Exceptions.ContractViolationException`, which derives from `System.Exception` — it is not an
+  `ArgumentException`, so existing `catch (ArgumentNullException)` or `catch (ArgumentException)` blocks no longer
+  catch these cases. What was thrown before, and what is thrown now:
+  - `DomainEventTypeMapper.Register<T>(null)`: `ArgumentNullException`, now `PreconditionViolationException`.
+  - `DomainEventTypeMapper.Register<T>("")` and `Register<T>("  ")`: the blank name was registered without error,
+    now `PreconditionViolationException`.
+  - `DomainEventTypeMapper.GetTypeName((Type)null)`: `ArgumentNullException`, now `PreconditionViolationException`.
+  - `DomainEventTypeMapper.GetTypeName((IInternalDomainEvent)null)`: `NullReferenceException`, now
+    `PreconditionViolationException`.
+  - `DomainEventTypeMapper.GetType(null)`: `ArgumentNullException`, now `PreconditionViolationException`.
+  - `DomainEventTypeMapper.GetType("")` and `GetType("  ")`: previously `InvalidOperationException` (or the registered
+    type, if a blank name had been registered), now `PreconditionViolationException`. Stored events whose event type is
+    blank can no longer be converted by `DomainEventMapper.ToDomain`.
+  - The replay constructor of an `EsAggregateRoot` subclass with `null` events: `NullReferenceException`, now
+    `PreconditionViolationException`.
+  - `DomainEventMapper.ToDomain<T>(data)` (`ezDDD.UseCase`; single and batch overloads) when `data.EventType` is null
+    or blank: it calls `DomainEventTypeMapper.GetType`, so it now throws `PreconditionViolationException` as above
+    (previously `ArgumentNullException` for a null event type and `InvalidOperationException` for a blank one).
+- **Upgrade notes:**
+  - Catch `PreconditionViolationException` or its base `ContractViolationException` (both in `uContract.Exceptions`)
+    where you handled the exceptions listed above.
+  - The checks are switched by environment variables that uContract reads once per process. Set `DBC_PRE=off`, or
+    `DBC=off` when `DBC_PRE` is not set, to disable them. `DBC_PRE` is read first, then `DBC`, then the default
+    (enabled). The accepted values are `true/1/yes/on` and `false/0/no/off`, case-insensitive; any other value, or an
+    empty one, is ignored as if the variable were not set, so a typo leaves the checks on.
+  - The switches apply to the whole process: they also affect contracts your own code declares with uContract, and
+    `DBC=off` additionally disables postconditions, invariants and checks, except any whose own switch (`DBC_POST`,
+    `DBC_INV`, `DBC_CHECK`) is set.
+  - With ezDDD.NET 1.0.0 the checks ran only if the application set `DBC=on` (or `DBC_PRE=on`); an application that set
+    it only for this purpose can remove the setting.
+  - If you also use uContract directly, read its
+    [2.0.0 changelog](https://github.com/cwouyang/uContract.NET/blob/v2.0.0/CHANGELOG.md): contracts in your own code
+    are now enforced in every build configuration too. For example, `Contract.Invariant` calls inside an aggregate's
+    `_EnsureInvariant` now run whenever an event is applied, including during event replay; when an aggregate is loaded
+    through `EsRepository`, a violation during replay surfaces as an `InvalidOperationException` with the contract
+    violation in its inner exception chain. A project that references uContract 1.0.0 directly must move to 2.0.0.
+- CI now runs the test suite in the Release configuration as well as Debug.
 
 ## [1.0.0] - 2026-07-06
 
