@@ -3184,7 +3184,7 @@ public class AccountNotifier : INotifier<DomainEventDataInput>
             internalEvent.Id,
             internalEvent.OccurredOn,
             internalEvent.Source,
-            internalEvent.AccountNumber,
+            internalEvent.Source, // AccountCreated carries no account number; the account id is used
             internalEvent.Owner,
             internalEvent.Metadata);
 
@@ -3704,7 +3704,7 @@ public class AccountNotifier : INotifier<DomainEventDataInput>
             internalEvent.Id,
             internalEvent.OccurredOn,
             internalEvent.Source,
-            internalEvent.AccountNumber,
+            internalEvent.Source, // AccountCreated carries no account number; the account id is used
             internalEvent.Owner,
             internalEvent.Metadata);
 
@@ -3925,6 +3925,7 @@ using EzDdd.Cqrs;
 using EzDdd.Cqrs.Command;
 
 // The inquiry reads the deduplication record of the stored read model
+// (AccountId and AccountSummaryReadModel as in the IProjector and ReadModel examples below)
 public sealed class AccountEventHandledInquiry : IInquiry<IdempotentInquiryInput, bool>
 {
     private readonly IArchive<AccountSummaryReadModel, AccountId> _archive;
@@ -4026,8 +4027,10 @@ Builds or updates a read model from an input. A projector is a synchronous pure 
 
 This is a different type from the removed use-case projector `EzDdd.Cqrs.Query.IProjector<TInput>`, which had the same simple name.
 
-**Example:**
+**Example** (uses the `AccountCreated` and `MoneyDeposited` events defined under [IInternalDomainEvent](#iinternaldomainevent), whose `Source` is a `string` and whose amounts are `decimal`, an `AccountId(string Value)` record, and the `AccountSummaryReadModel` shown under [ReadModel](#readmodel)):
 ```csharp
+public sealed record AccountId(string Value) : IValueObject;
+
 public sealed record AccountProjectionInput(AccountSummaryReadModel? Current, IInternalDomainEvent Event);
 
 public sealed class AccountSummaryProjector
@@ -4036,10 +4039,10 @@ public sealed class AccountSummaryProjector
     public AccountSummaryReadModel? Project(AccountProjectionInput input) =>
         input.Event switch
         {
-            AccountCreated e => new AccountSummaryReadModel(e.AccountId, e.Owner, e.InitialBalance.Amount, 0),
+            AccountCreated e => new AccountSummaryReadModel(new AccountId(e.Source), e.Owner, e.InitialBalance, 0),
             MoneyDeposited e when input.Current is not null => input.Current with
             {
-                Balance = input.Current.Balance + e.Amount.Amount,
+                Balance = input.Current.Balance + e.Amount,
                 TransactionCount = input.Current.TransactionCount + 1,
             },
             _ => null,

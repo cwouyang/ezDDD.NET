@@ -178,7 +178,7 @@ Five NuGet packages with a unidirectional dependency chain (`Common â†’ Entity â
 | [**Common**](docs/examples/API_REFERENCE.md#ezdddcommon) | `BiMap<TKey, TValue>`, `JsonUtil`, `Converter<TSource, TTarget>` |
 | [**Entity**](docs/examples/API_REFERENCE.md#ezdddentity) | `IEntity<TId>`, `IValueObject`, `IDomainEvent`, `IInternalDomainEvent`, `AggregateRoot<TId, TEvent>`, `EsAggregateRoot<TId, TEvent>`, `DomainEventTypeMapper` |
 | [**UseCase**](docs/examples/API_REFERENCE.md#ezdddusecase) | `IUseCase<TInput, TOutput>`, `DefaultOutput<T>`, `UseCaseDecorator<TInput, TOutput>`, `DomainEventDataInput`, `IReactor<TInput>`, `IReconciler<TContext, TReport>`, `IRepository<TAggregate, TId, TEvent>`, `IRepositoryPeer<TData, TId>`, `EsRepository<TAggregate, TId>`, `OutboxRepository<TAggregate, TData, TId>`, `IExternalDomainEventPublisher<TEvent>`, `ExitCode` |
-| [**Cqrs**](docs/examples/API_REFERENCE.md#ezdddcqrs) | `ICommand<TInput, TOutput>`, `IQuery<TInput, TOutput>`, `IInquiry<TInput, TOutput>`, `IProjection<TInput, TOutput>`, `INotifier<TInput>`, `IArchive<TData, TId>`, `IdempotentDecorator<TInput, TOutput>`, `IProjector<TInput, TOutput>`, `ReadModel` |
+| [**Cqrs**](docs/examples/API_REFERENCE.md#ezdddcqrs) | `ICommand<TInput, TOutput>`, `IQuery<TInput, TOutput>`, `IInquiry<TInput, TOutput>`, `IProjection<TInput, TOutput>`, `INotifier<TInput>`, `IArchive<TData, TId>`, `IdempotentDecorator<TInput, TOutput>`, `IIdempotentIdParser<TInput>`, `IdempotentInquiryInput`, `IProjector<TInput, TOutput>`, `ReadModel` |
 
 ---
 

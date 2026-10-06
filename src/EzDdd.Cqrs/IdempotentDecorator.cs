@@ -24,10 +24,10 @@ namespace EzDdd.Cqrs;
 ///         event for the same data id can both pass, so deliver the events of one data id serially (for
 ///         example by partitioning by data id), or, when the only effect of the decorated use case is a
 ///         save, use an archive with optimistic concurrency; side effects before the save can still happen
-///         twice. The answer of the
-///         inquiry is advisory, because the decorated use case loads the data again. Only
-///         <c>ReadModel</c> carries a record that can be used for deduplication, so a reactor that changes an
-///         aggregate needs an application-supplied inquiry backed by its own record of handled events.
+///         twice. The answer of the inquiry is advisory, because the decorated use case loads the data
+///         again. Only <c>ReadModel</c> carries a record that can be used for deduplication, so a reactor
+///         that changes an aggregate needs an application-supplied inquiry backed by its own record of
+///         handled events.
 ///     </para>
 /// </remarks>
 /// <typeparam name="TInput">The type of the use case input, which carries the domain event.</typeparam>

@@ -525,9 +525,9 @@ catch (RepositorySaveException ex)
 
 ### Threading and Concurrency
 
-> **Historical example**: `BlockingMessageBus` below was removed from both codebases (Java 6.0.0 moved messaging to `ezddd-gateway`; ezDDD.NET removed it in the Phase 6/7 sync — see ADR-0029). The snippet is retained solely to illustrate how a Java `CopyOnWriteArrayList` idiom translates to a C# lock + snapshot idiom; apply the same technique to your own thread-safe collections.
+> **Historical example**: the Java `BlockingMessageBus` below was removed from both codebases (Java 6.0.0 moved messaging to `ezddd-gateway`; ezDDD.NET removed it in the Phase 6/7 sync — see ADR-0029), and its `Reactor.execute(event)` shape predates Java 7.0.0. It is kept only to illustrate how a Java `CopyOnWriteArrayList` idiom translates to a C# lock + snapshot idiom. The C# side shows the idiom with the current `IReactor<TInput>` shape (`TInput : IInput`, `Task<DefaultOutput> ExecuteAsync`); it is an application-side dispatcher, not a library type.
 
-**Java (CopyOnWriteArrayList)**:
+**Java (CopyOnWriteArrayList, pre-7.0.0 shape)**:
 ```java
 public class BlockingMessageBus<Event> implements MessageBus<Event> {
     private final List<Reactor<Event>> reactors = new CopyOnWriteArrayList<>();
@@ -542,17 +542,28 @@ public class BlockingMessageBus<Event> implements MessageBus<Event> {
 }
 ```
 
-**C# (Lock + Snapshot)**:
+**C# (Lock + Snapshot, current shape)**:
 ```csharp
-public class BlockingMessageBus<TEvent> : IMessageBus<TEvent>
+using EzDdd.UseCase.Port.In;
+
+public sealed class ReactorDispatcher<TInput>
+    where TInput : IInput
 {
-    private readonly List<IReactor<TEvent>> _reactors = new();
+    private readonly List<IReactor<TInput>> _reactors = new();
     private readonly object _lock = new();
 
-    public async Task PostAsync(TEvent message)
+    public void Register(IReactor<TInput> reactor)
+    {
+        lock (_lock)
+        {
+            _reactors.Add(reactor);
+        }
+    }
+
+    public async Task<IReadOnlyList<DefaultOutput>> DispatchAsync(TInput input)
     {
         // Create snapshot inside lock
-        IReactor<TEvent>[] snapshot;
+        IReactor<TInput>[] snapshot;
 
         lock (_lock)
         {
@@ -560,10 +571,13 @@ public class BlockingMessageBus<TEvent> : IMessageBus<TEvent>
         }
 
         // Execute outside lock (non-blocking)
+        var outputs = new List<DefaultOutput>(snapshot.Length);
         foreach (var reactor in snapshot)
         {
-            await reactor.ExecuteAsync(message);
+            outputs.Add(await reactor.ExecuteAsync(input));
         }
+
+        return outputs;
     }
 }
 ```
@@ -571,7 +585,7 @@ public class BlockingMessageBus<TEvent> : IMessageBus<TEvent>
 **Key Points**:
 - `CopyOnWriteArrayList` → `List<T>` + `lock` (C# doesn't have CopyOnWriteArrayList)
 - Snapshot pattern: Copy reactors array inside lock, execute outside lock
-- Async execution: `await reactor.ExecuteAsync(message)`
+- Async execution: `await reactor.ExecuteAsync(input)` returns a `DefaultOutput`
 - `lock` statement for thread safety
 
 ---
