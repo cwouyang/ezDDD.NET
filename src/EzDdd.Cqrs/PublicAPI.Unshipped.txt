@@ -14,3 +14,9 @@
 *REMOVED*EzDdd.Cqrs.CqrsOutput<T>.Succeed() -> T!
 *REMOVED*static EzDdd.Cqrs.CqrsOutput<T>.Create() -> T!
 *REMOVED*EzDdd.Cqrs.Query.IProjector<TInput>
+const EzDdd.Cqrs.Entity.Query.EventDeduplicationRecord.DefaultMaxEventCapacity = 50 -> int
+EzDdd.Cqrs.Entity.Query.EventDeduplicationRecord
+EzDdd.Cqrs.Entity.Query.EventDeduplicationRecord.EventDeduplicationRecord() -> void
+EzDdd.Cqrs.Entity.Query.EventDeduplicationRecord.IsEventHandled(System.Guid eventId) -> bool
+EzDdd.Cqrs.Entity.Query.EventDeduplicationRecord.SetEventId(System.Guid eventId) -> void
+EzDdd.Cqrs.Entity.Query.EventDeduplicationRecord.EventDeduplicationRecord(int maxEventCapacity) -> void
