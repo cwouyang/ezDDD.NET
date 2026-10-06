@@ -21,15 +21,20 @@ public sealed class CompleteCqrsFlowTests
 {
     #region Setup Infrastructure
 
-    /// <summary>
-    ///     Creates the complete CQRS infrastructure for testing.
-    /// </summary>
-    private static CqrsTestInfrastructure _CreateInfrastructure()
+    private static void _RegisterAccountEventTypes()
     {
         DomainEventTypeMapper.Register<AccountCreated>("AccountCreated");
         DomainEventTypeMapper.Register<MoneyDeposited>("MoneyDeposited");
         DomainEventTypeMapper.Register<MoneyWithdrawn>("MoneyWithdrawn");
         DomainEventTypeMapper.Register<AccountClosed>("AccountClosed");
+    }
+
+    /// <summary>
+    ///     Creates the complete CQRS infrastructure for testing.
+    /// </summary>
+    private static CqrsTestInfrastructure _CreateInfrastructure()
+    {
+        _RegisterAccountEventTypes();
 
         InMemoryEventStorePeer eventStorePeer = new();
         EsRepository<BankAccount, AccountId> repository = new(eventStorePeer);
@@ -80,7 +85,8 @@ public sealed class CompleteCqrsFlowTests
     }
 
     /// <summary>
-    ///     Archive spy that makes the first save fail, like a store outage, and delegates every other call.
+    ///     Archive spy that makes the first save of a model with at least one transaction fail, like a store
+    ///     outage, and delegates every other call.
     /// </summary>
     private sealed class SaveFailsOnceArchive : IArchive<AccountSummaryReadModel, AccountId>
     {
@@ -99,7 +105,7 @@ public sealed class CompleteCqrsFlowTests
 
         public Task SaveAsync(AccountSummaryReadModel data)
         {
-            if (_failed)
+            if (_failed || data.TransactionCount < 1)
             {
                 return _inner.SaveAsync(data);
             }
@@ -244,28 +250,34 @@ public sealed class CompleteCqrsFlowTests
     }
 
     [Fact]
-    public async Task RedeliveryAfterFailedSave_ShouldProjectTheEvent()
+    public async Task RedeliveryAfterFailedSave_ShouldProjectTheEventExactlyOnce()
     {
         EsRepository<BankAccount, AccountId> repository = new(new InMemoryEventStorePeer());
         JsonCopyArchive<AccountSummaryReadModel, AccountId> store = new(m => m.AccountId);
         CqrsTestInfrastructure infra = _CreateInfrastructure(repository, store, new SaveFailsOnceArchive(store));
         AccountId accountId = new("ACC-DEDUP-003");
         BankAccount account = new(accountId, "Karl Moore", new Money(100m));
-        DomainEventDataInput created = _InputOf(account.GetDomainEvents().Single());
-        await Assert.ThrowsAsync<InvalidOperationException>(() => infra.Reactor.ExecuteAsync(created));
+        account.Deposit(new Money(25m));
+        List<DomainEventDataInput> inputs = account.GetDomainEvents().Select(_InputOf).ToList();
+        DomainEventDataInput created = inputs[0];
+        DomainEventDataInput deposited = inputs[1];
+        await infra.Reactor.ExecuteAsync(created);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => infra.Reactor.ExecuteAsync(deposited));
 
-        DefaultOutput output = await infra.Reactor.ExecuteAsync(created);
+        DefaultOutput output = await infra.Reactor.ExecuteAsync(deposited);
 
         AccountSummaryReadModel? stored = await store.FindByIdAsync(accountId);
         Assert.Equal(ExitCode.Success, output.ExitCode);
         Assert.NotNull(stored);
-        Assert.True(stored.EventDeduplicationRecord.IsEventHandled(created.Event.Id));
+        Assert.Equal(125m, stored.Balance);
+        Assert.Equal(1, stored.TransactionCount);
+        Assert.True(stored.EventDeduplicationRecord.IsEventHandled(deposited.Event.Id));
     }
 
     [Fact]
     public async Task RedeliveryOlderThanTheCapacity_ShouldBeProjectedAgain()
     {
-        _CreateInfrastructure();
+        _RegisterAccountEventTypes();
         const int capacity = 3;
         const int furtherEvents = capacity + 1;
         JsonCopyArchive<CappedCounterReadModel, AccountId> archive = new(m => m.AccountId);
