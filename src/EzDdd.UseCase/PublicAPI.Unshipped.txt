@@ -25,3 +25,7 @@ EzDdd.UseCase.Port.In.DefaultOutput.DefaultOutput() -> void
 EzDdd.UseCase.Port.In.DomainEventDataInput
 EzDdd.UseCase.Port.In.DomainEventDataInput.Event.get -> EzDdd.UseCase.Port.InOut.DomainEventData!
 EzDdd.UseCase.Port.In.DomainEventDataInput.Event.init -> void
+abstract EzDdd.UseCase.Port.In.UseCaseDecorator<TInput, TOutput>.ExecuteAsync(TInput input) -> System.Threading.Tasks.Task<TOutput>!
+EzDdd.UseCase.Port.In.UseCaseDecorator<TInput, TOutput>
+EzDdd.UseCase.Port.In.UseCaseDecorator<TInput, TOutput>.DecoratedUseCase.get -> EzDdd.UseCase.Port.In.IUseCase<TInput, TOutput>!
+EzDdd.UseCase.Port.In.UseCaseDecorator<TInput, TOutput>.UseCaseDecorator(EzDdd.UseCase.Port.In.IUseCase<TInput, TOutput>! useCase) -> void
