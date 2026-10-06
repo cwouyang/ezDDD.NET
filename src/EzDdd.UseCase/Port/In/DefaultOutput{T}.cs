@@ -3,7 +3,8 @@ using System.Diagnostics.CodeAnalysis;
 namespace EzDdd.UseCase.Port.In;
 
 /// <summary>
-///     <c>DefaultOutput</c> is a base class for CQRS command and query outputs.
+///     <c>DefaultOutput</c> is the default implementation of <see cref="IOutput" /> used by use cases,
+///     commands, and queries.
 ///     <para>
 ///         This class provides a type-safe fluent API using self-referential generics,
 ///         allowing subclasses to maintain their concrete type when chaining methods.
@@ -57,18 +58,18 @@ namespace EzDdd.UseCase.Port.In;
 ///     </para>
 ///     <list type="bullet">
 ///         <item>Subclass to add domain-specific fluent methods (e.g., <c>SetOrderTotal()</c>, <c>SetCustomerName()</c>)</item>
-///         <item>Self-referential generic <c>TSelf</c> parameter preserves concrete type in fluent method chains</item>
+///         <item>Self-referential generic <c>T</c> parameter preserves concrete type in fluent method chains</item>
 ///         <item>
-///             Override <c>Self()</c> protected method to return concrete subclass instance (required for proper type
-///             preservation)
+///             Fluent methods cast <c>this</c> to <c>T</c>, so <c>T</c> must be the subclass itself
 ///         </item>
 ///         <item>Use <c>new()</c> constraint to ensure parameterless constructor exists for <c>Create()</c> factory method</item>
 ///         <item>Compatible with both <c>ICommand</c> and <c>IQuery</c> output types</item>
 ///         <item>Can add validation logic in fluent methods before setting properties</item>
 ///     </list>
 ///     <para>
-///         See ADR-0017 (DefaultOutput Implementation Strategy) for detailed explanation of the
-///         self-referential generic pattern and design rationale.
+///         See ADR-0017 (CqrsOutput Implementation Strategy) for the self-referential generic pattern and its
+///         rationale, and ADR-0031 (Alignment with Java ezddd 9.0.1), which supersedes it, for the rename to
+///         <c>DefaultOutput</c> and the move to EzDdd.UseCase.
 ///     </para>
 /// </remarks>
 public class DefaultOutput<T> : IOutput
