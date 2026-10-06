@@ -31,3 +31,15 @@ override EzDdd.Cqrs.Entity.Query.ReadModel.GetHashCode() -> int
 EzDdd.Cqrs.Entity.Query.IReadValue
 EzDdd.Cqrs.Entity.Query.IProjector<TInput, TOutput>
 EzDdd.Cqrs.Entity.Query.IProjector<TInput, TOutput>.Project(TInput input) -> TOutput
+EzDdd.Cqrs.IIdempotentIdParser<TInput>
+EzDdd.Cqrs.IIdempotentIdParser<TInput>.Parse(TInput input) -> string?
+EzDdd.Cqrs.IdempotentInquiryInput
+EzDdd.Cqrs.IdempotentInquiryInput.DataId.get -> string!
+EzDdd.Cqrs.IdempotentInquiryInput.DataId.set -> void
+EzDdd.Cqrs.IdempotentInquiryInput.EventId.get -> System.Guid
+EzDdd.Cqrs.IdempotentInquiryInput.EventId.set -> void
+EzDdd.Cqrs.IdempotentInquiryInput.IdempotentInquiryInput() -> void
+EzDdd.Cqrs.IdempotentDecorator<TInput, TOutput>
+EzDdd.Cqrs.IdempotentDecorator<TInput, TOutput>.IdempotentDecorator(EzDdd.UseCase.Port.In.IUseCase<TInput!, TOutput>! useCase, EzDdd.Cqrs.Command.IInquiry<EzDdd.Cqrs.IdempotentInquiryInput!, bool>! inquiry, System.Func<TOutput>! outputFactory, System.Func<EzDdd.Entity.IInternalDomainEvent!, string?>! idParser) -> void
+override EzDdd.Cqrs.IdempotentDecorator<TInput, TOutput>.ExecuteAsync(TInput! input) -> System.Threading.Tasks.Task<TOutput>!
+EzDdd.Cqrs.IdempotentDecorator<TInput, TOutput>.IdempotentDecorator(EzDdd.UseCase.Port.In.IUseCase<TInput!, TOutput>! useCase, EzDdd.Cqrs.Command.IInquiry<EzDdd.Cqrs.IdempotentInquiryInput!, bool>! inquiry, System.Func<TOutput>! outputFactory, EzDdd.Cqrs.IIdempotentIdParser<EzDdd.Entity.IInternalDomainEvent!>! idParser) -> void
