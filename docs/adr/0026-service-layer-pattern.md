@@ -4,6 +4,8 @@
 
 **Accepted**
 
+> **Status note (2026-10-06)**: `CqrsOutput<T>` in this ADR is now `DefaultOutput<T>` in EzDdd.UseCase.Port.In ([ADR-0031](0031-align-with-java-ezddd-9-0-1.md)). The example's `Success(...)`/`Failure(...)` factories never existed; use `Create()` with `Succeed()`/`Fail()`/`SetMessage()`. The service-layer decision is unchanged.
+
 - **Date**: 2026-01-08
 - **Deciders**: ezDDD.NET Architecture Team
 - **Status Date**: 2026-01-08

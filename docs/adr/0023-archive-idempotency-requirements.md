@@ -2,11 +2,20 @@
 
 ## Status
 
-**Accepted**
+**Accepted (Amended by [ADR-0031](0031-align-with-java-ezddd-9-0-1.md))**
+
+> Partially amended: upsert and delete idempotency make repeated writes converge, but they do not
+> stop an accumulating projection from counting a redelivered event twice. Since the alignment with
+> Java ezddd 9.0.1 they are complemented by event deduplication: a read model deriving from
+> `ReadModel` remembers the ids of the events projected into it, and `IdempotentDecorator` skips an
+> event already applied. This adds two archive requirements: `FindByIdAsync` must return a copy the
+> caller can change without changing stored state (the reference-sharing `InMemoryArchive` example
+> below does not), and `SaveAsync` must persist the `eventDeduplicationRecord` property. The
+> idempotency requirements of this ADR remain in force.
 
 - **Date**: 2025-11-18
 - **Deciders**: Development Team
-- **Status Date**: 2025-11-18
+- **Status Date**: 2026-10-06
 
 ---
 
@@ -443,5 +452,6 @@ public async Task SaveAsync(AccountReadModel data)
 | Date       | Status      | Notes                          |
 |------------|-------------|--------------------------------|
 | 2025-11-18 | Accepted    | Initial decision after Iteration 5 & 6 implementation |
+| 2026-10-06 | Amended     | Amended by ADR-0031: complemented by event deduplication; archives return copies |
 
 ---

@@ -4,6 +4,8 @@
 
 **Accepted**
 
+> **Status note (2026-10-06)**: `CqrsOutput<T>` in this ADR is now `DefaultOutput<T>` in EzDdd.UseCase.Port.In ([ADR-0031](0031-align-with-java-ezddd-9-0-1.md)); `ICommand`/`IQuery` constrain on `DefaultOutput<TOutput>`. The independence of `IInquiry` and `IProjection` is unchanged; `IdempotentDecorator` asks an `IInquiry<IdempotentInquiryInput, bool>`.
+
 - **Date**: 2025-11-17
 - **Deciders**: Project maintainers
 - **Status Date**: 2025-11-17

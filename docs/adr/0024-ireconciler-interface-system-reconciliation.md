@@ -4,6 +4,8 @@
 
 **Accepted**
 
+> **Status note (2026-10-06)**: The use-case `IProjector` this ADR compares with was removed by [ADR-0031](0031-align-with-java-ezddd-9-0-1.md); event-driven work is now done by `IReactor<TInput>` and `INotifier<TInput>`, which are use cases. The `IReconciler` decision is unchanged.
+
 - **Date**: 2026-01-07
 - **Deciders**: Development Team
 - **Status Date**: 2026-01-07

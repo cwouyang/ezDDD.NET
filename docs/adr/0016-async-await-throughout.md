@@ -4,6 +4,8 @@
 
 **Accepted**
 
+> **Status note (2026-10-06)**: The `IReactor<TInput>` shape shown in this ADR predates [ADR-0031](0031-align-with-java-ezddd-9-0-1.md): `IReactor<in TInput>` is now an `IUseCase<TInput, DefaultOutput>` whose `ExecuteAsync` returns `Task<DefaultOutput>`, and the message-bus members were removed earlier (ADR-0025). The async-throughout decision is unchanged; the entities-layer `IProjector.Project` is synchronous because it performs no I/O.
+
 - **Date**: 2025-11-10
 - **Deciders**: Project maintainers
 - **Status Date**: 2025-11-10

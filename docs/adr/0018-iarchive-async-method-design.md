@@ -4,6 +4,8 @@
 
 **Accepted**
 
+> **Status note (2026-10-06)**: The `AccountProjector : IProjector, IReactor` example predates [ADR-0031](0031-align-with-java-ezddd-9-0-1.md): a read model is now maintained by an `IReactor<DomainEventDataInput>` that loads it from the archive, calls the entities-layer `IProjector<TInput, TOutput>`, and saves it. The `IArchive` method design is unchanged.
+
 - **Date**: 2025-11-17
 - **Deciders**: Project maintainers
 - **Status Date**: 2025-11-17

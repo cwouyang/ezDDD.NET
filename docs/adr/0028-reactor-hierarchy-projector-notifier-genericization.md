@@ -2,11 +2,19 @@
 
 ## Status
 
-**Accepted**
+**Superseded by [ADR-0031](0031-align-with-java-ezddd-9-0-1.md)**
+
+> Superseded with the alignment to Java ezddd 9.0.1: upstream 7.0.0 made `Reactor`, `Notifier`
+> and the use-case `Projector` siblings that each extend `UseCase` and return a `DefaultOutput`, and
+> 8.0.0 removed the use-case `Projector`. `IReactor<in TInput>` and `INotifier<in TInput>` are now
+> `IUseCase<TInput, DefaultOutput>` with `TInput : IInput`, `INotifier` no longer derives from
+> `IReactor`, and `EzDdd.Cqrs.Query.IProjector<TInput>` is removed in favor of an `IReactor` that
+> drives the entities-layer `EzDdd.Cqrs.Entity.Query.IProjector<TInput, TOutput>`. The async
+> `ExecuteAsync` (D1 here) and the contravariant input remain.
 
 - **Date**: 2026-07-04
 - **Deciders**: Development Team
-- **Status Date**: 2026-07-04
+- **Status Date**: 2026-10-06
 
 ---
 
@@ -237,5 +245,6 @@ removing it was an over-removal, not a design decision.
 | Date       | Status      | Notes                          |
 |------------|-------------|--------------------------------|
 | 2026-07-04 | Accepted    | Initial decision (Phase 7 I1)  |
+| 2026-10-06 | Superseded  | Superseded by ADR-0031: sibling use cases returning `DefaultOutput`; use-case `IProjector` removed (Java 7.0.0–8.0.0) |
 
 ---

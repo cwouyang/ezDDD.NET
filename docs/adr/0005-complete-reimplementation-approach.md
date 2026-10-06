@@ -4,6 +4,8 @@
 
 **Accepted**
 
+> **Status note (2026-10-06)**: Type names in this ADR predate [ADR-0031](0031-align-with-java-ezddd-9-0-1.md): `CqrsOutput` is now `DefaultOutput<T>` (EzDdd.UseCase), and the use-case `IProjector` was removed in favor of an `IReactor` that drives the entities-layer `IProjector<TInput, TOutput>`. The reimplementation approach is unchanged.
+
 - **Date**: 2025-10-31
 - **Deciders**: Project maintainers
 - **Status Date**: 2025-10-31

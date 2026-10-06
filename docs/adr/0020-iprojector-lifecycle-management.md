@@ -2,17 +2,22 @@
 
 ## Status
 
-**Superseded by [ADR-0028](0028-reactor-hierarchy-projector-notifier-genericization.md)**
+**Superseded by [ADR-0028](0028-reactor-hierarchy-projector-notifier-genericization.md), then by [ADR-0031](0031-align-with-java-ezddd-9-0-1.md)**
 
 > The "pure marker interface" decision is superseded: `IProjector` is now
 > `IProjector<in TInput> : IReactor<TInput>` (Java 5.0.0 alignment). The
 > lifecycle-separation guidance in this ADR (pair implementations with
 > `BackgroundService`/`IHostedService`; keep hosting concerns out of the
 > domain interface) remains applicable and is carried forward by ADR-0028.
+>
+> **Status note (2026-10-06)**: ADR-0028 is itself superseded by ADR-0031. The use-case
+> `IProjector<TInput>` was removed (Java 8.0.0); a read model is now maintained by an
+> `IReactor<TInput>` that drives the entities-layer `IProjector<TInput, TOutput>`. ADR-0031 restates
+> this ADR's lifecycle-separation guidance for that `IReactor`-driven flow.
 
 - **Date**: 2025-11-18
 - **Deciders**: Development Team
-- **Status Date**: 2026-07-04
+- **Status Date**: 2026-10-06
 
 ---
 
@@ -320,5 +325,6 @@ public async Task UpdateAsync_AccountCreated_SavesReadModel()
 |------------|-------------|--------------------------------|
 | 2025-11-18 | Accepted    | Initial decision after Iteration 4 & 6 implementation |
 | 2026-07-04 | Superseded  | Superseded by ADR-0028 (Reactor hierarchy, Projector genericization) |
+| 2026-10-06 | Superseded  | Pointer extended to ADR-0031 (use-case IProjector removed; guidance carried to the IReactor flow) |
 
 ---

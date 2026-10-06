@@ -4,6 +4,8 @@
 
 **Accepted**
 
+> **Status note (2026-10-06)**: `src/EzDdd.Cqrs/CqrsOutput.cs` is now `src/EzDdd.UseCase/Port/In/DefaultOutput{T}.cs` (type `DefaultOutput<T>`, [ADR-0031](0031-align-with-java-ezddd-9-0-1.md)); its two `null` checks are unchanged.
+
 - **Date**: 2026-01-08
 - **Deciders**: ezDDD.NET Architecture Team
 - **Status Date**: 2026-01-08

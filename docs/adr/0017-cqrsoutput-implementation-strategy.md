@@ -2,11 +2,17 @@
 
 ## Status
 
-**Accepted**
+**Superseded by [ADR-0031](0031-align-with-java-ezddd-9-0-1.md)**
+
+> Superseded with the alignment to Java ezddd 9.0.1: upstream 7.0.0 renamed `CqrsOutput` to
+> `DefaultOutput` and moved it to the use-case module, so `EzDdd.Cqrs.CqrsOutput<T>` is now
+> `EzDdd.UseCase.Port.In.DefaultOutput<T>` (package ezDDD.UseCase), with `Ignore()` and `Reject()`
+> added. The self-referential generic design, the `new()` constraint, the defaults and the `null`
+> guards recorded in this ADR carry over unchanged to `DefaultOutput<T>`.
 
 - **Date**: 2025-11-17
 - **Deciders**: Project maintainers
-- **Status Date**: 2025-11-17
+- **Status Date**: 2026-10-06
 
 ---
 
@@ -424,6 +430,7 @@ public void FluentApi_ShouldChainCorrectly()
 |------------|-------------|--------------------------------|
 | 2025-11-17 | Proposed    | Initial draft for Phase 4      |
 | 2025-11-17 | Accepted    | Decision finalized before Phase 4 implementation |
+| 2026-10-06 | Superseded  | Superseded by ADR-0031: renamed `DefaultOutput<T>` and moved to EzDdd.UseCase (Java 7.0.0) |
 
 ---
 
