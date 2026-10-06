@@ -13,3 +13,9 @@ EzDdd.UseCase.Port.In.DefaultOutput<T>.SetId(string! id) -> T!
 EzDdd.UseCase.Port.In.DefaultOutput<T>.SetMessage(string! message) -> T!
 EzDdd.UseCase.Port.In.DefaultOutput<T>.Succeed() -> T!
 static EzDdd.UseCase.Port.In.DefaultOutput<T>.Create() -> T!
+EzDdd.UseCase.Port.In.ExitCode.Ignore = 2 -> EzDdd.UseCase.Port.In.ExitCode
+EzDdd.UseCase.Port.In.ExitCode.Reject = 3 -> EzDdd.UseCase.Port.In.ExitCode
+EzDdd.UseCase.Port.In.DefaultOutput<T>.Ignore() -> T!
+EzDdd.UseCase.Port.In.DefaultOutput<T>.Reject() -> T!
+EzDdd.UseCase.Port.In.IOutput.Ignore() -> EzDdd.UseCase.Port.In.IOutput!
+EzDdd.UseCase.Port.In.IOutput.Reject() -> EzDdd.UseCase.Port.In.IOutput!

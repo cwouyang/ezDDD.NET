@@ -14,4 +14,14 @@ public enum ExitCode
     ///     Indicates failed execution.
     /// </summary>
     Failure = 1,
+
+    /// <summary>
+    ///     Indicates the request was ignored.
+    /// </summary>
+    Ignore = 2,
+
+    /// <summary>
+    ///     Indicates the request was rejected.
+    /// </summary>
+    Reject = 3,
 }

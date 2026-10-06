@@ -118,6 +118,18 @@ public class DefaultOutput<T> : IOutput
     }
 
     /// <inheritdoc />
+    IOutput IOutput.Ignore()
+    {
+        return Ignore();
+    }
+
+    /// <inheritdoc />
+    IOutput IOutput.Reject()
+    {
+        return Reject();
+    }
+
+    /// <inheritdoc />
     IOutput IOutput.SetId(string id)
     {
         return SetId(id);
@@ -199,6 +211,26 @@ public class DefaultOutput<T> : IOutput
     public T Succeed()
     {
         ExitCode = ExitCode.Success;
+        return _Self();
+    }
+
+    /// <summary>
+    ///     Sets the exit code to <see cref="ExitCode.Ignore" />.
+    /// </summary>
+    /// <returns>This output instance as type T for fluent API.</returns>
+    public T Ignore()
+    {
+        ExitCode = ExitCode.Ignore;
+        return _Self();
+    }
+
+    /// <summary>
+    ///     Sets the exit code to <see cref="ExitCode.Reject" />.
+    /// </summary>
+    /// <returns>This output instance as type T for fluent API.</returns>
+    public T Reject()
+    {
+        ExitCode = ExitCode.Reject;
         return _Self();
     }
 

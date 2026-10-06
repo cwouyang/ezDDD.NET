@@ -56,6 +56,24 @@ public class InputOutputTests
         Assert.Equal("Failure", exitCode.ToString());
     }
 
+    [Fact]
+    public void ExitCode_Ignore_HasCodeTwo()
+    {
+        const ExitCode exitCode = ExitCode.Ignore;
+
+        Assert.Equal(2, exitCode.Code());
+        Assert.Equal("Ignore", exitCode.ToString());
+    }
+
+    [Fact]
+    public void ExitCode_Reject_HasCodeThree()
+    {
+        const ExitCode exitCode = ExitCode.Reject;
+
+        Assert.Equal(3, exitCode.Code());
+        Assert.Equal("Reject", exitCode.ToString());
+    }
+
     #endregion
 
     #region IOutput Tests
@@ -115,6 +133,28 @@ public class InputOutputTests
         var result = output.Fail();
 
         Assert.Equal(ExitCode.Failure, result.ExitCode);
+        Assert.Same(output, result);
+    }
+
+    [Fact]
+    public void Output_Ignore_SetsExitCodeToIgnore()
+    {
+        IOutput output = new TestOutput();
+
+        var result = output.Ignore();
+
+        Assert.Equal(ExitCode.Ignore, result.ExitCode);
+        Assert.Same(output, result);
+    }
+
+    [Fact]
+    public void Output_Reject_SetsExitCodeToReject()
+    {
+        IOutput output = new TestOutput();
+
+        var result = output.Reject();
+
+        Assert.Equal(ExitCode.Reject, result.ExitCode);
         Assert.Same(output, result);
     }
 
@@ -188,6 +228,18 @@ public class InputOutputTests
         public IOutput Fail()
         {
             ExitCode = ExitCode.Failure;
+            return this;
+        }
+
+        public IOutput Ignore()
+        {
+            ExitCode = ExitCode.Ignore;
+            return this;
+        }
+
+        public IOutput Reject()
+        {
+            ExitCode = ExitCode.Reject;
             return this;
         }
 

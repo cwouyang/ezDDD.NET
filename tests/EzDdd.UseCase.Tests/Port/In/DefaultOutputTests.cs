@@ -93,6 +93,30 @@ public class DefaultOutputTests
     }
 
     [Fact]
+    public void Ignore_WhenCalled_ShouldSetExitCodeToIgnoreAndReturnSelf()
+    {
+        TestOutput output = TestOutput.Create();
+
+        TestOutput result = output.Ignore();
+
+        Assert.Equal(ExitCode.Ignore, output.ExitCode);
+        Assert.Same(output, result);
+        Assert.IsType<TestOutput>(result);
+    }
+
+    [Fact]
+    public void Reject_WhenCalled_ShouldSetExitCodeToRejectAndReturnSelf()
+    {
+        TestOutput output = TestOutput.Create();
+
+        TestOutput result = output.Reject();
+
+        Assert.Equal(ExitCode.Reject, output.ExitCode);
+        Assert.Same(output, result);
+        Assert.IsType<TestOutput>(result);
+    }
+
+    [Fact]
     public void FluentAPI_MethodChaining_ShouldWork()
     {
         const string expectedId = "id-001";
@@ -199,6 +223,28 @@ public class DefaultOutputTests
         IOutput result = output.Succeed();
 
         Assert.Equal(ExitCode.Success, output.ExitCode);
+        Assert.Same(output, result);
+    }
+
+    [Fact]
+    public void ExplicitIOutput_Ignore_ShouldWorkThroughInterface()
+    {
+        IOutput output = TestOutput.Create();
+
+        IOutput result = output.Ignore();
+
+        Assert.Equal(ExitCode.Ignore, output.ExitCode);
+        Assert.Same(output, result);
+    }
+
+    [Fact]
+    public void ExplicitIOutput_Reject_ShouldWorkThroughInterface()
+    {
+        IOutput output = TestOutput.Create();
+
+        IOutput result = output.Reject();
+
+        Assert.Equal(ExitCode.Reject, output.ExitCode);
         Assert.Same(output, result);
     }
 
