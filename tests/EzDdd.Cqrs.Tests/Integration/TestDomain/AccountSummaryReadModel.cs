@@ -1,3 +1,4 @@
+using EzDdd.Cqrs.Entity.Query;
 using EzDdd.UseCase.Tests.Integration.TestDomain;
 
 namespace EzDdd.Cqrs.Tests.Integration.TestDomain;
@@ -20,4 +21,4 @@ public sealed record AccountSummaryReadModel(
     DateTimeOffset CreatedOn,
     DateTimeOffset LastTransactionDate,
     int TransactionCount
-);
+) : ReadModel;
