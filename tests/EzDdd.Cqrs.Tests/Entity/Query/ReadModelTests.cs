@@ -113,4 +113,29 @@ public class ReadModelTests
         Assert.False(counter.Equals(small));
         Assert.False(small.Equals(counter));
     }
+
+    [Fact]
+    public void With_OnAPopulatedModelAtCapacity_KeepsTheIdsAndCapacityInTheCopy()
+    {
+        ThreeIdMemoryReadModel original = new("three-1");
+        Guid a = Guid.NewGuid();
+        Guid b = Guid.NewGuid();
+        Guid c = Guid.NewGuid();
+        Guid d = Guid.NewGuid();
+        original.UpdateEventDeduplicationRecord(a);
+        original.UpdateEventDeduplicationRecord(b);
+        original.UpdateEventDeduplicationRecord(c);
+        ThreeIdMemoryReadModel copy = original with { Id = "three-2" };
+
+        copy.UpdateEventDeduplicationRecord(d);
+
+        Assert.False(copy.EventDeduplicationRecord.IsEventHandled(a));
+        Assert.True(copy.EventDeduplicationRecord.IsEventHandled(b));
+        Assert.True(copy.EventDeduplicationRecord.IsEventHandled(c));
+        Assert.True(copy.EventDeduplicationRecord.IsEventHandled(d));
+        Assert.True(original.EventDeduplicationRecord.IsEventHandled(a));
+        Assert.True(original.EventDeduplicationRecord.IsEventHandled(b));
+        Assert.True(original.EventDeduplicationRecord.IsEventHandled(c));
+        Assert.False(original.EventDeduplicationRecord.IsEventHandled(d));
+    }
 }

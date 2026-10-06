@@ -100,6 +100,31 @@ public class ReadModelJsonTests
         Assert.Equal(EventDeduplicationRecord.DefaultMaxEventCapacity, CapacityOf(loaded, optionSet));
     }
 
+    [Theory]
+    [MemberData(nameof(OptionSets))]
+    public void Roundtrip_OfAPopulatedSmallCapacityModel_KeepsTheCapacityAndIdOrder(string optionSet)
+    {
+        JsonSerializerOptions options = OptionsFor(optionSet);
+        ThreeIdMemoryReadModel model = new("three-1");
+        model.UpdateEventDeduplicationRecord(FirstId);
+        model.UpdateEventDeduplicationRecord(SecondId);
+        model.UpdateEventDeduplicationRecord(ThirdId);
+        Guid fourth = Guid.NewGuid();
+
+        ThreeIdMemoryReadModel? loaded = JsonSerializer.Deserialize<ThreeIdMemoryReadModel>(
+            JsonSerializer.Serialize(model, options),
+            options
+        );
+        Assert.NotNull(loaded);
+        loaded.UpdateEventDeduplicationRecord(fourth);
+
+        Assert.Equal(ThreeIdMemoryReadModel.Capacity, CapacityOf(loaded, optionSet));
+        Assert.False(loaded.EventDeduplicationRecord.IsEventHandled(FirstId));
+        Assert.True(loaded.EventDeduplicationRecord.IsEventHandled(SecondId));
+        Assert.True(loaded.EventDeduplicationRecord.IsEventHandled(ThirdId));
+        Assert.True(loaded.EventDeduplicationRecord.IsEventHandled(fourth));
+    }
+
     // The record exposes its capacity only through its JSON form.
     private static int CapacityOf(ReadModel model, string optionSet)
     {

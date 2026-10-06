@@ -14,3 +14,8 @@ public sealed record SmallMemoryReadModel(string Id) : ReadModel(SmallMemoryRead
 }
 
 public sealed record InvalidCapacityReadModel(int Capacity) : ReadModel(Capacity);
+
+public sealed record ThreeIdMemoryReadModel(string Id) : ReadModel(ThreeIdMemoryReadModel.Capacity)
+{
+    public const int Capacity = 3;
+}
