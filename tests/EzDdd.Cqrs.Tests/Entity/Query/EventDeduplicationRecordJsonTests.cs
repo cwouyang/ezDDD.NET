@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using EzDdd.Common;
 using EzDdd.Cqrs.Entity.Query;
 
@@ -177,6 +178,24 @@ public class EventDeduplicationRecordJsonTests
         );
 
         Assert.IsType<JsonException>(error.InnerException);
+    }
+
+    [Fact]
+    public void Deserialize_WithPopulateCreationHandling_StillReadsStoredIds()
+    {
+        JsonSerializerOptions options = new() { PreferredObjectCreationHandling = JsonObjectCreationHandling.Populate };
+
+        EventDeduplicationRecord? record = JsonSerializer.Deserialize<EventDeduplicationRecord>(
+            """{"processedEventIds":["11111111-1111-1111-1111-111111111111"],"MAX_EVENT_CAPACITY":5}""",
+            options
+        );
+
+        Assert.NotNull(record);
+        Assert.True(record.IsEventHandled(FirstId));
+        Assert.Equal(
+            """{"processedEventIds":["11111111-1111-1111-1111-111111111111"],"MAX_EVENT_CAPACITY":5}""",
+            JsonSerializer.Serialize(record, options)
+        );
     }
 
     private static EventDeduplicationRecord Read(string json, string optionSet) =>

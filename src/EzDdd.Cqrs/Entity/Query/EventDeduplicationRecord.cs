@@ -39,6 +39,7 @@ public sealed class EventDeduplicationRecord
     // setters are the tolerant read path, while the public constructor still rejects a capacity below 1.
     [JsonInclude]
     [JsonPropertyName("processedEventIds")]
+    [JsonObjectCreationHandling(JsonObjectCreationHandling.Replace)]
     private List<string?>? JsonEventIds
     {
         get => [.. _eventIds];
