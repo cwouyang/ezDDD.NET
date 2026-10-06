@@ -20,7 +20,7 @@ public class CommandTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_WhenCalled_ShouldReturnCqrsOutput()
+    public async Task ExecuteAsync_WhenCalled_ShouldReturnDefaultOutput()
     {
         TestCommand command = new();
         TestInput input = new("test-data");
@@ -60,7 +60,7 @@ public class CommandTests
 
     private sealed record TestInput(string Data) : IInput;
 
-    private sealed class TestOutput : CqrsOutput<TestOutput>
+    private sealed class TestOutput : DefaultOutput<TestOutput>
     {
         public string ProcessedData { get; set; } = string.Empty;
 

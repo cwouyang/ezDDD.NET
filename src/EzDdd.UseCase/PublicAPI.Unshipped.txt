@@ -1,1 +1,15 @@
 #nullable enable
+EzDdd.UseCase.Port.In.DefaultOutput<T>
+EzDdd.UseCase.Port.In.DefaultOutput<T>.DefaultOutput() -> void
+EzDdd.UseCase.Port.In.DefaultOutput<T>.ExitCode.get -> EzDdd.UseCase.Port.In.ExitCode
+EzDdd.UseCase.Port.In.DefaultOutput<T>.ExitCode.set -> void
+EzDdd.UseCase.Port.In.DefaultOutput<T>.Fail() -> T!
+EzDdd.UseCase.Port.In.DefaultOutput<T>.Id.get -> string!
+EzDdd.UseCase.Port.In.DefaultOutput<T>.Id.set -> void
+EzDdd.UseCase.Port.In.DefaultOutput<T>.Message.get -> string!
+EzDdd.UseCase.Port.In.DefaultOutput<T>.Message.set -> void
+EzDdd.UseCase.Port.In.DefaultOutput<T>.SetExitCode(EzDdd.UseCase.Port.In.ExitCode exitCode) -> T!
+EzDdd.UseCase.Port.In.DefaultOutput<T>.SetId(string! id) -> T!
+EzDdd.UseCase.Port.In.DefaultOutput<T>.SetMessage(string! message) -> T!
+EzDdd.UseCase.Port.In.DefaultOutput<T>.Succeed() -> T!
+static EzDdd.UseCase.Port.In.DefaultOutput<T>.Create() -> T!

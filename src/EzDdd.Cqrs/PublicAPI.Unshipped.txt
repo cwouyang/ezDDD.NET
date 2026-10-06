@@ -1,1 +1,15 @@
 #nullable enable
+*REMOVED*EzDdd.Cqrs.CqrsOutput<T>
+*REMOVED*EzDdd.Cqrs.CqrsOutput<T>.CqrsOutput() -> void
+*REMOVED*EzDdd.Cqrs.CqrsOutput<T>.ExitCode.get -> EzDdd.UseCase.Port.In.ExitCode
+*REMOVED*EzDdd.Cqrs.CqrsOutput<T>.ExitCode.set -> void
+*REMOVED*EzDdd.Cqrs.CqrsOutput<T>.Fail() -> T!
+*REMOVED*EzDdd.Cqrs.CqrsOutput<T>.Id.get -> string!
+*REMOVED*EzDdd.Cqrs.CqrsOutput<T>.Id.set -> void
+*REMOVED*EzDdd.Cqrs.CqrsOutput<T>.Message.get -> string!
+*REMOVED*EzDdd.Cqrs.CqrsOutput<T>.Message.set -> void
+*REMOVED*EzDdd.Cqrs.CqrsOutput<T>.SetExitCode(EzDdd.UseCase.Port.In.ExitCode exitCode) -> T!
+*REMOVED*EzDdd.Cqrs.CqrsOutput<T>.SetId(string! id) -> T!
+*REMOVED*EzDdd.Cqrs.CqrsOutput<T>.SetMessage(string! message) -> T!
+*REMOVED*EzDdd.Cqrs.CqrsOutput<T>.Succeed() -> T!
+*REMOVED*static EzDdd.Cqrs.CqrsOutput<T>.Create() -> T!

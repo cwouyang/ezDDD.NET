@@ -1,8 +1,8 @@
 using EzDdd.UseCase.Port.In;
 
-namespace EzDdd.Cqrs.Tests;
+namespace EzDdd.UseCase.Tests.Port.In;
 
-public class CqrsOutputTests
+public class DefaultOutputTests
 {
     #region Factory and Properties Tests
 
@@ -218,9 +218,9 @@ public class CqrsOutputTests
 
     #region Test Helper Classes
 
-    private sealed class TestOutput : CqrsOutput<TestOutput> { }
+    private sealed class TestOutput : DefaultOutput<TestOutput> { }
 
-    private sealed class TestOutputWithCustomProperty : CqrsOutput<TestOutputWithCustomProperty>
+    private sealed class TestOutputWithCustomProperty : DefaultOutput<TestOutputWithCustomProperty>
     {
         public string CustomData { get; set; } = string.Empty;
         public int CustomValue { get; set; }

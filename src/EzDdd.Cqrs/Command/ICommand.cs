@@ -16,7 +16,7 @@ namespace EzDdd.Cqrs.Command;
 ///     The input type for the command, must implement <see cref="IInput" />.
 /// </typeparam>
 /// <typeparam name="TOutput">
-///     The output type for the command, must extend <see cref="CqrsOutput{T}" />.
+///     The output type for the command, must extend <see cref="DefaultOutput{T}" />.
 /// </typeparam>
 /// <remarks>
 ///     <para>
@@ -31,7 +31,7 @@ namespace EzDdd.Cqrs.Command;
 ///             <item>Inherits <see cref="IUseCase{TInput,TOutput}.ExecuteAsync" /> method</item>
 ///             <item>Modifies system state (creates, updates, deletes aggregates)</item>
 ///             <item>Uses <see cref="IRepository{TAggregate,TId,TEvent}" /> for persistence</item>
-///             <item>Returns <see cref="CqrsOutput{T}" /> with operation result</item>
+///             <item>Returns <see cref="DefaultOutput{T}" /> with operation result</item>
 ///             <item>May use <see cref="IInquiry{TInput,TOutput}" /> for validation</item>
 ///         </list>
 ///     </para>
@@ -44,7 +44,7 @@ namespace EzDdd.Cqrs.Command;
 ///             Money InitialBalance
 ///         ) : IInput;
 ///
-///         public class CreateAccountOutput : CqrsOutput&lt;CreateAccountOutput&gt;
+///         public class CreateAccountOutput : DefaultOutput&lt;CreateAccountOutput&gt;
 ///         {
 ///             public string AccountNumber { get; set; } = string.Empty;
 ///         }
@@ -91,7 +91,7 @@ namespace EzDdd.Cqrs.Command;
 ///         <b>Generic Variance</b>: This interface uses contravariant input (<c>in TInput</c>)
 ///         to enable flexible command composition, but does NOT use covariant output (<c>out TOutput</c>)
 ///         because it would conflict with the <c>new()</c> constraint on the base
-///         <see cref="IUseCase{TInput,TOutput}" /> interface and the <c>CqrsOutput&lt;TOutput&gt;</c> constraint.
+///         <see cref="IUseCase{TInput,TOutput}" /> interface and the <c>DefaultOutput&lt;TOutput&gt;</c> constraint.
 ///         Covariance requires output-only usage, but <c>new()</c> requires instantiation (input operation).
 ///         See ADR-0021 (Generic Variance Annotations) for detailed explanation of this design decision.
 ///     </para>
@@ -114,7 +114,7 @@ namespace EzDdd.Cqrs.Command;
 /// <seealso cref="IInquiry{TInput,TOutput}" />
 public interface ICommand<in TInput, TOutput> : IUseCase<TInput, TOutput>
     where TInput : IInput
-    where TOutput : CqrsOutput<TOutput>, new()
+    where TOutput : DefaultOutput<TOutput>, new()
 {
     // Marker interface - inherits ExecuteAsync(TInput input) from IUseCase
 }

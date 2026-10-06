@@ -112,5 +112,5 @@ public class InquiryTests
         }
     }
 
-    private sealed class TestCommandOutput : CqrsOutput<TestCommandOutput> { }
+    private sealed class TestCommandOutput : DefaultOutput<TestCommandOutput> { }
 }
