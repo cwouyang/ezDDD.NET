@@ -2,9 +2,11 @@
 
 > **Tactical Domain-Driven Design patterns library for .NET 8+**
 >
-> Based on [Java ezddd 6.0.1](https://gitlab.com/TeddyChen/ezddd)
+> Based on [Java ezddd 9.0.1](https://gitlab.com/TeddyChen/ezddd)
 
-A modern tactical DDD library for .NET with event sourcing, state sourcing, and CQRS patterns. This is a faithful .NET port of the **Java ezddd 6.0.1** library (GitLab commit: `3aac0f5`) with **~99% semantic parity** and .NET-specific improvements.
+A modern tactical DDD library for .NET with event sourcing, state sourcing, and CQRS patterns. This is a faithful .NET port of the **Java ezddd 9.0.1** library (GitLab commit: `aa7a99c`) with **~99% semantic parity** and .NET-specific improvements.
+
+> **Unreleased:** the alignment with Java ezddd 9.0.1 (7.0.0–9.0.1) is not on NuGet yet and contains breaking changes — `CqrsOutput<T>` is now `DefaultOutput<T>`, reactors and notifiers return an output, and the use-case `IProjector` is removed. The released 2.0.0 package follows Java ezddd 6.0.1. See the [CHANGELOG](CHANGELOG.md) for upgrade notes.
 
 [![Build and Test](https://github.com/cwouyang/ezDDD.NET/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/cwouyang/ezDDD.NET/actions/workflows/build-and-test.yml)
 [![NuGet](https://img.shields.io/nuget/v/ezDDD.Core?logo=nuget&label=NuGet&color=004880)](https://www.nuget.org/packages/ezDDD.Core/)
@@ -132,8 +134,9 @@ This is a trimmed version of the compile-verified BankAccount example; the full 
 - ✅ **Event sourcing**: `EsAggregateRoot<TId, TEvent>` enforcing R1/R2/R3 invariant rules via template method, with event replay and `{category}-{id}` stream naming
 - ✅ **State sourcing**: `OutboxRepository` persists aggregate state + events atomically (Transactional Outbox)
 - ✅ **Repository bridge pattern**: `IRepository` (domain abstraction) ↔ `IRepositoryPeer` (persistence SPI; the transaction boundary)
-- ✅ **CQRS**: `ICommand` / `IQuery` / `IInquiry` / `IProjection` with the `CqrsOutput<T>` fluent output API
-- ✅ **Event reaction**: `IReactor<TInput>` hierarchy — `IProjector<TInput>` maintains read models, `INotifier<TInput>` converts internal events to external (integration) events
+- ✅ **CQRS**: `ICommand` / `IQuery` / `IInquiry` / `IProjection` with the `DefaultOutput<T>` fluent output API
+- ✅ **Event-driven use cases**: `IReactor<TInput>` applies business rules (such as maintaining read models), `INotifier<TInput>` converts internal events to external (integration) events; both take a `DomainEventDataInput` and return a `DefaultOutput`
+- ✅ **Read models and idempotency**: `ReadModel` records remember the events already projected into them, `IProjector<TInput, TOutput>` keeps projection logic pure, and `IdempotentDecorator` skips events that an at-least-once transport redelivers
 - ✅ **External publishing**: `IExternalDomainEventPublisher<TEvent>` out-port; repositories never publish — a separate Relay does (see [examples/EventInfrastructure/](examples/EventInfrastructure/))
 - ✅ **System reconciliation**: `IReconciler<TContext, TReport>` for maintenance jobs (cleanup, consistency checks)
 
@@ -145,8 +148,8 @@ This is a trimmed version of the compile-verified BankAccount example; the full 
 - 🔒 **Thread-safe**: Concurrent collections, `Lazy<T>`, and snapshot patterns
 - 💎 **Strongly typed**: Generic variance (`in TInput`, `out TOutput`) and nullable reference types
 - 🧬 **Modern C# idioms**: Records for events/value objects, pattern matching for event handlers
-- 🧪 **Highly tested**: 543 tests passing, >90% coverage across all modules
-- 🤝 **Semantic parity**: ~99% parity with Java ezddd 6.0.1, upstream tracked per release
+- 🧪 **Highly tested**: 600+ tests passing, >90% coverage across all modules
+- 🤝 **Semantic parity**: ~99% parity with Java ezddd 9.0.1, upstream tracked per release
 
 ---
 
@@ -158,8 +161,8 @@ Five NuGet packages with a unidirectional dependency chain (`Common → Entity �
 |---------------|---------|------------|
 | `ezDDD.Common` | Foundation utilities (`BiMap`, `JsonUtil`, `Converter`) | — |
 | `ezDDD.Entity` | Core DDD patterns (entities, value objects, aggregates, domain events) | Common, uContract |
-| `ezDDD.UseCase` | Use cases, repositories (event/state sourcing), event infrastructure | Entity |
-| `ezDDD.Cqrs` | CQRS patterns (commands, queries, projections, `CqrsOutput`) | UseCase |
+| `ezDDD.UseCase` | Use cases (`DefaultOutput`, `UseCaseDecorator`), repositories (event/state sourcing), event infrastructure | Entity |
+| `ezDDD.Cqrs` | CQRS patterns (commands, queries, projections, read models, `IdempotentDecorator`) | UseCase |
 | `ezDDD.Core` ⭐ | **All-in-one aggregator** (no code of its own) | All of the above |
 
 > Note: Package IDs use the `ezDDD.*` prefix; namespaces use `EzDdd.*` (e.g. `using EzDdd.Entity;`).
@@ -174,8 +177,8 @@ Five NuGet packages with a unidirectional dependency chain (`Common → Entity �
 |--------|-----------|
 | [**Common**](docs/examples/API_REFERENCE.md#ezdddcommon) | `BiMap<TKey, TValue>`, `JsonUtil`, `Converter<TSource, TTarget>` |
 | [**Entity**](docs/examples/API_REFERENCE.md#ezdddentity) | `IEntity<TId>`, `IValueObject`, `IDomainEvent`, `IInternalDomainEvent`, `AggregateRoot<TId, TEvent>`, `EsAggregateRoot<TId, TEvent>`, `DomainEventTypeMapper` |
-| [**UseCase**](docs/examples/API_REFERENCE.md#ezdddusecase) | `IUseCase<TInput, TOutput>`, `IReactor<TInput>`, `IReconciler<TContext, TReport>`, `IRepository<TAggregate, TId, TEvent>`, `IRepositoryPeer<TData, TId>`, `EsRepository<TAggregate, TId>`, `OutboxRepository<TAggregate, TData, TId>`, `IExternalDomainEventPublisher<TEvent>`, `ExitCode` |
-| [**Cqrs**](docs/examples/API_REFERENCE.md#ezdddcqrs) | `ICommand<TInput, TOutput>`, `IQuery<TInput, TOutput>`, `IInquiry<TInput, TOutput>`, `IProjection<TInput, TOutput>`, `IProjector<TInput>`, `INotifier<TInput>`, `IArchive<TData, TId>`, `CqrsOutput<T>` |
+| [**UseCase**](docs/examples/API_REFERENCE.md#ezdddusecase) | `IUseCase<TInput, TOutput>`, `DefaultOutput<T>`, `UseCaseDecorator<TInput, TOutput>`, `DomainEventDataInput`, `IReactor<TInput>`, `IReconciler<TContext, TReport>`, `IRepository<TAggregate, TId, TEvent>`, `IRepositoryPeer<TData, TId>`, `EsRepository<TAggregate, TId>`, `OutboxRepository<TAggregate, TData, TId>`, `IExternalDomainEventPublisher<TEvent>`, `ExitCode` |
+| [**Cqrs**](docs/examples/API_REFERENCE.md#ezdddcqrs) | `ICommand<TInput, TOutput>`, `IQuery<TInput, TOutput>`, `IInquiry<TInput, TOutput>`, `IProjection<TInput, TOutput>`, `INotifier<TInput>`, `IArchive<TData, TId>`, `IdempotentDecorator<TInput, TOutput>`, `IProjector<TInput, TOutput>`, `ReadModel` |
 
 ---
 
@@ -186,7 +189,7 @@ Five NuGet packages with a unidirectional dependency chain (`Common → Entity �
 - **Basic Patterns**: Aggregates, value objects, domain events → [USAGE_EXAMPLES.md](docs/examples/USAGE_EXAMPLES.md#basic-examples)
 - **Event Sourcing**: BankAccount aggregate, replay, R1/R2/R3 rules, `EsRepository` → [USAGE_EXAMPLES.md](docs/examples/USAGE_EXAMPLES.md#event-sourcing-examples)
 - **State Sourcing**: Transactional Outbox, `OutboxRepository`, `OutboxMapper` → [USAGE_EXAMPLES.md](docs/examples/USAGE_EXAMPLES.md#state-sourcing-examples)
-- **CQRS**: Commands, queries, projections, `CqrsOutput` fluent API → [USAGE_EXAMPLES.md](docs/examples/USAGE_EXAMPLES.md#cqrs-examples)
+- **CQRS**: Commands, queries, idempotent read-model projection, `DefaultOutput` fluent API → [USAGE_EXAMPLES.md](docs/examples/USAGE_EXAMPLES.md#cqrs-examples)
 - **System Reconciliation**: Cleanup reconcilers, `NullContext`, scheduling → [USAGE_EXAMPLES.md](docs/examples/USAGE_EXAMPLES.md#system-reconciliation-examples)
 - **Real-World Scenarios**: Banking, e-commerce, inventory, order management → [USAGE_EXAMPLES.md](docs/examples/USAGE_EXAMPLES.md#real-world-scenarios)
 - **Relay Pattern**: Reference implementation of `EventStoreRelay` (event store → publisher) → [examples/EventInfrastructure/](examples/EventInfrastructure/)
@@ -204,7 +207,7 @@ Five NuGet packages with a unidirectional dependency chain (`Common → Entity �
 
 ## Differences from Java Version
 
-ezDDD.NET maintains **~99% semantic parity** with Java ezddd 6.0.1 — core patterns (aggregates, R1/R2/R3 rules, repository bridge, Transactional Outbox, CQRS separation, reactor hierarchy) behave identically — while adopting .NET platform idioms.
+ezDDD.NET maintains **~99% semantic parity** with Java ezddd 9.0.1 — core patterns (aggregates, R1/R2/R3 rules, repository bridge, Transactional Outbox, CQRS separation, event-driven use cases, event deduplication) behave identically — while adopting .NET platform idioms.
 
 ### Syntax and Platform Differences
 
@@ -225,7 +228,8 @@ ezDDD.NET maintains **~99% semantic parity** with Java ezddd 6.0.1 — core patt
 |------------|--------------|
 | `Optional<T> findById(ID)` | `Task<T?> FindByIdAsync(TId)` |
 | `addDomainEvent(E)` / `getDomainEvents()` | `_AddDomainEvent(TEvent)` / `GetDomainEvents()` |
-| `CqrsOutput.create().succeed()` | `CqrsOutput<T>.Create().Succeed()` |
+| `DefaultOutput.create().succeed()` | `DefaultOutput<T>.Create().Succeed()` (raw `DefaultOutput` → non-generic `DefaultOutput`) |
+| `Optional<String>` from `IdempotentIdParser` | `string?` from `IIdempotentIdParser<TInput>` |
 | `MessageProducer` (moved to ezddd-gateway in 6.0.0) | Excluded from core, matching Java; a .NET Gateway package is deferred post-1.0 |
 
 ### Example Comparison
@@ -322,9 +326,9 @@ See [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt) for the required attribut
 
 ## References
 
-### Original Java Version (6.0.1)
+### Original Java Version (9.0.1)
 
-**This .NET port is based on Java ezddd 6.0.1** (GitLab commit: `3aac0f5`; synchronized 2.1.0 → 4.1.0 → 6.0.1 before first publication)
+**This .NET port is based on Java ezddd 9.0.1** (GitLab commit: `aa7a99c`; synchronized 2.1.0 → 4.1.0 → 6.0.1 before first publication, then 6.0.1 → 9.0.1 — see [ADR-0031](docs/adr/0031-align-with-java-ezddd-9-0-1.md))
 
 - **Repository**: [Java ezddd (GitLab)](https://gitlab.com/TeddyChen/ezddd) by [Teddy Chen](https://gitlab.com/TeddyChen) (TeddySoft)
 - **Ecosystem**: [uContract.NET](https://github.com/cwouyang/uContract.NET) - Design by Contract dependency

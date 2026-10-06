@@ -28,6 +28,11 @@
 > ezddd 6.0.1 — is a two-state `ExitCode` (`Success = 0`, `Failure = 1`) and a self-referential
 > fluent `CqrsOutput<T>` (`Create()`, `Succeed()`, `Fail()`, `SetMessage()`); failure detail is
 > conveyed via `Message`. The code below uses the current API.
+>
+> **Note (2026-10-06)**: With the Java ezddd 9.0.1 alignment
+> ([ADR-0031](../adr/0031-align-with-java-ezddd-9-0-1.md)), `CqrsOutput<T>` was renamed
+> `DefaultOutput<T>` and moved to `EzDdd.UseCase.Port.In`, and `ExitCode` gained `Ignore = 2` and
+> `Reject = 3`. The code below uses the new names.
 
 ### Scenario
 
@@ -66,9 +71,9 @@ using EzDdd.UseCase.Port.Out;
 namespace Banking.Application.UseCases;
 
 /// <summary>
-/// Output type: self-referential CqrsOutput subclass with a domain-specific payload.
+/// Output type: self-referential DefaultOutput subclass with a domain-specific payload.
 /// </summary>
-public sealed class TransferMoneyOutput : CqrsOutput<TransferMoneyOutput>
+public sealed class TransferMoneyOutput : DefaultOutput<TransferMoneyOutput>
 {
     public Guid TransactionId { get; set; }
 
@@ -365,7 +370,8 @@ public sealed class TransferMoneyService : ITransferMoneyService
 ```csharp
 // TransferMoneyUseCase.cs (AFTER - 15 lines, simple orchestration)
 
-using EzDdd.Cqrs;
+using EzDdd.Cqrs.Command;
+using EzDdd.UseCase.Port.In;
 using EzDdd.UseCase.Tests.Integration.Services;
 
 namespace Banking.Application.UseCases;
@@ -405,7 +411,7 @@ public sealed class TransferMoneyUseCase : ICommand<TransferMoneyInput, Transfer
                                          AccountClosedException or
                                          SameAccountTransferException)
         {
-            // ✅ Map domain exceptions to the two-state ExitCode + Message
+            // ✅ Map domain exceptions to ExitCode.Failure + Message
             return TransferMoneyOutput.Create()
                 .Fail()
                 .SetMessage(ex.Message);

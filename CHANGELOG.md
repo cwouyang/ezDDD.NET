@@ -9,7 +9,81 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_No changes yet._
+Aligns ezDDD.NET with [Java ezddd 9.0.1](https://gitlab.com/TeddyChen/ezddd) (commit `aa7a99c`; upstream releases
+7.0.0, 7.1.0, 8.0.0, 9.0.0 and 9.0.1). The decisions and every deviation from upstream are recorded in
+[ADR-0031](docs/adr/0031-align-with-java-ezddd-9-0-1.md).
+
+### Added
+
+- `ezDDD.UseCase`: `ExitCode.Ignore` (2) and `ExitCode.Reject` (3), with `Ignore()` and `Reject()` on `IOutput` and
+  `DefaultOutput<T>`.
+- `ezDDD.UseCase`: non-generic `DefaultOutput` (`DefaultOutput : DefaultOutput<DefaultOutput>`), the output of
+  reactors and notifiers.
+- `ezDDD.UseCase`: `DomainEventDataInput`, a non-sealed record `IInput` carrying one `DomainEventData` in its
+  `required` `Event` property; record inputs that carry more than the event can derive from it.
+- `ezDDD.UseCase`: `UseCaseDecorator<TInput, TOutput>`, the base class for decorators of a use case; the decorated use
+  case is available to subclasses as `DecoratedUseCase`.
+- `ezDDD.Cqrs`: `IdempotentDecorator<TInput, TOutput>`, `IIdempotentIdParser<TInput>` and `IdempotentInquiryInput`.
+  The decorator parses the id of the data an event targets, asks an `IInquiry<IdempotentInquiryInput, bool>` whether
+  the event was already applied, and returns an `Ignore` output instead of running the decorated use case when it was
+  (or when the parser returns `null`). The parser can also be a `Func<IInternalDomainEvent, string?>`.
+- `ezDDD.Cqrs`, namespace `EzDdd.Cqrs.Entity.Query` (the entities layer of the query side):
+  - `IProjector<TInput, TOutput>` — a synchronous, pure projection function.
+  - `ReadModel` — an `abstract record` that positional-record read models can derive from. It carries an
+    `EventDeduplicationRecord` (`UpdateEventDeduplicationRecord(Guid)`) that is serialized with the model as
+    `eventDeduplicationRecord`, in the same JSON shape as Java ezddd. Copies made with `with` get their own record;
+    equality ignores the record. JSON support is reflection-based System.Text.Json only: a source-generated
+    `JsonSerializerContext` silently drops the record.
+  - `EventDeduplicationRecord` — remembers the most recent event ids (`DefaultMaxEventCapacity` = 50).
+  - `IReadValue` — marker for value-semantic components of a read model.
+  - Limitations, documented rather than guarded: the decorator is a best-effort filter, not mutual exclusion; an
+    archive's `FindByIdAsync` must return a copy; record the event id before the single save; deleting a read model
+    deletes its record; a redelivery older than the capacity is projected again. See ADR-0031.
+
+### Changed
+
+- **BREAKING:** `EzDdd.Cqrs.CqrsOutput<T>` is renamed `DefaultOutput<T>` and moved to `EzDdd.UseCase.Port.In`
+  (package `ezDDD.UseCase`). Its behavior is unchanged apart from the new `Ignore()` and `Reject()`.
+- **BREAKING:** `IOutput` gains `Ignore()` and `Reject()`.
+- **BREAKING:** `ExitCode` gains `Ignore` and `Reject`.
+- **BREAKING:** `IReactor<TInput>` is now `IReactor<in TInput> : IUseCase<TInput, DefaultOutput> where TInput : IInput`:
+  `ExecuteAsync` returns `Task<DefaultOutput>` instead of `Task`, and the input must implement `IInput`.
+- **BREAKING:** `INotifier<TInput>` is now `INotifier<in TInput> : IUseCase<TInput, DefaultOutput> where TInput :
+  IInput`. It no longer derives from `IReactor<TInput>`; the two are siblings.
+- **BREAKING:** `ICommand` and `IQuery` constrain their output with `where TOutput : DefaultOutput<TOutput>, new()`
+  (previously `CqrsOutput<TOutput>`).
+- **Upgrade notes** (before → after):
+  - `CqrsOutput<T>` → `DefaultOutput<T>` (compile error): rename, and add `using EzDdd.UseCase.Port.In;` (package
+    `ezDDD.UseCase`, already a dependency of `ezDDD.Cqrs`).
+  - `IOutput` gains `Ignore()` / `Reject()` (compile error for classes that implement `IOutput` directly): add both
+    members, or derive from `DefaultOutput<T>`.
+  - `ExitCode` gains `Ignore` / `Reject` (silent): `switch` statements, `==` comparisons and success-versus-failure
+    mappings now meet the values 2 and 3. Handle them or add a default arm. They are produced by `IdempotentDecorator`
+    or by explicit calls.
+  - `IReactor` returns `Task<DefaultOutput>` and its input must be an `IInput` (compile error): return an output, and
+    make the input type implement `IInput` — a record deriving from `DomainEventDataInput` if it carries an event.
+    `IReactor<string>` / `IReactor<DomainEventData>` become `IReactor<MyInput>` (for example
+    `IReactor<DomainEventDataInput>`).
+  - `INotifier` returns `Task<DefaultOutput>`, its input must be an `IInput`, and it is no longer an `IReactor`
+    (compile error for implementations and for static uses such as assigning a notifier to `IReactor<T>`; **silent**
+    for dependency-injection registrations and lookups by `IReactor<T>`): change it as for `IReactor`, and register and
+    resolve notifiers as `INotifier<T>`.
+  - `EzDdd.Cqrs.Query.IProjector<TInput>` removed (compile error): write the use case as an `IReactor` that loads the
+    read model, calls a projector, and saves it; move the projection logic into
+    `EzDdd.Cqrs.Entity.Query.IProjector<TInput, TOutput>` (a different type with the same simple name).
+  - `ICommand` / `IQuery` constraint now on `DefaultOutput<TOutput>` (compile error only through the rename): rename;
+    add `using EzDdd.UseCase.Port.In;`.
+  - Read models (opt-in): derive from `ReadModel` to get event deduplication. Stored documents then gain an
+    `eventDeduplicationRecord` property. System.Text.Json readers ignore unknown properties by default; strict readers
+    (for example Java with `FAIL_ON_UNKNOWN_PROPERTIES`) must tolerate it. A reader on ezDDD.NET 2.x that re-saves a
+    document drops the property, so redeliveries within the window are projected again after upgrading once more.
+    Documents without the property load with an empty record.
+
+### Removed
+
+- **BREAKING:** `EzDdd.Cqrs.CqrsOutput<T>` (moved; see Changed).
+- **BREAKING:** `EzDdd.Cqrs.Query.IProjector<TInput>`, the use-case projector (removed upstream in Java ezddd 8.0.0).
+  Its role is taken by an `IReactor` that drives an `EzDdd.Cqrs.Entity.Query.IProjector<TInput, TOutput>`.
 
 ## [2.0.0] - 2026-10-05
 
