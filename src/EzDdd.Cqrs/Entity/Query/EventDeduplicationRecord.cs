@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace EzDdd.Cqrs.Entity.Query;
 
 /// <summary>
@@ -18,7 +20,7 @@ public sealed class EventDeduplicationRecord
     public const int DefaultMaxEventCapacity = 50;
 
     private readonly List<string> _eventIds = [];
-    private readonly int _maxEventCapacity;
+    private int _maxEventCapacity;
 
     /// <summary>Creates a record with <see cref="DefaultMaxEventCapacity"/>.</summary>
     public EventDeduplicationRecord()
@@ -31,6 +33,35 @@ public sealed class EventDeduplicationRecord
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(maxEventCapacity, 1);
         _maxEventCapacity = maxEventCapacity;
+    }
+
+    // JSON shape shared with the Java library. Non-public members keep the type free of public properties; the
+    // setters are the tolerant read path, while the public constructor still rejects a capacity below 1.
+    [JsonInclude]
+    [JsonPropertyName("processedEventIds")]
+    private List<string?>? JsonEventIds
+    {
+        get => [.. _eventIds];
+        set
+        {
+            _eventIds.Clear();
+            foreach (string stored in value?.OfType<string>() ?? [])
+            {
+                string id = Guid.TryParse(stored, out Guid guid) ? guid.ToString("D") : stored;
+                if (!_eventIds.Contains(id, StringComparer.Ordinal))
+                {
+                    _eventIds.Add(id);
+                }
+            }
+        }
+    }
+
+    [JsonInclude]
+    [JsonPropertyName("MAX_EVENT_CAPACITY")]
+    private int? JsonMaxEventCapacity
+    {
+        get => _maxEventCapacity;
+        set => _maxEventCapacity = value is >= 1 ? value.Value : DefaultMaxEventCapacity;
     }
 
     /// <summary>Tells whether the event id is still remembered.</summary>
