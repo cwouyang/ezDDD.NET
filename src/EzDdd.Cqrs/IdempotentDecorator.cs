@@ -87,7 +87,7 @@ public class IdempotentDecorator<TInput, TOutput> : UseCaseDecorator<TInput, TOu
         string? dataId = _idParser(domainEvent);
         if (dataId is null)
         {
-            return (TOutput)_outputFactory().Ignore();
+            return _IgnoredOutput();
         }
 
         bool applied = await _inquiry
@@ -95,10 +95,17 @@ public class IdempotentDecorator<TInput, TOutput> : UseCaseDecorator<TInput, TOu
             .ConfigureAwait(false);
         if (applied)
         {
-            return (TOutput)_outputFactory().Ignore();
+            return _IgnoredOutput();
         }
 
         return await DecoratedUseCase.ExecuteAsync(input).ConfigureAwait(false);
+    }
+
+    private TOutput _IgnoredOutput()
+    {
+        TOutput output = _outputFactory();
+        output.Ignore();
+        return output;
     }
 
     private static Func<IInternalDomainEvent, string?> _ParseDelegateOf(

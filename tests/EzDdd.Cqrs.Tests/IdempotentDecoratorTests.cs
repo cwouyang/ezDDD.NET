@@ -251,6 +251,24 @@ public class IdempotentDecoratorTests
         Assert.NotSame(spies.InquiryInputs[0], spies.InquiryInputs[1]);
     }
 
+    [Theory]
+    [InlineData(null, false)]
+    [InlineData(DataId, true)]
+    public async Task ExecuteAsync_WhenIgnoring_ReturnsTheFactoryOutputInstanceItIgnored(string? parsedId, bool applied)
+    {
+        Spies spies = new() { ParsedId = parsedId, AlreadyApplied = applied };
+        IdempotentDecorator<DomainEventDataInput, SelfMutatingOutput> sut = new(
+            new NeverCalledUseCase(),
+            spies,
+            () => new SelfMutatingOutput(),
+            _ => spies.ParsedId
+        );
+
+        SelfMutatingOutput output = await sut.ExecuteAsync(_NewInput());
+
+        Assert.Equal(ExitCode.Ignore, output.ExitCode);
+    }
+
     private static IdempotentDecorator<DomainEventDataInput, DefaultOutput> _Create(
         IUseCase<DomainEventDataInput, DefaultOutput> useCase,
         IInquiry<IdempotentInquiryInput, bool> inquiry,
@@ -277,6 +295,52 @@ public class IdempotentDecoratorTests
     {
         public IReadOnlyDictionary<string, string> Metadata { get; init; } =
             new ReadOnlyDictionary<string, string>(new Dictionary<string, string>());
+    }
+
+    private sealed class NeverCalledUseCase : IUseCase<DomainEventDataInput, SelfMutatingOutput>
+    {
+        public Task<SelfMutatingOutput> ExecuteAsync(DomainEventDataInput input) =>
+            throw new InvalidOperationException("The decorated use case must not run.");
+    }
+
+    // Mutates itself on Ignore() but returns a different instance, like a hand-written IOutput may.
+    private sealed class SelfMutatingOutput : IOutput
+    {
+        public string Message { get; private set; } = "";
+
+        public ExitCode ExitCode { get; private set; }
+
+        public string Id { get; private set; } = "";
+
+        public IOutput SetMessage(string message)
+        {
+            Message = message;
+            return this;
+        }
+
+        public IOutput SetExitCode(ExitCode exitCode)
+        {
+            ExitCode = exitCode;
+            return this;
+        }
+
+        public IOutput Fail() => SetExitCode(ExitCode.Failure);
+
+        public IOutput Succeed() => SetExitCode(ExitCode.Success);
+
+        public IOutput Ignore()
+        {
+            ExitCode = ExitCode.Ignore;
+            return new SelfMutatingOutput();
+        }
+
+        public IOutput Reject() => SetExitCode(ExitCode.Reject);
+
+        public IOutput SetId(string id)
+        {
+            Id = id;
+            return this;
+        }
     }
 
     private sealed class Spies
