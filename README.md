@@ -135,7 +135,7 @@ This is a trimmed version of the compile-verified BankAccount example; the full 
 - ✅ **State sourcing**: `OutboxRepository` persists aggregate state + events atomically (Transactional Outbox)
 - ✅ **Repository bridge pattern**: `IRepository` (domain abstraction) ↔ `IRepositoryPeer` (persistence SPI; the transaction boundary)
 - ✅ **CQRS**: `ICommand` / `IQuery` / `IInquiry` / `IProjection` with the `DefaultOutput<T>` fluent output API
-- ✅ **Event-driven use cases**: `IReactor<TInput>` applies business rules (such as maintaining read models), `INotifier<TInput>` converts internal events to external (integration) events; both take a `DomainEventDataInput` and return a `DefaultOutput`
+- ✅ **Event-driven use cases**: `IReactor<TInput>` applies business rules (such as maintaining read models), `INotifier<TInput>` converts internal events to external (integration) events; typically take a `DomainEventDataInput` (any `IInput` works) and return a `DefaultOutput`
 - ✅ **Read models and idempotency**: `ReadModel` records remember the events already projected into them, `IProjector<TInput, TOutput>` keeps projection logic pure, and `IdempotentDecorator` skips events that an at-least-once transport redelivers
 - ✅ **External publishing**: `IExternalDomainEventPublisher<TEvent>` out-port; repositories never publish — a separate Relay does (see [examples/EventInfrastructure/](examples/EventInfrastructure/))
 - ✅ **System reconciliation**: `IReconciler<TContext, TReport>` for maintenance jobs (cleanup, consistency checks)

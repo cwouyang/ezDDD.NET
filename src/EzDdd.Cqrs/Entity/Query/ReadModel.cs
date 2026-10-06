@@ -31,10 +31,12 @@ public abstract record ReadModel
 
     /// <summary>Creates a read model that remembers at most <paramref name="maxEventCapacity"/> event ids.</summary>
     /// <param name="maxEventCapacity">The number of most recent event ids to remember.</param>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="maxEventCapacity"/> is less than 1.</exception>
     protected ReadModel(int maxEventCapacity) => _eventDeduplicationRecord = new(maxEventCapacity);
 
     /// <summary>Creates a copy that owns an independent deduplication record.</summary>
     /// <param name="original">The read model to copy.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="original"/> is <see langword="null"/>.</exception>
     protected ReadModel(ReadModel original)
     {
         ArgumentNullException.ThrowIfNull(original);
@@ -55,7 +57,7 @@ public abstract record ReadModel
     /// <param name="eventId">The id of the handled event.</param>
     public void UpdateEventDeduplicationRecord(Guid eventId) => EventDeduplicationRecord.SetEventId(eventId);
 
-    /// <summary>Compares the runtime type only; the deduplication record never takes part.</summary>
+    /// <summary>Compares the runtime type; derived records add their own members; the deduplication record never takes part.</summary>
     /// <param name="other">The read model to compare with.</param>
     /// <returns><see langword="true"/> if both are of the same runtime type.</returns>
     public virtual bool Equals(ReadModel? other) =>
