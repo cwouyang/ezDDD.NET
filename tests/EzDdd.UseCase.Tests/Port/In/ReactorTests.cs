@@ -1,55 +1,98 @@
 using EzDdd.UseCase.Port.In;
+using EzDdd.UseCase.Port.InOut;
 
 namespace EzDdd.UseCase.Tests.Port.In;
 
 public class ReactorTests
 {
-    [Fact]
-    public void Interface_CanBeImplemented()
-    {
-        TestReactor reactor = new();
+    private const string EventType = "AccountCreated";
+    private const string JsonContentType = "application/json";
+    private static readonly byte[] _EmptyJson = "{}"u8.ToArray();
 
-        Assert.IsAssignableFrom<IReactor<string>>(reactor);
+    private static DomainEventData _NewEventData()
+    {
+        return new DomainEventData(Guid.NewGuid(), EventType, JsonContentType, _EmptyJson, _EmptyJson);
     }
 
     [Fact]
-    public async Task ExecuteAsync_WhenCalled_ProcessesInput()
+    public async Task ExecuteAsync_WhenReactorHandlesEvent_YieldsDefaultOutput()
     {
-        TestReactor reactor = new();
+        RecordingReactor reactor = new();
+        DomainEventData data = _NewEventData();
 
-        await reactor.ExecuteAsync("event-1");
+        DefaultOutput output = await reactor.ExecuteAsync(new DomainEventDataInput { Event = data });
 
-        Assert.Equal("event-1", reactor.LastInput);
+        Assert.Same(data, reactor.LastEvent);
+        Assert.Equal(ExitCode.Success, output.ExitCode);
     }
 
     [Fact]
-    public void Interface_InputIsContravariant()
+    public async Task ExecuteAsync_WhenReactorReturnsDefaultOutputSubclass_YieldsThatInstance()
     {
-        ObjectReactor reactor = new();
+        IReactor<DomainEventDataInput> reactor = new SubclassOutputReactor();
 
-        // Compile-time verification: IReactor<in TInput> allows assigning
-        // a reactor of a base input type to a more derived input type.
-        IReactor<string> stringReactor = reactor;
+        DefaultOutput output = await reactor.ExecuteAsync(new DomainEventDataInput { Event = _NewEventData() });
 
-        Assert.Same(reactor, stringReactor);
+        Assert.IsType<SubclassOutput>(output);
     }
 
-    private sealed class TestReactor : IReactor<string>
+    [Fact]
+    public async Task ExecuteAsync_WhenReactorOfBaseInputUsedAsDerivedInput_ProcessesDerivedInput()
     {
-        public string? LastInput { get; private set; }
+        RecordingReactor baseReactor = new();
+        IReactor<DerivedInput> derivedReactor = baseReactor;
+        DomainEventData data = _NewEventData();
 
-        public Task ExecuteAsync(string input)
+        DefaultOutput output = await derivedReactor.ExecuteAsync(new DerivedInput { Event = data, Extra = "extra" });
+
+        Assert.Same(data, baseReactor.LastEvent);
+        Assert.Equal(ExitCode.Success, output.ExitCode);
+    }
+
+    [Fact]
+    public void DomainEventDataInput_WhenDerived_CarriesEventAndOwnData()
+    {
+        DomainEventData data = _NewEventData();
+
+        DerivedInput input = new() { Event = data, Extra = "extra" };
+
+        Assert.Same(data, input.Event);
+        Assert.Equal("extra", input.Extra);
+    }
+
+    [Fact]
+    public void DefaultOutput_WhenSubclassed_FluentSettersReturnDefaultOutput()
+    {
+        SubclassOutput output = new();
+
+        DefaultOutput result = output.SetMessage("done");
+
+        Assert.Same(output, result);
+    }
+
+    private sealed class SubclassOutput : DefaultOutput;
+
+    private sealed record DerivedInput : DomainEventDataInput
+    {
+        public required string Extra { get; init; }
+    }
+
+    private sealed class RecordingReactor : IReactor<DomainEventDataInput>
+    {
+        public DomainEventData? LastEvent { get; private set; }
+
+        public Task<DefaultOutput> ExecuteAsync(DomainEventDataInput input)
         {
-            LastInput = input;
-            return Task.CompletedTask;
+            LastEvent = input.Event;
+            return Task.FromResult(new DefaultOutput());
         }
     }
 
-    private sealed class ObjectReactor : IReactor<object>
+    private sealed class SubclassOutputReactor : IReactor<DomainEventDataInput>
     {
-        public Task ExecuteAsync(object input)
+        public Task<DefaultOutput> ExecuteAsync(DomainEventDataInput input)
         {
-            return Task.CompletedTask;
+            return Task.FromResult<DefaultOutput>(new SubclassOutput());
         }
     }
 }

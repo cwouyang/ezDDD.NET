@@ -33,7 +33,7 @@ namespace EzDdd.Cqrs.Query;
 ///             optimized for specific query scenarios.
 ///         </item>
 ///         <item>
-///             <b>Eventually Consistent</b>: Updated by <see cref="IProjector{TInput}" /> services
+///             <b>Eventually Consistent</b>: Updated by reactor services
 ///             listening to events, so may lag slightly behind write model.
 ///         </item>
 ///         <item>

@@ -39,8 +39,8 @@ namespace EzDdd.Cqrs.Query;
 ///         <item><c>IProjection</c>: View builder for queries, standalone, flexible output</item>
 ///     </list>
 ///     <para>
-///         <b>Not to be confused with IProjector</b>: IProjector is a background service
-///         that maintains read models, while IProjection builds views from read models.
+///         <b>Read models vs. views</b>: Reactors maintain read models in an archive,
+///         while IProjection builds views from read models.
 ///     </para>
 /// </remarks>
 /// <example>

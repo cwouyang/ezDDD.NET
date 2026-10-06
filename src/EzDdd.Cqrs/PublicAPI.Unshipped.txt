@@ -13,3 +13,4 @@
 *REMOVED*EzDdd.Cqrs.CqrsOutput<T>.SetMessage(string! message) -> T!
 *REMOVED*EzDdd.Cqrs.CqrsOutput<T>.Succeed() -> T!
 *REMOVED*static EzDdd.Cqrs.CqrsOutput<T>.Create() -> T!
+*REMOVED*EzDdd.Cqrs.Query.IProjector<TInput>

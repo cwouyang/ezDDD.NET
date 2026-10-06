@@ -1,5 +1,6 @@
 using EzDdd.Cqrs.Query;
 using EzDdd.Entity;
+using EzDdd.UseCase.Port.In;
 using EzDdd.UseCase.Port.InOut;
 using EzDdd.UseCase.Tests.Integration.TestDomain;
 
@@ -20,7 +21,7 @@ namespace EzDdd.Cqrs.Tests.Integration.TestDomain;
 ///         subscribing to events from a message broker (e.g., Kafka, RabbitMQ).
 ///     </para>
 /// </remarks>
-public sealed class AccountProjector : IProjector<DomainEventData>
+public sealed class AccountProjector : IReactor<DomainEventDataInput>
 {
     private readonly IArchive<AccountSummaryReadModel, AccountId> _archive;
 
@@ -37,8 +38,8 @@ public sealed class AccountProjector : IProjector<DomainEventData>
     ///     Executes the projector logic to update the read model based on the received domain event.
     ///     This method is called by the event relay infrastructure when events are published.
     /// </summary>
-    /// <param name="input">The domain event data to process.</param>
-    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <param name="input">The input carrying the domain event data to process.</param>
+    /// <returns>A task yielding a successful <see cref="DefaultOutput" />.</returns>
     /// <remarks>
     ///     <para>
     ///         <b>Error Handling</b>: This implementation uses a try-catch block to prevent
@@ -50,11 +51,12 @@ public sealed class AccountProjector : IProjector<DomainEventData>
     ///         exceptions to make test failures visible.
     ///     </para>
     /// </remarks>
-    public async Task ExecuteAsync(DomainEventData input)
+    public async Task<DefaultOutput> ExecuteAsync(DomainEventDataInput input)
     {
+        DomainEventData eventData = input.Event;
         try
         {
-            IInternalDomainEvent domainEvent = _DeserializeDomainEvent(input);
+            IInternalDomainEvent domainEvent = _DeserializeDomainEvent(eventData);
 
             switch (domainEvent)
             {
@@ -74,13 +76,15 @@ public sealed class AccountProjector : IProjector<DomainEventData>
                     await _HandleAccountClosedAsync(e);
                     break;
             }
+
+            return DefaultOutput.Create().Succeed();
         }
         catch (Exception ex)
         {
             // In test scenarios: rethrow to make failures visible in test results
             // In production: log error and continue processing (don't crash projector)
             await Console.Error.WriteLineAsync(
-                $"Error processing event {input.Id} (type: {input.EventType}): {ex.Message}"
+                $"Error processing event {eventData.Id} (type: {eventData.EventType}): {ex.Message}"
             );
             throw; // Rethrow for test observability
         }

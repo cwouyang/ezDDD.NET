@@ -66,7 +66,7 @@ public sealed class CompleteCqrsFlowTests
                 DomainEventData eventData = DomainEventMapper.ToData(domainEvent);
 
                 // Process event through projector (the relay's downstream consumer)
-                await Projector.ExecuteAsync(eventData);
+                await Projector.ExecuteAsync(new DomainEventDataInput { Event = eventData });
             }
         }
     }
