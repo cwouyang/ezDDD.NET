@@ -348,6 +348,8 @@ public class IdempotentDecoratorTests
             IInquiry<IdempotentInquiryInput, bool>,
             IIdempotentIdParser<IInternalDomainEvent>
     {
+        private readonly object _gate = new();
+
         public string? ParsedId { get; init; }
 
         public bool AlreadyApplied { get; init; }
@@ -377,7 +379,11 @@ public class IdempotentDecoratorTests
 
         public string? Parse(IInternalDomainEvent input)
         {
-            CallOrder.Add("parse");
+            lock (_gate)
+            {
+                CallOrder.Add("parse");
+            }
+
             return ParsedId;
         }
 
@@ -399,10 +405,14 @@ public class IdempotentDecoratorTests
                 throw UseCaseFailure;
             }
 
-            UseCaseCalls++;
-            UseCaseInputs.Add(input);
             DefaultOutput output = new();
-            UseCaseOutputs.Add(output);
+            lock (_gate)
+            {
+                UseCaseCalls++;
+                UseCaseInputs.Add(input);
+                UseCaseOutputs.Add(output);
+            }
+
             return output;
         }
 
@@ -414,7 +424,7 @@ public class IdempotentDecoratorTests
                 throw InquiryFailure;
             }
 
-            lock (InquiryInputs)
+            lock (_gate)
             {
                 InquiryInputs.Add(input);
                 InquiryCalls++;
