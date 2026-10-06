@@ -20,3 +20,14 @@ EzDdd.Cqrs.Entity.Query.EventDeduplicationRecord.EventDeduplicationRecord() -> v
 EzDdd.Cqrs.Entity.Query.EventDeduplicationRecord.IsEventHandled(System.Guid eventId) -> bool
 EzDdd.Cqrs.Entity.Query.EventDeduplicationRecord.SetEventId(System.Guid eventId) -> void
 EzDdd.Cqrs.Entity.Query.EventDeduplicationRecord.EventDeduplicationRecord(int maxEventCapacity) -> void
+EzDdd.Cqrs.Entity.Query.ReadModel
+EzDdd.Cqrs.Entity.Query.ReadModel.EventDeduplicationRecord.get -> EzDdd.Cqrs.Entity.Query.EventDeduplicationRecord!
+EzDdd.Cqrs.Entity.Query.ReadModel.UpdateEventDeduplicationRecord(System.Guid eventId) -> void
+EzDdd.Cqrs.Entity.Query.ReadModel.ReadModel() -> void
+EzDdd.Cqrs.Entity.Query.ReadModel.ReadModel(int maxEventCapacity) -> void
+EzDdd.Cqrs.Entity.Query.ReadModel.ReadModel(EzDdd.Cqrs.Entity.Query.ReadModel! original) -> void
+virtual EzDdd.Cqrs.Entity.Query.ReadModel.Equals(EzDdd.Cqrs.Entity.Query.ReadModel? other) -> bool
+override EzDdd.Cqrs.Entity.Query.ReadModel.GetHashCode() -> int
+EzDdd.Cqrs.Entity.Query.IReadValue
+EzDdd.Cqrs.Entity.Query.IProjector<TInput, TOutput>
+EzDdd.Cqrs.Entity.Query.IProjector<TInput, TOutput>.Project(TInput input) -> TOutput

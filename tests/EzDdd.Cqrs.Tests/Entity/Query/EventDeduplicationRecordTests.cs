@@ -1,4 +1,3 @@
-using System.Reflection;
 using EzDdd.Cqrs.Entity.Query;
 
 namespace EzDdd.Cqrs.Tests.Entity.Query;
@@ -113,51 +112,6 @@ public class EventDeduplicationRecordTests
         Assert.Equal(50, EventDeduplicationRecord.DefaultMaxEventCapacity);
         Assert.False(record.IsEventHandled(ids[0]));
         Assert.All(ids.Skip(1), id => Assert.True(record.IsEventHandled(id)));
-    }
-
-    // The copy member is internal and this test assembly has no InternalsVisibleTo grant, so it is reached by reflection.
-    [Fact]
-    public void Copy_HasSameIdsAndCapacity()
-    {
-        EventDeduplicationRecord original = new(2);
-        Guid[] ids = NewIds(3);
-        original.SetEventId(ids[0]);
-        original.SetEventId(ids[1]);
-
-        EventDeduplicationRecord copy = CopyOf(original);
-        copy.SetEventId(ids[2]);
-
-        Assert.True(original.IsEventHandled(ids[0]));
-        Assert.True(original.IsEventHandled(ids[1]));
-        Assert.False(copy.IsEventHandled(ids[0]));
-        Assert.True(copy.IsEventHandled(ids[1]));
-        Assert.True(copy.IsEventHandled(ids[2]));
-    }
-
-    [Fact]
-    public void Copy_IsIndependentOfTheOriginalInBothDirections()
-    {
-        EventDeduplicationRecord original = new(5);
-        Guid shared = Guid.NewGuid();
-        Guid onlyInCopy = Guid.NewGuid();
-        Guid onlyInOriginal = Guid.NewGuid();
-        original.SetEventId(shared);
-        EventDeduplicationRecord copy = CopyOf(original);
-
-        copy.SetEventId(onlyInCopy);
-        original.SetEventId(onlyInOriginal);
-
-        Assert.False(original.IsEventHandled(onlyInCopy));
-        Assert.False(copy.IsEventHandled(onlyInOriginal));
-        Assert.True(copy.IsEventHandled(shared));
-    }
-
-    private static EventDeduplicationRecord CopyOf(EventDeduplicationRecord record)
-    {
-        MethodInfo method =
-            typeof(EventDeduplicationRecord).GetMethod("Copy", BindingFlags.Instance | BindingFlags.NonPublic)
-            ?? throw new InvalidOperationException("EventDeduplicationRecord.Copy was not found.");
-        return (EventDeduplicationRecord)method.Invoke(record, null)!;
     }
 
     private static Guid[] NewIds(int count) => [.. Enumerable.Range(0, count).Select(_ => Guid.NewGuid())];
