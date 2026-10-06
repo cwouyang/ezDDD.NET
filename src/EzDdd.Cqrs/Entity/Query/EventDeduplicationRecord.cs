@@ -9,6 +9,11 @@ namespace EzDdd.Cqrs.Entity.Query;
 /// <remarks>
 /// Only the most recent ids are kept: when the capacity is exceeded, the eldest ids are dropped first. A redelivery
 /// older than the capacity is therefore no longer recognized. This type is not thread-safe.
+/// <para>
+/// Its JSON form (the shape the Java library writes) is produced by reflection-based System.Text.Json only. A source-generated
+/// <c>JsonSerializerContext</c> is not supported: the shape lives in private members the generator cannot see, so such a
+/// context would silently drop the record.
+/// </para>
 /// </remarks>
 public sealed class EventDeduplicationRecord
 {
@@ -39,6 +44,7 @@ public sealed class EventDeduplicationRecord
     // setters are the tolerant read path, while the public constructor still rejects a capacity below 1.
     [JsonInclude]
     [JsonPropertyName("processedEventIds")]
+    // Under Populate the serializer would fill the getter's throwaway copy and skip the tolerant setter.
     [JsonObjectCreationHandling(JsonObjectCreationHandling.Replace)]
     private List<string?>? JsonEventIds
     {

@@ -106,12 +106,12 @@ public class EventDeduplicationRecordJsonTests
     public void Deserialize_WithDuplicateGuidsInAnyCase_KeepsTheFirstOccurrencePosition(string optionSet)
     {
         string document =
-            """{"processedEventIds":["11111111-1111-1111-1111-111111111111","22222222-2222-2222-2222-222222222222","11111111111111111111111111111111"],"MAX_EVENT_CAPACITY":2}""";
+            """{"processedEventIds":["aaaaaaaa-1111-1111-1111-111111111111","22222222-2222-2222-2222-222222222222","AAAAAAAA-1111-1111-1111-111111111111","aaaaaaaa111111111111111111111111"],"MAX_EVENT_CAPACITY":2}""";
         EventDeduplicationRecord record = Read(document, optionSet);
 
         record.SetEventId(ThirdId);
 
-        Assert.False(record.IsEventHandled(FirstId));
+        Assert.False(record.IsEventHandled(Guid.Parse("aaaaaaaa-1111-1111-1111-111111111111")));
         Assert.True(record.IsEventHandled(SecondId));
         Assert.True(record.IsEventHandled(ThirdId));
     }
@@ -162,12 +162,11 @@ public class EventDeduplicationRecordJsonTests
         Assert.True(record.IsEventHandled(ThirdId));
     }
 
-    [Fact]
-    public void Deserialize_WithCapacityOfWrongJsonType_ThrowsJsonException()
+    [Theory]
+    [MemberData(nameof(OptionSets))]
+    public void Deserialize_WithCapacityOfWrongJsonType_ThrowsJsonException(string optionSet)
     {
-        Assert.Throws<JsonException>(() =>
-            JsonSerializer.Deserialize<EventDeduplicationRecord>("""{"MAX_EVENT_CAPACITY":"50"}""", JsonUtil.Options)
-        );
+        Assert.Throws<JsonException>(() => Read("""{"MAX_EVENT_CAPACITY":"50"}""", optionSet));
     }
 
     [Fact]
