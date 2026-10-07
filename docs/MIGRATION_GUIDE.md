@@ -2,9 +2,9 @@
 
 Complete guide for migrating from Java ezddd to .NET ezDDD.NET.
 
-> **Version**: 1.0.0-alpha.1
-> **Last Updated**: 2026-07-05
-> **Java Version**: ezddd 6.0.1
+> **Version**: Unreleased (see [CHANGELOG](../CHANGELOG.md))
+> **Last Updated**: 2026-10-06
+> **Java Version**: ezddd 9.0.1
 > **Target Audience**: Java developers familiar with ezddd
 
 ---
@@ -57,7 +57,7 @@ ezDDD.NET is a faithful .NET port of Java ezddd with **~98% semantic parity**. C
 ✅ **Same Patterns**
 - Bridge Pattern (IRepository ↔ IRepositoryPeer)
 - Template Method (EsAggregateRoot)
-- Reactor Pattern (IReactor / IProjector / INotifier)
+- Event-driven use cases (IReactor / INotifier) with idempotent decoration (IdempotentDecorator)
 - Command Pattern (IUseCase)
 
 ✅ **.NET Platform Improvements**
@@ -308,7 +308,14 @@ List<string> names = accounts.Values
 | `IRepositoryPeer<D, ID>` | `IRepositoryPeer<TData, TId>` | **Async methods** |
 | `EsRepository<A, ID, E>` | `EsRepository<TAggregate, TId>` | Async + Reflection |
 | `OutboxRepository<A, ID, E>` | `OutboxRepository<TAggregate, TData, TId>` | Async |
-| `Reactor<Input>` | `IReactor<TInput>` | `Task ExecuteAsync(TInput)` |
+| `Reactor<Input>` (a `UseCase<Input, DefaultOutput>` since 7.0.0) | `IReactor<TInput> : IUseCase<TInput, DefaultOutput>` | `Task<DefaultOutput> ExecuteAsync(TInput)`; `TInput : IInput` |
+| `DefaultOutput<T>` (7.0.0; formerly ezcqrs `CqrsOutput<T>`) | `DefaultOutput<T>` | Self-referential fluent output; namespace `EzDdd.UseCase.Port.In` |
+| raw `DefaultOutput` | `DefaultOutput : DefaultOutput<DefaultOutput>` | C# has no raw types; the output of reactors and notifiers |
+| `ExitCode.IGNORE` / `ExitCode.REJECT` (7.1.0) | `ExitCode.Ignore` (2) / `ExitCode.Reject` (3) | `ignore()` / `reject()` → `Ignore()` / `Reject()` on `IOutput` and `DefaultOutput<T>` |
+| `UseCaseDecorator<I, O>` (8.0.0) | `UseCaseDecorator<TInput, TOutput>` | Protected field `useCase` → protected property `DecoratedUseCase` |
+| `DomainEventDataInput` (8.0.0) | `DomainEventDataInput` | Non-sealed `record` with a `required` init property `Event` (Java: public field) |
+| `Reactor.DefaultInput` / `Notifier.DefaultInput` | — | Not ported; use `DomainEventDataInput` |
+| `create()` / `create(Class)` factories on inputs | — | Not ported; use object initializers (`DefaultOutput<T>.Create()` is kept) |
 | `ExternalDomainEventPublisher<E>` | `IExternalDomainEventPublisher<TEvent>` | **Async**: `PublishAsync` |
 
 **Critical Change**: All repository methods are **async** in .NET.
@@ -323,10 +330,25 @@ List<string> names = accounts.Values
 | `IQuery<I, O>` | `IQuery<TInput, TOutput>` | Marker interface |
 | `IInquiry<I, O>` | `IInquiry<TInput, TOutput>` | Marker interface |
 | `IProjection<I, O>` | `IProjection<TInput, TOutput>` | Async |
-| `Projector<Input>` | `IProjector<TInput>` | Extends `IReactor<TInput>` (ADR-0028) |
-| `Notifier<Input>` | `INotifier<TInput>` | Extends `IReactor<TInput>` (ADR-0028) |
+| `Notifier<Input>` (a sibling of `Reactor` since 7.0.0) | `INotifier<TInput> : IUseCase<TInput, DefaultOutput>` | Not an `IReactor`; `TInput : IInput` |
+| use-case `Projector<Input>` (removed in 8.0.0) | — | Removed; write the use case as an `IReactor` that drives the entities-layer projector |
 | `IArchive<D, ID>` | `IArchive<TData, TId>` | **Async methods** |
-| `CqrsOutput<T>` | `CqrsOutput<T>` | Fluent API with records |
+| `Command` / `Query` bound on raw `DefaultOutput` | `where TOutput : DefaultOutput<TOutput>, new()` | Same constraint as the former `CqrsOutput<T>` |
+| `IdempotentDecorator<I, O>` (8.0.0) | `IdempotentDecorator<TInput, TOutput>` | `Supplier<O>` → `Func<TOutput>`; extra constructor taking `Func<IInternalDomainEvent, string?>` |
+| `IdempotentIdParser<I>` returning `Optional<String>` | `IIdempotentIdParser<TInput>` returning `string?` | `null` = not handled; `""` is a valid id |
+| `IdempotentInquiryInput` (public fields) | `IdempotentInquiryInput : IInquiryInput` | Settable `DataId` (default `""`) and `EventId` (`Guid`) |
+
+**Entities layer of the query side** (`cqrs.entity.query`, 8.0.0–9.0.1 → namespace `EzDdd.Cqrs.Entity.Query`):
+
+| Java | C# (.NET) | Notes |
+|------|-----------|-------|
+| `Projector<I, O>` with `project(I)` | `IProjector<TInput, TOutput>` with `Project(TInput)` | Synchronous pure function (no I/O) |
+| `ReadModel` (abstract class since 9.0.0; a marker interface in 8.0.x) | `ReadModel` (`abstract record`) | Positional records can derive from it; equality ignores the deduplication record |
+| nested `ReadModel.EventDeduplicationRecord` (API takes `String`) | `EventDeduplicationRecord` (top-level) | API takes `Guid`; same JSON shape (`processedEventIds`, `MAX_EVENT_CAPACITY`) |
+| `DEFAULT_MAX_EVENT_CAPACITY` (50) | `EventDeduplicationRecord.DefaultMaxEventCapacity` (50) | Capacity < 1 is rejected by constructors |
+| `ReadValue` | `IReadValue` | Marker interface |
+
+See [ADR-0031](adr/0031-align-with-java-ezddd-9-0-1.md) for the full list of deviations from Java ezddd 9.0.1 and the known limitations of event deduplication.
 
 ---
 
@@ -393,11 +415,12 @@ protected override void _When(IInternalDomainEvent @event)
 
 ### Repository Pattern (sync → async)
 
-> **Note on `ExitCode`**: Both Java ezddd 6.0.1 and ezDDD.NET use a two-state `ExitCode`
-> (`SUCCESS`/`FAILURE` in Java, `Success = 0`/`Failure = 1` in C#). Earlier drafts of this
-> guide showed richer members (`RESOURCE_NOT_FOUND_FAILURE`, `CONFLICT_FAILURE`,
-> `VALIDATION_FAILURE`, …) which do not exist in the current API — failure detail is
-> conveyed via `Message` (`fail()` + `setMessage()` / `Fail()` + `SetMessage()`).
+> **Note on `ExitCode`**: Java ezddd 9.0.1 and ezDDD.NET use the same four exit codes
+> (`SUCCESS`/`FAILURE`/`IGNORE`/`REJECT` in Java, `Success = 0`/`Failure = 1`/`Ignore = 2`/
+> `Reject = 3` in C#). Earlier drafts of this guide showed richer members
+> (`RESOURCE_NOT_FOUND_FAILURE`, `CONFLICT_FAILURE`, `VALIDATION_FAILURE`, …) which do not exist
+> in the current API — failure detail is conveyed via `Message` (`fail()` + `setMessage()` /
+> `Fail()` + `SetMessage()`).
 
 **Java (Synchronous)**:
 ```java
@@ -502,9 +525,9 @@ catch (RepositorySaveException ex)
 
 ### Threading and Concurrency
 
-> **Historical example**: `BlockingMessageBus` below was removed from both codebases (Java 6.0.0 moved messaging to `ezddd-gateway`; ezDDD.NET removed it in the Phase 6/7 sync — see ADR-0029). The snippet is retained solely to illustrate how a Java `CopyOnWriteArrayList` idiom translates to a C# lock + snapshot idiom; apply the same technique to your own thread-safe collections.
+> **Historical example**: the Java `BlockingMessageBus` below was removed from both codebases (Java 6.0.0 moved messaging to `ezddd-gateway`; ezDDD.NET removed it in the Phase 6/7 sync — see ADR-0029), and its `Reactor.execute(event)` shape predates Java 7.0.0. It is kept only to illustrate how a Java `CopyOnWriteArrayList` idiom translates to a C# lock + snapshot idiom. The C# side shows the idiom with the current `IReactor<TInput>` shape (`TInput : IInput`, `Task<DefaultOutput> ExecuteAsync`); it is an application-side dispatcher, not a library type.
 
-**Java (CopyOnWriteArrayList)**:
+**Java (CopyOnWriteArrayList, pre-7.0.0 shape)**:
 ```java
 public class BlockingMessageBus<Event> implements MessageBus<Event> {
     private final List<Reactor<Event>> reactors = new CopyOnWriteArrayList<>();
@@ -519,17 +542,28 @@ public class BlockingMessageBus<Event> implements MessageBus<Event> {
 }
 ```
 
-**C# (Lock + Snapshot)**:
+**C# (Lock + Snapshot, current shape)**:
 ```csharp
-public class BlockingMessageBus<TEvent> : IMessageBus<TEvent>
+using EzDdd.UseCase.Port.In;
+
+public sealed class ReactorDispatcher<TInput>
+    where TInput : IInput
 {
-    private readonly List<IReactor<TEvent>> _reactors = new();
+    private readonly List<IReactor<TInput>> _reactors = new();
     private readonly object _lock = new();
 
-    public async Task PostAsync(TEvent message)
+    public void Register(IReactor<TInput> reactor)
+    {
+        lock (_lock)
+        {
+            _reactors.Add(reactor);
+        }
+    }
+
+    public async Task<IReadOnlyList<DefaultOutput>> DispatchAsync(TInput input)
     {
         // Create snapshot inside lock
-        IReactor<TEvent>[] snapshot;
+        IReactor<TInput>[] snapshot;
 
         lock (_lock)
         {
@@ -537,10 +571,13 @@ public class BlockingMessageBus<TEvent> : IMessageBus<TEvent>
         }
 
         // Execute outside lock (non-blocking)
+        var outputs = new List<DefaultOutput>(snapshot.Length);
         foreach (var reactor in snapshot)
         {
-            await reactor.ExecuteAsync(message);
+            outputs.Add(await reactor.ExecuteAsync(input));
         }
+
+        return outputs;
     }
 }
 ```
@@ -548,7 +585,7 @@ public class BlockingMessageBus<TEvent> : IMessageBus<TEvent>
 **Key Points**:
 - `CopyOnWriteArrayList` → `List<T>` + `lock` (C# doesn't have CopyOnWriteArrayList)
 - Snapshot pattern: Copy reactors array inside lock, execute outside lock
-- Async execution: `await reactor.ExecuteAsync(message)`
+- Async execution: `await reactor.ExecuteAsync(input)` returns a `DefaultOutput`
 - `lock` statement for thread safety
 
 ---

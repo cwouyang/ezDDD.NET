@@ -2,8 +2,8 @@
 
 Complete reference for all public APIs in ezDDD.NET tactical Domain-Driven Design framework.
 
-> **Version**: 1.0.0-alpha.1
-> **Last Updated**: 2026-07-05
+> **Version**: Unreleased (aligned with Java ezddd 9.0.1; see [CHANGELOG](../../CHANGELOG.md))
+> **Last Updated**: 2026-10-06
 
 ---
 
@@ -22,18 +22,21 @@ Complete reference for all public APIs in ezDDD.NET tactical Domain-Driven Desig
   - [AggregateRoot<TId, TEvent>](#aggregateroot)
   - [EsAggregateRoot<TId, TEvent>](#esaggregateroot)
   - [DomainEventTypeMapper](#domaineventtypemapper)
-- [EzDdd.UseCase](#ezdddusеcase)
+- [EzDdd.UseCase](#ezdddusecase)
   - [Foundation Interfaces](#foundation-interfaces)
     - [IInput](#iinput)
     - [IOutput](#ioutput)
     - [IVersionedInput](#iversionedinput)
     - [ExitCode](#exitcode)
     - [ExitCodeExtensions](#exitcodeextensions)
+    - [DefaultOutput<T> and DefaultOutput](#defaultoutput)
+    - [DomainEventDataInput](#domaineventdatainput)
     - [IReactor<TInput>](#ireactor)
     - [IReconciler<TContext, TReport>](#ireconciler)
     - [NullContext](#nullcontext)
   - [Use Case Pattern](#use-case-pattern)
     - [IUseCase<TInput, TOutput>](#iusecase)
+    - [UseCaseDecorator<TInput, TOutput>](#usecasedecorator)
     - [UseCaseFailureException](#usecasefailureexception)
   - [Repository Pattern](#repository-pattern)
     - [IRepository<TAggregate, TId, TEvent>](#irepository)
@@ -66,11 +69,18 @@ Complete reference for all public APIs in ezDDD.NET tactical Domain-Driven Desig
   - [Query Side](#query-side)
     - [IQuery<TInput, TOutput>](#iquery)
     - [IProjection<TInput, TOutput>](#iprojection)
-    - [IProjector<TInput>](#iprojector)
     - [INotifier<TInput>](#inotifier)
     - [IProjectionInput](#iprojectioninput)
     - [IArchive<TData, TId>](#iarchive)
-  - [CqrsOutput<T>](#cqrsoutput)
+  - [Idempotency](#idempotency)
+    - [IdempotentDecorator<TInput, TOutput>](#idempotentdecorator)
+    - [IIdempotentIdParser<TInput>](#iidempotentidparser)
+    - [IdempotentInquiryInput](#idempotentinquiryinput)
+  - [Entities Layer of the Query Side](#entities-layer-of-the-query-side)
+    - [IProjector<TInput, TOutput>](#iprojector)
+    - [ReadModel](#readmodel)
+    - [EventDeduplicationRecord](#eventdeduplicationrecord)
+    - [IReadValue](#ireadvalue)
 
 ---
 
@@ -1242,12 +1252,14 @@ public interface IOutput
     IOutput SetExitCode(ExitCode exitCode);
     IOutput Fail();
     IOutput Succeed();
+    IOutput Ignore();
+    IOutput Reject();
     IOutput SetId(string id);
 }
 ```
 
 **Description:**
-Interface for representing the output after executing a use case. Provides fluent API for building output objects.
+Interface for representing the output after executing a use case. Provides fluent API for building output objects. `Ignore()` and `Reject()` set the exit code to `ExitCode.Ignore` / `ExitCode.Reject`; they are ordinary interface members, so a class that implements `IOutput` directly must provide them. Deriving from [DefaultOutput<T>](#defaultoutput) provides all members.
 
 **Properties:**
 - `Message`: Human-readable message
@@ -1290,6 +1302,18 @@ public class CreateAccountOutput : IOutput
         return this;
     }
 
+    public IOutput Ignore()
+    {
+        ExitCode = ExitCode.Ignore;
+        return this;
+    }
+
+    public IOutput Reject()
+    {
+        ExitCode = ExitCode.Reject;
+        return this;
+    }
+
     public IOutput SetId(string id)
     {
         Id = id;
@@ -1303,10 +1327,10 @@ public class CreateAccountOutput : IOutput
     }
 }
 
-// Usage:
+// Usage (the IOutput members return IOutput, so call the concrete setter first):
 var output = new CreateAccountOutput()
-    .SetId(accountId.ToString())
     .SetAccountNumber("123456")
+    .SetId(accountId.ToString())
     .SetMessage("Account created successfully")
     .Succeed();
 ```
@@ -1318,7 +1342,7 @@ var output = new CreateAccountOutput()
 
 **Related:**
 - [ExitCode](#exitcode)
-- [CqrsOutput](#cqrsoutput)
+- [DefaultOutput<T>](#defaultoutput)
 - [IUseCase](#iusecase)
 
 ---
@@ -1379,16 +1403,20 @@ if (account.Version != input.Version)
 public enum ExitCode
 {
     Success = 0,
-    Failure = 1
+    Failure = 1,
+    Ignore = 2,
+    Reject = 3
 }
 ```
 
 **Description:**
-Enumeration representing the execution status of a use case. Mirrors upstream Java ezddd's two-state result model; richer failure semantics (not-found, conflict, validation) are conveyed via `IOutput.Message` or by throwing `UseCaseFailureException`.
+Enumeration representing the execution status of a use case. Mirrors upstream Java ezddd's exit codes (`IGNORE` and `REJECT` were added in Java 7.1.0); details such as not-found, conflict, or validation errors are conveyed via `IOutput.Message` or by throwing `UseCaseFailureException`.
 
 **Values:**
 - `Success (0)`: Operation completed successfully
 - `Failure (1)`: Operation failed
+- `Ignore (2)`: The request was ignored — for example, [IdempotentDecorator](#idempotentdecorator) returns it for an event that was already applied or that names no data the use case handles
+- `Reject (3)`: The request was rejected
 
 **Example:**
 ```csharp
@@ -1418,9 +1446,10 @@ return output;
 ```
 
 **Notes:**
-- ✅ Two-state result model (parity with Java ezddd)
+- ✅ Same four exit codes as Java ezddd
 - ✅ Use `IOutput.Message` to convey failure details
 - ✅ `ExitCodeExtensions.Code()` yields the underlying integer value
+- ⚠️ Code that maps exit codes with `switch` or `==` (for example, success versus failure) must also handle `Ignore` and `Reject`, or add a default arm
 
 **Related:**
 - [ExitCodeExtensions](#exitcodeextensions)
@@ -1449,7 +1478,7 @@ Extension methods for `ExitCode`.
 ##### Code
 Gets the integer code value of the exit code.
 
-**Returns:** int - `0` for `Success`, `1` for `Failure`
+**Returns:** int - `0` for `Success`, `1` for `Failure`, `2` for `Ignore`, `3` for `Reject`
 
 **Example:**
 ```csharp
@@ -1461,27 +1490,162 @@ int code = ExitCode.Failure.Code(); // 1
 
 ---
 
+#### DefaultOutput
+
+**Namespace:** `EzDdd.UseCase.Port.In` (package `ezDDD.UseCase`)
+
+**Signature:**
+```csharp
+public class DefaultOutput<T> : IOutput
+    where T : DefaultOutput<T>, new()
+{
+    public string Id { get; set; }          // default ""
+    public string Message { get; set; }     // default ""
+    public ExitCode ExitCode { get; set; }  // default ExitCode.Success
+
+    public static T Create();
+    public T SetId(string id);
+    public T SetMessage(string message);
+    public T SetExitCode(ExitCode exitCode);
+    public T Succeed();
+    public T Fail();
+    public T Ignore();
+    public T Reject();
+}
+
+public class DefaultOutput : DefaultOutput<DefaultOutput>;
+```
+
+**Description:**
+`DefaultOutput<T>` is the default implementation of `IOutput` used by use cases, commands, and queries. It provides a type-safe fluent API through a self-referential generic, so subclasses keep their concrete type when chaining methods. The `IOutput` members are implemented explicitly and return `IOutput`; the public members return `T`.
+
+The non-generic `DefaultOutput` is the ready-to-use output of event-driven use cases ([IReactor<TInput>](#ireactor), [INotifier<TInput>](#inotifier)). It is not sealed: an implementation can return a subclass that carries extra data, but the fluent setters of such a subclass still return `DefaultOutput`.
+
+Formerly `EzDdd.Cqrs.CqrsOutput<T>` (renamed and moved with Java ezddd 7.0.0; see [ADR-0031](../adr/0031-align-with-java-ezddd-9-0-1.md)).
+
+**Type Parameters:**
+- `T`: The concrete output type (self-referential constraint)
+
+**Properties:**
+- `Id`: Identifier associated with output (default `""`)
+- `Message`: Human-readable message (default `""`)
+- `ExitCode`: Execution status code (default `ExitCode.Success`)
+
+**Methods:**
+
+##### Create (static)
+Creates a new instance of the concrete output type.
+
+**Returns:** T - New instance
+
+##### SetId / SetMessage
+Set the identifier or message and return this instance.
+
+**Exceptions:**
+- `ArgumentNullException`: When the value is `null`
+
+##### SetExitCode
+Sets the exit code and returns this instance.
+
+##### Succeed / Fail / Ignore / Reject
+Set the exit code to `Success`, `Failure`, `Ignore`, or `Reject` and return this instance.
+
+**Example:**
+```csharp
+using EzDdd.UseCase.Port.In;
+
+public class CreateAccountOutput : DefaultOutput<CreateAccountOutput>
+{
+    public string AccountNumber { get; set; } = string.Empty;
+
+    public CreateAccountOutput SetAccountNumber(string accountNumber)
+    {
+        AccountNumber = accountNumber;
+        return this;
+    }
+}
+
+// All methods return CreateAccountOutput, not DefaultOutput<CreateAccountOutput>
+var output = CreateAccountOutput.Create()
+    .SetId("ACC-001")
+    .SetAccountNumber("1234567890")
+    .SetMessage("Account created successfully")
+    .Succeed();
+
+// Event-driven use cases return the non-generic DefaultOutput
+DefaultOutput ignored = DefaultOutput.Create().Ignore();
+```
+
+**Notes:**
+- ✅ Type-safe method chaining preserves the concrete type
+- ✅ Output constraint of [ICommand](#icommand) and [IQuery](#iquery): `where TOutput : DefaultOutput<TOutput>, new()`
+- ✅ Package `ezDDD.UseCase`, already a dependency of `ezDDD.Cqrs`
+
+**Related:**
+- [IOutput](#ioutput)
+- [ExitCode](#exitcode)
+- [ICommand](#icommand)
+- [IQuery](#iquery)
+
+---
+
+#### DomainEventDataInput
+
+**Namespace:** `EzDdd.UseCase.Port.In`
+
+**Signature:**
+```csharp
+public record DomainEventDataInput : IInput
+{
+    public required DomainEventData Event { get; init; }
+}
+```
+
+**Description:**
+An `IInput` that carries one [DomainEventData](#domaineventdata); the input of event-driven use cases such as [IReactor<TInput>](#ireactor) and [INotifier<TInput>](#inotifier), and the input type that [IdempotentDecorator](#idempotentdecorator) requires. It is a non-sealed record, so an input that carries more than the event can derive from it.
+
+**Example:**
+```csharp
+// Used directly
+var input = new DomainEventDataInput { Event = eventData };
+
+// Derived record carrying extra data
+public record TenantEventInput : DomainEventDataInput
+{
+    public required string TenantId { get; init; }
+}
+```
+
+**Notes:**
+- ✅ Replaces the nested `DefaultInput` types of Java's `Reactor` and `Notifier` (not ported)
+- ⚠️ `required` guarantees that `Event` is set by an object initializer or present in JSON, not that it is non-null
+
+**Related:**
+- [IReactor<TInput>](#ireactor)
+- [INotifier<TInput>](#inotifier)
+- [IdempotentDecorator](#idempotentdecorator)
+
+---
+
 #### IReactor
 
 **Namespace:** `EzDdd.UseCase.Port.In`
 
 **Signature:**
 ```csharp
-public interface IReactor<in TInput>
-{
-    Task ExecuteAsync(TInput input);
-}
+public interface IReactor<in TInput> : IUseCase<TInput, DefaultOutput>
+    where TInput : IInput;
 ```
 
 **Description:**
-In-port for services that take care of specific business rules whenever they receive a message. According to the received message, a reactor triggers a side effect such as notifying frontend clients or another bounded context. Reactors should handle messages idempotently. `IProjector<TInput>` and `INotifier<TInput>` in EzDdd.Cqrs are specialized reactors (see ADR-0028).
+An event-driven use case (an in-port) that takes care of specific business rules whenever it receives a message. According to the received message, a reactor applies the business rules and triggers a side effect, such as updating another aggregate or a read model. It is a sibling of [INotifier<TInput>](#inotifier): a reactor applies business rules, whereas a notifier publishes events outward. A reactor that maintains a read model loads it from an [IArchive](#iarchive), calls an entities-layer [IProjector<TInput, TOutput>](#iprojector), records the event id, and saves it.
 
 **Type Parameters:**
-- `TInput`: The type of input message this reactor processes (contravariant)
+- `TInput`: The type of input message this reactor processes (contravariant; must implement `IInput`, typically [DomainEventDataInput](#domaineventdatainput))
 
 **Example:**
 ```csharp
-public class WelcomeEmailReactor : IReactor<DomainEventData>
+public class WelcomeEmailReactor : IReactor<DomainEventDataInput>
 {
     private readonly IEmailService _emailService;
 
@@ -1490,24 +1654,32 @@ public class WelcomeEmailReactor : IReactor<DomainEventData>
         _emailService = emailService;
     }
 
-    public async Task ExecuteAsync(DomainEventData input)
+    public async Task<DefaultOutput> ExecuteAsync(DomainEventDataInput input)
     {
-        var domainEvent = DomainEventMapper.ToDomain<AccountCreated>(input);
+        if (input.Event.EventType != "AccountCreated")
+        {
+            return DefaultOutput.Create().Ignore();
+        }
+
+        var domainEvent = DomainEventMapper.ToDomain<AccountCreated>(input.Event);
         await _emailService.SendWelcomeEmailAsync(domainEvent.Owner);
+        return DefaultOutput.Create().Succeed();
     }
 }
 ```
 
 **Notes:**
 - ✅ Receives messages delivered by infrastructure (e.g., an event store relay)
-- ✅ No return value (fire-and-forget semantics)
+- ✅ Returns a `DefaultOutput` like every other use case
 - ✅ Asynchronous execution
-- ✅ Should be idempotent (same message processed twice yields same result)
+- ⚠️ Under at-least-once delivery, wrap it in [IdempotentDecorator](#idempotentdecorator) or handle redeliveries yourself; the decorator is not an `IReactor`, so hold the wrapped reactor as `IUseCase<TInput, DefaultOutput>`
+- ⚠️ Hosting (start/stop, subscribing to a broker) stays an infrastructure concern — pair the reactor with `IHostedService`/`BackgroundService`
 
 **Related:**
-- [IProjector<TInput>](#iprojector)
 - [INotifier<TInput>](#inotifier)
-- [DomainEventData](#domaineventdata)
+- [DomainEventDataInput](#domaineventdatainput)
+- [IdempotentDecorator](#idempotentdecorator)
+- [IProjector<TInput, TOutput>](#iprojector)
 
 ---
 
@@ -1690,6 +1862,61 @@ public class DepositMoneyUseCase : IUseCase<DepositInput, DepositOutput>
 - [ICommand](#icommand)
 - [IQuery](#iquery)
 - [IRepository](#irepository)
+
+---
+
+#### UseCaseDecorator
+
+**Namespace:** `EzDdd.UseCase.Port.In`
+
+**Signature:**
+```csharp
+public abstract class UseCaseDecorator<TInput, TOutput> : IUseCase<TInput, TOutput>
+    where TInput : IInput
+    where TOutput : IOutput
+{
+    protected UseCaseDecorator(IUseCase<TInput, TOutput> useCase);
+    protected IUseCase<TInput, TOutput> DecoratedUseCase { get; }
+    public abstract Task<TOutput> ExecuteAsync(TInput input);
+}
+```
+
+**Description:**
+Base class for decorators of an in-port use case. A decorator implements the same in-port as the use case it wraps, so a concern that cuts across many use cases (an idempotency check, a transaction, logging) can be added without touching them. A subclass either delegates to `DecoratedUseCase` or returns an output that explains why it did not (for example with `ExitCode.Ignore` or `ExitCode.Reject`); it must not change the meaning of the decorated use case. Decorators can be stacked.
+
+**Exceptions:**
+- `ArgumentNullException`: When the decorated use case is `null`
+
+**Example:**
+```csharp
+public sealed class LoggingDecorator<TInput, TOutput> : UseCaseDecorator<TInput, TOutput>
+    where TInput : IInput
+    where TOutput : IOutput
+{
+    private readonly ILogger _logger;
+
+    public LoggingDecorator(IUseCase<TInput, TOutput> useCase, ILogger logger)
+        : base(useCase)
+    {
+        _logger = logger;
+    }
+
+    public override async Task<TOutput> ExecuteAsync(TInput input)
+    {
+        TOutput output = await DecoratedUseCase.ExecuteAsync(input);
+        _logger.LogInformation("{Input} → {ExitCode}", input, output.ExitCode);
+        return output;
+    }
+}
+```
+
+**Notes:**
+- ✅ Mirrors Java ezddd `UseCaseDecorator` (since 8.0.0); Java's protected field `useCase` is the protected property `DecoratedUseCase`
+- ✅ [IdempotentDecorator](#idempotentdecorator) is the decorator the library ships
+
+**Related:**
+- [IUseCase](#iusecase)
+- [IdempotentDecorator](#idempotentdecorator)
 
 ---
 
@@ -2940,7 +3167,7 @@ public class KafkaAccountEventPublisher
 }
 
 // Used from a notifier in the use cases layer
-public class AccountNotifier : INotifier<DomainEventData>
+public class AccountNotifier : INotifier<DomainEventDataInput>
 {
     private readonly IExternalDomainEventPublisher<AccountCreatedIntegrationEvent> _publisher;
 
@@ -2950,18 +3177,19 @@ public class AccountNotifier : INotifier<DomainEventData>
         _publisher = publisher;
     }
 
-    public async Task ExecuteAsync(DomainEventData input)
+    public async Task<DefaultOutput> ExecuteAsync(DomainEventDataInput input)
     {
-        var internalEvent = DomainEventMapper.ToDomain<AccountCreated>(input);
+        var internalEvent = DomainEventMapper.ToDomain<AccountCreated>(input.Event);
         var integrationEvent = new AccountCreatedIntegrationEvent(
             internalEvent.Id,
             internalEvent.OccurredOn,
             internalEvent.Source,
-            internalEvent.AccountNumber,
+            internalEvent.Source, // AccountCreated carries no account number; the account id is used
             internalEvent.Owner,
             internalEvent.Metadata);
 
         await _publisher.PublishAsync(integrationEvent);
+        return DefaultOutput.Create().Succeed();
     }
 }
 ```
@@ -3032,18 +3260,18 @@ CQRS pattern separation of command (write) and query (read) operations.
 ```csharp
 public interface ICommand<in TInput, TOutput> : IUseCase<TInput, TOutput>
     where TInput : IInput
-    where TOutput : CqrsOutput<TOutput>, new()
+    where TOutput : DefaultOutput<TOutput>, new()
 {
     // Marker interface - inherits ExecuteAsync from IUseCase
 }
 ```
 
 **Description:**
-Marker interface for command operations in CQRS (write side). Commands modify system state by creating, updating, or deleting aggregates.
+Marker interface for command operations in CQRS (write side). Commands modify system state by creating, updating, or deleting aggregates. The output type derives from [DefaultOutput<T>](#defaultoutput) (namespace `EzDdd.UseCase.Port.In`).
 
 **Type Parameters:**
 - `TInput`: The input type
-- `TOutput`: The output type (must extend CqrsOutput<TOutput>)
+- `TOutput`: The output type (must derive from DefaultOutput<TOutput>, from EzDdd.UseCase.Port.In)
 
 **Example:**
 ```csharp
@@ -3054,7 +3282,7 @@ public record CreateAccountInput(
     decimal InitialBalance
 ) : IInput;
 
-public class CreateAccountOutput : CqrsOutput<CreateAccountOutput>
+public class CreateAccountOutput : DefaultOutput<CreateAccountOutput>
 {
     public string AccountNumber { get; set; } = string.Empty;
 
@@ -3100,7 +3328,7 @@ public class CreateAccountCommand
 **Key Characteristics:**
 - Modifies system state
 - Uses IRepository for persistence
-- Returns CqrsOutput with operation result
+- Returns a DefaultOutput<T> subclass with operation result
 - May use IInquiry for validation
 
 **Notes:**
@@ -3111,7 +3339,7 @@ public class CreateAccountCommand
 **Related:**
 - [IQuery](#iquery)
 - [IInquiry](#iinquiry)
-- [CqrsOutput](#cqrsoutput)
+- [DefaultOutput<T>](#defaultoutput)
 - [IRepository](#irepository)
 
 ---
@@ -3146,7 +3374,7 @@ public record CheckAccountExistsInput(
     string AccountNumber
 ) : IInquiryInput;
 
-public class CheckAccountExistsOutput : CqrsOutput<CheckAccountExistsOutput>
+public class CheckAccountExistsOutput : DefaultOutput<CheckAccountExistsOutput>
 {
     public bool Exists { get; set; }
 
@@ -3257,14 +3485,14 @@ public record ValidateTransferInput(
 ```csharp
 public interface IQuery<in TInput, TOutput> : IUseCase<TInput, TOutput>
     where TInput : IInput
-    where TOutput : CqrsOutput<TOutput>, new()
+    where TOutput : DefaultOutput<TOutput>, new()
 {
     // Marker interface - inherits ExecuteAsync from IUseCase
 }
 ```
 
 **Description:**
-Marker interface for query operations (read side). Queries retrieve system state without modifying it, typically from optimized read models.
+Marker interface for query operations (read side). Queries retrieve system state without modifying it, typically from optimized read models. The output type derives from [DefaultOutput<T>](#defaultoutput) (namespace `EzDdd.UseCase.Port.In`).
 
 **Type Parameters:**
 - `TInput`: The input type
@@ -3276,7 +3504,7 @@ public record GetAccountSummaryInput(
     Guid AccountId
 ) : IInput;
 
-public class GetAccountSummaryOutput : CqrsOutput<GetAccountSummaryOutput>
+public class GetAccountSummaryOutput : DefaultOutput<GetAccountSummaryOutput>
 {
     public string AccountNumber { get; set; } = string.Empty;
     public string Owner { get; set; } = string.Empty;
@@ -3377,7 +3605,7 @@ public record AccountTransactionHistoryInput(
 ) : IProjectionInput;
 
 public class AccountTransactionHistoryOutput
-    : CqrsOutput<AccountTransactionHistoryOutput>
+    : DefaultOutput<AccountTransactionHistoryOutput>
 {
     public List<TransactionDto> Transactions { get; set; } = new();
 
@@ -3432,92 +3660,7 @@ public class AccountTransactionHistoryProjection
 - [IProjectionInput](#iprojectioninput)
 - [IQuery](#iquery)
 - [IArchive](#iarchive)
-- [IProjector](#iprojector)
-
----
-
-#### IProjector
-
-**Namespace:** `EzDdd.Cqrs.Query`
-
-**Signature:**
-```csharp
-public interface IProjector<in TInput> : IReactor<TInput>
-{
-    // Inherits Task ExecuteAsync(TInput input) from IReactor<TInput>
-}
-```
-
-**Description:**
-A kind of [IReactor<TInput>](#ireactor) that writes read models in a query database. Projectors receive domain events published by the write model and project them into denormalized read models in [IArchive](#iarchive), keeping the query side eventually consistent with the write side. Formerly a non-generic marker interface; genericized in ADR-0028 to mirror upstream `Projector<Input> extends Reactor<Input>`.
-
-**Type Parameters:**
-- `TInput`: The type of input message (typically domain event data) this projector processes (contravariant)
-
-**CQRS Flow:**
-```
-Command → Aggregate → Events → Repository → Relay → Projector → Archive → Query
-```
-
-**Example:**
-```csharp
-public class AccountSummaryProjector : IProjector<DomainEventData>
-{
-    private readonly IArchive<AccountSummaryReadModel, Guid> _archive;
-
-    public AccountSummaryProjector(
-        IArchive<AccountSummaryReadModel, Guid> archive)
-    {
-        _archive = archive;
-    }
-
-    public async Task ExecuteAsync(DomainEventData input)
-    {
-        switch (input.EventType)
-        {
-            case "AccountCreated":
-                var created = DomainEventMapper.ToDomain<AccountCreated>(input);
-                await _archive.SaveAsync(new AccountSummaryReadModel
-                {
-                    Id = Guid.Parse(created.Source),
-                    AccountNumber = created.AccountNumber,
-                    Owner = created.Owner,
-                    Balance = created.InitialBalance
-                });
-                break;
-
-            case "MoneyDeposited":
-                var deposited = DomainEventMapper.ToDomain<MoneyDeposited>(input);
-                var account = await _archive.FindByIdAsync(
-                    Guid.Parse(deposited.Source));
-                if (account != null)
-                {
-                    account.Balance += deposited.Amount;
-                    await _archive.SaveAsync(account);
-                }
-                break;
-        }
-    }
-}
-
-// Startup configuration (events delivered by a relay; see
-// examples/EventInfrastructure for a reference relay implementation):
-services.AddSingleton<IProjector<DomainEventData>, AccountSummaryProjector>();
-```
-
-**Notes:**
-- ✅ Reactor for read model maintenance (event handling contract inherited from IReactor<TInput>)
-- ✅ Receives domain events from infrastructure (e.g., an event store relay)
-- ✅ Updates read models asynchronously
-- ✅ Maintains eventual consistency
-- ✅ Lifecycle (Start/Stop) stays an infrastructure concern — combine with `IHostedService`/`BackgroundService`
-- ⚠️ Handle events idempotently (same event processed twice yields same result)
-
-**Related:**
-- [IProjection](#iprojection)
-- [IReactor<TInput>](#ireactor)
-- [INotifier<TInput>](#inotifier)
-- [IArchive](#iarchive)
+- [IProjector<TInput, TOutput>](#iprojector)
 
 ---
 
@@ -3527,21 +3670,19 @@ services.AddSingleton<IProjector<DomainEventData>, AccountSummaryProjector>();
 
 **Signature:**
 ```csharp
-public interface INotifier<in TInput> : IReactor<TInput>
-{
-    // Inherits Task ExecuteAsync(TInput input) from IReactor<TInput>
-}
+public interface INotifier<in TInput> : IUseCase<TInput, DefaultOutput>
+    where TInput : IInput;
 ```
 
 **Description:**
-A kind of [IReactor<TInput>](#ireactor) that receives internal domain events, converts them into external domain events (integration events), and dispatches them through an out-port to front-ends, downstream bounded contexts, or external systems (such as Kafka), in order to notify others of aggregate state changes. The notifier upholds the cross-layer principle of Clean Architecture: objects from the entities layer must not leave the use cases layer and travel outward directly.
+An event-driven use case (an in-port) and a sibling of [IReactor<TInput>](#ireactor), not a subtype of it. It receives internal domain events, converts them into external domain events (integration events), and dispatches them through an out-port to front-ends, downstream bounded contexts, or external systems (such as Kafka), in order to notify others of aggregate state changes. The notifier upholds the cross-layer principle of Clean Architecture: objects from the entities layer must not leave the use cases layer and travel outward directly.
 
 **Type Parameters:**
-- `TInput`: The type of input message (typically internal domain event data) this notifier processes (contravariant)
+- `TInput`: The type of input message (typically [DomainEventDataInput](#domaineventdatainput)) this notifier processes (contravariant; must implement `IInput`)
 
 **Example:**
 ```csharp
-public class AccountNotifier : INotifier<DomainEventData>
+public class AccountNotifier : INotifier<DomainEventDataInput>
 {
     private readonly IExternalDomainEventPublisher<AccountCreatedIntegrationEvent> _publisher;
 
@@ -3551,23 +3692,24 @@ public class AccountNotifier : INotifier<DomainEventData>
         _publisher = publisher;
     }
 
-    public async Task ExecuteAsync(DomainEventData input)
+    public async Task<DefaultOutput> ExecuteAsync(DomainEventDataInput input)
     {
-        if (input.EventType != "AccountCreated")
+        if (input.Event.EventType != "AccountCreated")
         {
-            return;
+            return DefaultOutput.Create().Ignore();
         }
 
-        var internalEvent = DomainEventMapper.ToDomain<AccountCreated>(input);
+        var internalEvent = DomainEventMapper.ToDomain<AccountCreated>(input.Event);
         var integrationEvent = new AccountCreatedIntegrationEvent(
             internalEvent.Id,
             internalEvent.OccurredOn,
             internalEvent.Source,
-            internalEvent.AccountNumber,
+            internalEvent.Source, // AccountCreated carries no account number; the account id is used
             internalEvent.Owner,
             internalEvent.Metadata);
 
         await _publisher.PublishAsync(integrationEvent);
+        return DefaultOutput.Create().Succeed();
     }
 }
 ```
@@ -3575,12 +3717,11 @@ public class AccountNotifier : INotifier<DomainEventData>
 **Notes:**
 - ✅ Converts internal domain events to integration events at the layer boundary
 - ✅ Dispatches through IExternalDomainEventPublisher (out-port)
-- ✅ Mirrors upstream `Notifier<Input>` (since Java ezddd 5.0.0)
-- ⚠️ Handle events idempotently, like all reactors
+- ✅ Mirrors upstream `Notifier<Input>` (a sibling of `Reactor` since Java ezddd 7.0.0)
+- ⚠️ Not an `IReactor`: register and resolve notifiers as `INotifier<TInput>`; a lookup by `IReactor<TInput>` no longer finds them
 
 **Related:**
 - [IReactor<TInput>](#ireactor)
-- [IProjector<TInput>](#iprojector)
 - [IExternalDomainEventPublisher](#iexternaldomaineventpublisher)
 - [IExternalDomainEvent](#iexternaldomainevent)
 
@@ -3719,135 +3860,333 @@ public class SqlAccountSummaryArchive
 - ✅ Optimized for read performance
 - ✅ Eventually consistent with write model
 - ✅ Separate database (optional)
+- ⚠️ `SaveAsync` uses upsert semantics and `DeleteAsync` succeeds when the data is absent (ADR-0023)
+- ⚠️ When the stored type derives from [ReadModel](#readmodel): `FindByIdAsync` must return a copy the caller can change without changing stored state, and `SaveAsync` must persist the `eventDeduplicationRecord` property (the EF Core-style example above returns tracked instances and would need adapting)
 
 **Related:**
 - [IQuery](#iquery)
 - [IProjection](#iprojection)
-- [IProjector](#iprojector)
+- [IProjector<TInput, TOutput>](#iprojector)
 - [IRepository](#irepository)
 
 ---
 
-### CqrsOutput
+### Idempotency
+
+Under at-least-once delivery, an event-driven use case receives some events more than once. These types skip an event that was already applied, before the decorated use case runs. They mirror Java ezddd 8.0.0–9.0.1 (see [ADR-0031](../adr/0031-align-with-java-ezddd-9-0-1.md)).
+
+#### IdempotentDecorator
 
 **Namespace:** `EzDdd.Cqrs`
 
 **Signature:**
 ```csharp
-public class CqrsOutput<T> : IOutput
-    where T : CqrsOutput<T>, new()
+public class IdempotentDecorator<TInput, TOutput> : UseCaseDecorator<TInput, TOutput>
+    where TInput : DomainEventDataInput
+    where TOutput : IOutput
 {
-    public string Id { get; set; }
-    public string Message { get; set; }
-    public ExitCode ExitCode { get; set; }
+    public IdempotentDecorator(
+        IUseCase<TInput, TOutput> useCase,
+        IInquiry<IdempotentInquiryInput, bool> inquiry,
+        Func<TOutput> outputFactory,
+        IIdempotentIdParser<IInternalDomainEvent> idParser);
 
-    public static T Create();
-    public T SetId(string id);
-    public T SetMessage(string message);
-    public T SetExitCode(ExitCode exitCode);
-    public T Succeed();
-    public T Fail();
+    public IdempotentDecorator(
+        IUseCase<TInput, TOutput> useCase,
+        IInquiry<IdempotentInquiryInput, bool> inquiry,
+        Func<TOutput> outputFactory,
+        Func<IInternalDomainEvent, string?> idParser);
+
+    public override Task<TOutput> ExecuteAsync(TInput input);
 }
 ```
 
 **Description:**
-Base class for CQRS command and query outputs. Provides type-safe fluent API using self-referential generics, allowing subclasses to maintain their concrete type when chaining methods.
+Makes a message-driven use case skip a domain event that was already applied. `ExecuteAsync`:
 
-**Type Parameters:**
-- `T`: The concrete output type (self-referential constraint)
-
-**Properties:**
-- `Id`: Identifier associated with output
-- `Message`: Human-readable message
-- `ExitCode`: Execution status code
-
-**Methods:**
-
-#### Create (static)
-Creates a new instance of the concrete output type.
-
-**Returns:** T - New instance
-
-#### SetId
-Sets the identifier and returns this instance.
+1. Converts `input.Event` with `DomainEventMapper.ToDomain<IInternalDomainEvent>` (the event type must be registered in `DomainEventTypeMapper`; a conversion failure propagates, and neither the parser nor the inquiry is called).
+2. Asks the id parser for the id of the data the event targets. `null` means "not mine": the decorator returns `outputFactory().Ignore()` without asking the inquiry or running the use case. An empty string is a valid id.
+3. Asks the inquiry with `DataId` = the parser result and `EventId` = the event's `Id`. `true` → returns `outputFactory().Ignore()` without running the use case.
+4. Otherwise runs the decorated use case with the same input instance and returns its output unchanged.
 
 **Parameters:**
-- `id` (string): The identifier
+- `useCase`: The use case to decorate
+- `inquiry`: Answers `true` only when the event has already been applied to the data, and `false` when the data does not exist yet
+- `outputFactory`: Must return a **new** instance on every call; the decorator changes it with `Ignore()`
+- `idParser`: An `IIdempotentIdParser<IInternalDomainEvent>` or a lambda
 
-**Returns:** T - This instance for chaining
-
-#### SetMessage
-Sets the message and returns this instance.
-
-**Parameters:**
-- `message` (string): The message
-
-**Returns:** T - This instance for chaining
-
-#### SetExitCode
-Sets the exit code and returns this instance.
-
-**Parameters:**
-- `exitCode` (ExitCode): The exit code
-
-**Returns:** T - This instance for chaining
-
-#### Succeed
-Sets exit code to Success and returns this instance.
-
-**Returns:** T - This instance for chaining
-
-#### Fail
-Sets exit code to Failure and returns this instance.
-
-**Returns:** T - This instance for chaining
+**Exceptions:**
+- `ArgumentNullException`: When a constructor argument, the input, or `input.Event` is `null`
+- Exceptions from the mapper, the inquiry, and the decorated use case propagate unchanged
 
 **Example:**
 ```csharp
-public class CreateAccountOutput : CqrsOutput<CreateAccountOutput>
-{
-    public string AccountNumber { get; set; } = string.Empty;
-    public decimal Balance { get; set; }
+using EzDdd.Cqrs;
+using EzDdd.Cqrs.Command;
 
-    public CreateAccountOutput SetAccountNumber(string accountNumber)
+// The inquiry reads the deduplication record of the stored read model
+// (AccountId and AccountSummaryReadModel as in the IProjector and ReadModel examples below)
+public sealed class AccountEventHandledInquiry : IInquiry<IdempotentInquiryInput, bool>
+{
+    private readonly IArchive<AccountSummaryReadModel, AccountId> _archive;
+
+    public AccountEventHandledInquiry(IArchive<AccountSummaryReadModel, AccountId> archive)
     {
-        AccountNumber = accountNumber;
-        return this;
+        _archive = archive;
     }
 
-    public CreateAccountOutput SetBalance(decimal balance)
+    public async Task<bool> QueryAsync(IdempotentInquiryInput input)
     {
-        Balance = balance;
-        return this;
+        AccountSummaryReadModel? model = await _archive.FindByIdAsync(new AccountId(input.DataId));
+        return model?.EventDeduplicationRecord.IsEventHandled(input.EventId) ?? false;
     }
 }
 
-// Usage with fluent API:
-var output = CreateAccountOutput.Create()
-    .SetId("ACC-001")
-    .SetAccountNumber("1234567890")
-    .SetBalance(1000m)
-    .SetMessage("Account created successfully")
-    .Succeed();
-
-// All methods return CreateAccountOutput, not CqrsOutput
-// This enables type-safe chaining with domain-specific methods
+// Wiring: the decorator is not an IReactor, so hold it as IUseCase<,>
+IUseCase<DomainEventDataInput, DefaultOutput> reactor =
+    new IdempotentDecorator<DomainEventDataInput, DefaultOutput>(
+        new AccountSummaryReactor(archive),
+        new AccountEventHandledInquiry(archive),
+        () => new DefaultOutput(),
+        (IInternalDomainEvent e) => e.Source);
 ```
 
-**Design Pattern:**
-Self-referential generic with fluent builder API. The `T` parameter ensures that fluent methods always return the concrete subclass type, not the base `CqrsOutput` type.
+The lambda parameter needs its type (`IInternalDomainEvent e`) or a cast so that the compiler can pick between the two constructors.
 
-**Notes:**
-- ✅ Type-safe method chaining preserves concrete type
-- ✅ Static factory method for creating instances
-- ✅ Explicit IOutput implementation for interface compatibility
-- ✅ Extensible with domain-specific fluent methods
+**Limitations (documented, not guarded):**
+- ⚠️ A best-effort filter, not mutual exclusion: concurrent deliveries of the same event for the same data id can both pass the inquiry. Deliver all events for one data id serially (e.g., partition by data id), or — when the only effect of the decorated use case is a save — use an archive with optimistic concurrency. Side effects before the save (notifications, outbound calls) can still happen twice.
+- ⚠️ The inquiry's answer is advisory: the decorated use case loads the data again, and another writer may change it in between.
+- ⚠️ Only [ReadModel](#readmodel) carries a deduplication record. Using the decorator for a reactor that changes an aggregate needs an application-supplied inquiry backed by its own record of handled events.
 
 **Related:**
-- [IOutput](#ioutput)
-- [ICommand](#icommand)
-- [IQuery](#iquery)
-- [ExitCode](#exitcode)
+- [UseCaseDecorator](#usecasedecorator)
+- [IIdempotentIdParser](#iidempotentidparser)
+- [IdempotentInquiryInput](#idempotentinquiryinput)
+- [ReadModel](#readmodel)
+
+---
+
+#### IIdempotentIdParser
+
+**Namespace:** `EzDdd.Cqrs`
+
+**Signature:**
+```csharp
+public interface IIdempotentIdParser<in TInput>
+{
+    string? Parse(TInput input);
+}
+```
+
+**Description:**
+Tells an [IdempotentDecorator](#idempotentdecorator) which data a message would touch. Returns the data id, or `null` when the message names no data the use case handles (Java returns an empty `Optional`). An empty string is a valid id.
+
+**Related:**
+- [IdempotentDecorator](#idempotentdecorator)
+
+---
+
+#### IdempotentInquiryInput
+
+**Namespace:** `EzDdd.Cqrs`
+
+**Signature:**
+```csharp
+public class IdempotentInquiryInput : IInquiryInput
+{
+    public string DataId { get; set; }  // default ""
+    public Guid EventId { get; set; }   // default Guid.Empty
+}
+```
+
+**Description:**
+The input of the inquiry that an [IdempotentDecorator](#idempotentdecorator) asks: `DataId` is the parser result and `EventId` the id of the event under test. There is no occurrence time; since Java ezddd 9.0.0 the answer depends on the recorded event ids alone.
+
+**Related:**
+- [IdempotentDecorator](#idempotentdecorator)
+- [IInquiry](#iinquiry)
+
+---
+
+### Entities Layer of the Query Side
+
+**Namespace:** `EzDdd.Cqrs.Entity.Query` (package `ezDDD.Cqrs`). Mirrors Java ezddd's `cqrs.entity.query` package (since 8.0.0).
+
+#### IProjector
+
+**Signature:**
+```csharp
+public interface IProjector<in TInput, out TOutput>
+{
+    TOutput Project(TInput input);
+}
+```
+
+**Description:**
+Builds or updates a read model from an input. A projector is a synchronous pure function: it performs no I/O, so its logic can be unit-tested without infrastructure. Loading and saving the read model stay in the use cases layer, in an [IReactor<TInput>](#ireactor).
+
+This is a different type from the removed use-case projector `EzDdd.Cqrs.Query.IProjector<TInput>`, which had the same simple name.
+
+**Example** (uses the `AccountCreated` and `MoneyDeposited` events defined under [IInternalDomainEvent](#iinternaldomainevent), whose `Source` is a `string` and whose amounts are `decimal`, an `AccountId(string Value)` record, and the `AccountSummaryReadModel` shown under [ReadModel](#readmodel)):
+```csharp
+public sealed record AccountId(string Value) : IValueObject;
+
+public sealed record AccountProjectionInput(AccountSummaryReadModel? Current, IInternalDomainEvent Event);
+
+public sealed class AccountSummaryProjector
+    : IProjector<AccountProjectionInput, AccountSummaryReadModel?>
+{
+    public AccountSummaryReadModel? Project(AccountProjectionInput input) =>
+        input.Event switch
+        {
+            AccountCreated e => new AccountSummaryReadModel(new AccountId(e.Source), e.Owner, e.InitialBalance, 0),
+            MoneyDeposited e when input.Current is not null => input.Current with
+            {
+                Balance = input.Current.Balance + e.Amount,
+                TransactionCount = input.Current.TransactionCount + 1,
+            },
+            _ => null,
+        };
+}
+
+// The use case that drives it: load, project, record the event id, save once
+public sealed class AccountSummaryReactor : IReactor<DomainEventDataInput>
+{
+    private readonly IArchive<AccountSummaryReadModel, AccountId> _archive;
+    private readonly AccountSummaryProjector _projector = new();
+
+    public AccountSummaryReactor(IArchive<AccountSummaryReadModel, AccountId> archive)
+    {
+        _archive = archive;
+    }
+
+    public async Task<DefaultOutput> ExecuteAsync(DomainEventDataInput input)
+    {
+        var domainEvent = DomainEventMapper.ToDomain<IInternalDomainEvent>(input.Event);
+        var current = await _archive.FindByIdAsync(new AccountId(domainEvent.Source));
+
+        var projected = _projector.Project(new AccountProjectionInput(current, domainEvent));
+        if (projected is null)
+        {
+            return DefaultOutput.Create().Ignore();
+        }
+
+        projected.UpdateEventDeduplicationRecord(domainEvent.Id);
+        await _archive.SaveAsync(projected);
+        return DefaultOutput.Create().Succeed();
+    }
+}
+```
+
+**Related:**
+- [ReadModel](#readmodel)
+- [IReactor<TInput>](#ireactor)
+
+---
+
+#### ReadModel
+
+**Signature:**
+```csharp
+public abstract record ReadModel
+{
+    protected ReadModel();                          // capacity 50
+    protected ReadModel(int maxEventCapacity);
+    protected ReadModel(ReadModel original);        // copy constructor used by `with`
+
+    [JsonInclude, JsonPropertyName("eventDeduplicationRecord")]
+    public EventDeduplicationRecord EventDeduplicationRecord { get; private set; }
+
+    public void UpdateEventDeduplicationRecord(Guid eventId);
+    public virtual bool Equals(ReadModel? other);
+    public override int GetHashCode();
+}
+```
+
+**Description:**
+The product of a projection and the unit an [IArchive](#iarchive) stores. It carries the [EventDeduplicationRecord](#eventdeduplicationrecord) of the events already projected into it, so the record is written and read back with the model. It is an `abstract record`, so positional-record read models can derive from it:
+
+```csharp
+public sealed record AccountSummaryReadModel(
+    AccountId AccountId, string Owner, decimal Balance, int TransactionCount
+) : ReadModel;
+
+// Custom capacity
+public sealed record BusyAccountReadModel(AccountId AccountId, decimal Balance) : ReadModel(200);
+```
+
+**Behavior:**
+- **Copies**: a copy made with `with` (at any depth of derivation) gets its own record with the same ids and capacity; updating one does not affect the other.
+- **Equality**: the deduplication record never takes part. Two read models are equal when they have the same runtime type and equal derived members.
+- **JSON**: the model serializes as `{ ...derived members..., "eventDeduplicationRecord": { "processedEventIds": [...], "MAX_EVENT_CAPACITY": 50 } }`. A document without the property (e.g., written by ezDDD.NET 2.x) or with `null` loads with an empty record and the capacity the derived constructor chose.
+
+**Exceptions:**
+- `ArgumentOutOfRangeException`: When `maxEventCapacity` is less than 1
+
+**Usage rules (documented, not guarded):**
+- ⚠️ Call `UpdateEventDeduplicationRecord` before the single `SaveAsync` of the model — also on the first event, which creates the model — so the model and its record are written in one atomic write. An `IArchive` implementation must not drop `eventDeduplicationRecord`.
+- ⚠️ `IArchive.FindByIdAsync` must return an instance the caller can change without changing stored state (a copy). Otherwise a failure between the update and the save marks an event as handled that was never persisted, and its redelivery is ignored.
+- ⚠️ Do not skip a save because the new model equals the old one: equality ignores the record, so a save whose only change is a newly recorded event id would be skipped. Always save after `UpdateEventDeduplicationRecord`.
+- ⚠️ Deleting a read model deletes its record. A later redelivery of an earlier event (for example the creation event) is projected again and can recreate the model; keep a tombstone or your own record if that matters.
+- ⚠️ A stored capacity wins over the constructor's: raising the capacity in code affects only new documents. A redelivery older than the capacity is projected again. Each remembered id adds about 39 bytes to the document.
+- ⚠️ Rolling back to ezDDD.NET 2.x and re-saving a model drops the record; after upgrading again, redeliveries still within the window are projected again.
+- ⚠️ JSON support is reflection-based System.Text.Json only. A source-generated `JsonSerializerContext` cannot see the private members involved and silently drops the record.
+- ⚠️ Not thread-safe.
+
+**Related:**
+- [EventDeduplicationRecord](#eventdeduplicationrecord)
+- [IdempotentDecorator](#idempotentdecorator)
+- [IArchive](#iarchive)
+
+---
+
+#### EventDeduplicationRecord
+
+**Signature:**
+```csharp
+public sealed class EventDeduplicationRecord
+{
+    public const int DefaultMaxEventCapacity = 50;
+
+    public EventDeduplicationRecord();
+    public EventDeduplicationRecord(int maxEventCapacity);
+
+    public bool IsEventHandled(Guid eventId);
+    public void SetEventId(Guid eventId);
+}
+```
+
+**Description:**
+Remembers the ids of the most recent events projected into the read model that owns it. When the capacity is exceeded, the eldest ids are dropped first; recording an id already remembered does not move it. Ids are stored as lowercase `"D"`-format strings, exactly as Java's `UUID.toString()` writes them. It exposes no public properties; its JSON shape (`processedEventIds`, then `MAX_EVENT_CAPACITY`) matches Java ezddd.
+
+**Reading stored JSON** (tolerant, so a malformed record never stops a read model from loading):
+- `MAX_EVENT_CAPACITY` missing, `null`, or less than 1 → 50
+- `processedEventIds` missing or `null` → no ids; `null` ids are dropped; duplicates collapse to the first occurrence
+- A stored GUID string in another case or format is normalized, so it still matches; other strings are kept and match nothing
+- Stored ids beyond the capacity are kept until the next `SetEventId`
+- JSON that is syntactically wrong or of the wrong type still throws
+
+**Exceptions:**
+- `ArgumentOutOfRangeException`: When `maxEventCapacity` is less than 1
+
+**Notes:**
+- ⚠️ Upstream's default of 50 is sized for ezddd-gateway's poll size of 20, which ezDDD.NET does not have; size the capacity above the number of events that can be redelivered for one read model
+- ⚠️ Reflection-based System.Text.Json only (see [ReadModel](#readmodel)); not thread-safe
+
+**Related:**
+- [ReadModel](#readmodel)
+
+---
+
+#### IReadValue
+
+**Signature:**
+```csharp
+public interface IReadValue;
+```
+
+**Description:**
+Marks a value-semantic component that lives inside a [ReadModel](#readmodel). It is never archived on its own.
 
 ---
 
@@ -3861,4 +4200,4 @@ Self-referential generic with fluent builder API. The `T` parameter ensures that
 
 ---
 
-*Last updated: 2026-07-05*
+*Last updated: 2026-10-06*

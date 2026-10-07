@@ -8,7 +8,7 @@ namespace EzDdd.Cqrs.Query;
 ///     typically from optimized read models in an <see cref="IArchive{TData, TId}" />.
 /// </summary>
 /// <typeparam name="TInput">The query input type.</typeparam>
-/// <typeparam name="TOutput">The query output type, must extend <see cref="CqrsOutput{T}" />.</typeparam>
+/// <typeparam name="TOutput">The query output type, must extend <see cref="DefaultOutput{T}" />.</typeparam>
 /// <remarks>
 ///     <para>
 ///         In CQRS, queries represent read operations that retrieve system state.
@@ -29,13 +29,13 @@ namespace EzDdd.Cqrs.Query;
 ///     </list>
 ///     <para>
 ///         Read models in the query database are kept eventually consistent with the write model
-///         via <see cref="IProjector{TInput}" /> background services that listen to domain events.
+///         by reactors that listen to domain events.
 ///     </para>
 ///     <para>
 ///         <b>Generic Variance</b>: This interface uses contravariant input (<c>in TInput</c>)
 ///         to enable flexible query composition, but does NOT use covariant output (<c>out TOutput</c>)
 ///         because it would conflict with the <c>new()</c> constraint on the base
-///         <see cref="IUseCase{TInput,TOutput}" /> interface and the <c>CqrsOutput&lt;TOutput&gt;</c> constraint.
+///         <see cref="IUseCase{TInput,TOutput}" /> interface and the <c>DefaultOutput&lt;TOutput&gt;</c> constraint.
 ///         Covariance requires output-only usage, but <c>new()</c> requires instantiation (input operation).
 ///         See ADR-0021 (Generic Variance Annotations) for detailed explanation of this design decision.
 ///     </para>
@@ -78,7 +78,7 @@ namespace EzDdd.Cqrs.Query;
 /// </example>
 public interface IQuery<in TInput, TOutput> : IUseCase<TInput, TOutput>
     where TInput : IInput
-    where TOutput : CqrsOutput<TOutput>, new()
+    where TOutput : DefaultOutput<TOutput>, new()
 {
     // Marker interface - no additional methods beyond IUseCase.ExecuteAsync()
 }

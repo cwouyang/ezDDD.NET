@@ -1,3 +1,5 @@
+using EzDdd.UseCase.Port.In;
+
 namespace EzDdd.Cqrs.Query;
 
 /// <summary>
@@ -18,7 +20,7 @@ namespace EzDdd.Cqrs.Query;
 ///         </item>
 ///         <item>
 ///             <b>Flexible Output</b>: Output can be any type - view models, DTOs, records.
-///             Does NOT require <see cref="CqrsOutput{T}" />.
+///             Does NOT require <see cref="DefaultOutput{T}" />.
 ///         </item>
 ///         <item>
 ///             <b>Used Within Queries</b>: Queries may use projections to build complex
@@ -33,12 +35,12 @@ namespace EzDdd.Cqrs.Query;
 ///         <b>Difference from IQuery</b>:
 ///     </para>
 ///     <list type="bullet">
-///         <item><c>IQuery</c>: Full use case for read operations, extends IUseCase, requires CqrsOutput</item>
+///         <item><c>IQuery</c>: Full use case for read operations, extends IUseCase, requires DefaultOutput</item>
 ///         <item><c>IProjection</c>: View builder for queries, standalone, flexible output</item>
 ///     </list>
 ///     <para>
-///         <b>Not to be confused with IProjector</b>: IProjector is a background service
-///         that maintains read models, while IProjection builds views from read models.
+///         <b>Read models vs. views</b>: Reactors maintain read models in an archive,
+///         while IProjection builds views from read models.
 ///     </para>
 /// </remarks>
 /// <example>

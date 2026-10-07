@@ -4,6 +4,8 @@
 
 **Accepted**
 
+> **Status note (2026-10-06)**: The `CqrsOutput<TOutput>` constraint shown in this ADR is now `DefaultOutput<TOutput>` (EzDdd.UseCase.Port.In, [ADR-0031](0031-align-with-java-ezddd-9-0-1.md)). The variance decisions are unchanged.
+
 - **Date**: 2025-11-18
 - **Deciders**: Development Team
 - **Status Date**: 2025-11-18

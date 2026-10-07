@@ -1,4 +1,5 @@
 using EzDdd.Cqrs.Query;
+using EzDdd.UseCase.Port.In;
 
 namespace EzDdd.Cqrs.Command;
 
@@ -17,7 +18,7 @@ namespace EzDdd.Cqrs.Command;
 /// </typeparam>
 /// <typeparam name="TOutput">
 ///     The output type for the inquiry. Can be any type (bool, DTO, etc.).
-///     Does NOT require <see cref="CqrsOutput{T}" /> constraint for flexibility.
+///     Does NOT require <see cref="DefaultOutput{T}" /> constraint for flexibility.
 /// </typeparam>
 /// <remarks>
 ///     <para>
@@ -27,7 +28,7 @@ namespace EzDdd.Cqrs.Command;
 ///         <b>Key Differences from IQuery</b>:
 ///         <list type="bullet">
 ///             <item>Does NOT extend IUseCase (simpler, less overhead)</item>
-///             <item>Does NOT require CqrsOutput (flexible output types)</item>
+///             <item>Does NOT require DefaultOutput (flexible output types)</item>
 ///             <item>Used within commands for validation, not exposed to clients</item>
 ///             <item>Synchronous or asynchronous execution</item>
 ///         </list>

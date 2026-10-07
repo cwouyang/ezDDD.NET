@@ -2,8 +2,8 @@
 
 Practical examples demonstrating how to use ezDDD.NET in real-world scenarios.
 
-> **Version**: 1.0.0-alpha.1
-> **Last Updated**: 2026-07-05
+> **Version**: Unreleased (aligned with Java ezddd 9.0.1; see [CHANGELOG](../../CHANGELOG.md))
+> **Last Updated**: 2026-10-06
 
 ---
 
@@ -27,9 +27,9 @@ Practical examples demonstrating how to use ezDDD.NET in real-world scenarios.
 - [CQRS Examples](#cqrs-examples)
   - [Command Side (Write Model)](#command-side-write-model)
   - [Query Side (Read Model)](#query-side-read-model)
-  - [Projection and Projector](#projection-and-projector)
+  - [Read Model Projection with an Idempotent Reactor](#read-model-projection-with-an-idempotent-reactor)
   - [Complete CQRS Flow](#complete-cqrs-flow)
-  - [CqrsOutput Fluent API](#cqrsoutput-fluent-api)
+  - [DefaultOutput Fluent API](#defaultoutput-fluent-api)
 - [Real-World Scenarios](#real-world-scenarios)
   - [Banking System (Event Sourcing)](#banking-system-event-sourcing)
 - [System Reconciliation Examples](#system-reconciliation-examples)
@@ -2095,9 +2095,9 @@ public sealed record CreateAccountInput
 ) : IInput;
 
 // Command output
-// (ICommand requires TOutput : CqrsOutput<TOutput>, new() - the base class
+// (ICommand requires TOutput : DefaultOutput<TOutput>, new() - the base class
 //  already provides Id/Message/ExitCode plus the fluent Set*/Succeed/Fail API)
-public sealed class CreateAccountOutput : CqrsOutput<CreateAccountOutput>
+public sealed class CreateAccountOutput : DefaultOutput<CreateAccountOutput>
 {
     public long Version { get; set; }
 
@@ -2153,7 +2153,7 @@ public sealed record DepositMoneyInput
     public long Version { get; set; }
 }
 
-public sealed class DepositMoneyOutput : CqrsOutput<DepositMoneyOutput>
+public sealed class DepositMoneyOutput : DefaultOutput<DepositMoneyOutput>
 {
     public decimal NewBalance { get; set; }
     public long Version { get; set; }
@@ -2254,7 +2254,7 @@ await DemoCommandsAsync();
 
 **Explanation**:
 
-1. **ICommand**: Extends `IUseCase` for write operations; its output type must extend `CqrsOutput<TOutput>`
+1. **ICommand**: Extends `IUseCase` for write operations; its output type must derive from `DefaultOutput<TOutput>` (namespace `EzDdd.UseCase.Port.In`)
 2. **Input/Output**: Define contracts for command data
 3. **Repository**: Commands use repository to persist changes
 4. **Optimistic Locking**: Use `IVersionedInput` for concurrency control (settable `Version` property)
@@ -2299,29 +2299,32 @@ Version: 1
 
 ```csharp
 using System.Collections.Concurrent;
-using EzDdd.Cqrs;
+using EzDdd.Common;
+using EzDdd.Cqrs.Entity.Query;
 using EzDdd.Cqrs.Query;
 using EzDdd.Entity;
 using EzDdd.UseCase.Exceptions;
 using EzDdd.UseCase.Port.In;
 
-// Simple in-memory IArchive implementation for the demos
+// Simple in-memory IArchive implementation for the demos. Like a real database it stores
+// JSON, so every find returns a copy - a requirement for read models deriving from
+// ReadModel (see the next example).
 public sealed class InMemoryArchive<TData, TId>(Func<TData, TId> idSelector)
     : IArchive<TData, TId>
     where TData : class
     where TId : notnull
 {
-    private readonly ConcurrentDictionary<TId, TData> _store = new();
+    private readonly ConcurrentDictionary<TId, string> _store = new();
 
     public Task<TData?> FindByIdAsync(TId id)
     {
-        _store.TryGetValue(id, out TData? data);
-        return Task.FromResult(data);
+        TData? copy = _store.TryGetValue(id, out string? json) ? JsonUtil.ReadValue<TData>(json) : null;
+        return Task.FromResult(copy);
     }
 
     public Task SaveAsync(TData data)
     {
-        _store[idSelector(data)] = data;
+        _store[idSelector(data)] = JsonUtil.AsString(data);
         return Task.CompletedTask;
     }
 
@@ -2332,7 +2335,8 @@ public sealed class InMemoryArchive<TData, TId>(Func<TData, TId> idSelector)
     }
 }
 
-// Read model (denormalized for queries)
+// Read model (denormalized for queries). Deriving from ReadModel adds the event
+// deduplication record used by the next example.
 public sealed record AccountSummaryReadModel
 (
     AccountId AccountId,
@@ -2341,10 +2345,7 @@ public sealed record AccountSummaryReadModel
     DateTimeOffset CreatedOn,
     DateTimeOffset LastTransactionDate,
     int TransactionCount
-) : IEntity<AccountId>
-{
-    AccountId IEntity<AccountId>.Id => AccountId;
-}
+) : ReadModel;
 
 // Query input (IQuery requires TInput : IInput)
 public sealed record GetAccountSummaryInput
@@ -2352,8 +2353,8 @@ public sealed record GetAccountSummaryInput
     AccountId AccountId
 ) : IInput;
 
-// Query output (IQuery requires TOutput : CqrsOutput<TOutput>, new())
-public sealed class GetAccountSummaryOutput : CqrsOutput<GetAccountSummaryOutput>
+// Query output (IQuery requires TOutput : DefaultOutput<TOutput>, new())
+public sealed class GetAccountSummaryOutput : DefaultOutput<GetAccountSummaryOutput>
 {
     public string AccountId { get; set; } = string.Empty;
     public string Owner { get; set; } = string.Empty;
@@ -2434,7 +2435,7 @@ public sealed record GetAccountHistoryInput
     int PageSize
 ) : IInput;
 
-public sealed class GetAccountHistoryOutput : CqrsOutput<GetAccountHistoryOutput>
+public sealed class GetAccountHistoryOutput : DefaultOutput<GetAccountHistoryOutput>
 {
     public List<TransactionHistoryItem> Transactions { get; set; } = [];
     public int TotalCount { get; set; }
@@ -2485,10 +2486,10 @@ Console.WriteLine($"Transactions: {output.TransactionCount}");
 
 **Explanation**:
 
-1. **IQuery**: Extends `IUseCase` for read operations; input must implement `IInput`, output must extend `CqrsOutput<TOutput>`
+1. **IQuery**: Extends `IUseCase` for read operations; input must implement `IInput`, output must derive from `DefaultOutput<TOutput>`
 2. **Read Model**: Denormalized data structure optimized for queries
 3. **IArchive**: Query database interface (query-side counterpart to IRepository)
-4. **Fluent Output**: `CqrsOutput<T>` base class provides `Create()`/`SetId()`/`SetMessage()`/`Succeed()`/`Fail()`
+4. **Fluent Output**: `DefaultOutput<T>` base class provides `Create()`/`SetId()`/`SetMessage()`/`Succeed()`/`Fail()`/`Ignore()`/`Reject()`
 5. **No Modifications**: Queries NEVER modify state
 
 **Output**:
@@ -2515,135 +2516,111 @@ Transactions: 5
 
 ---
 
-### Projection and Projector
+### Read Model Projection with an Idempotent Reactor
 
-**Scenario**: Build and maintain read models from domain events.
+**Scenario**: Build and maintain read models from domain events, and skip events that an at-least-once transport delivers twice.
 
 **Key Concepts**:
-- IProjector<TInput> (a specialized IReactor<TInput>)
-- ExecuteAsync for event handling
-- Event-driven updates
-- Eventually consistent reads
+- `IProjector<TInput, TOutput>` (entities layer, `EzDdd.Cqrs.Entity.Query`): pure, synchronous projection logic
+- `IReactor<DomainEventDataInput>`: the use case that loads, projects, records the event id, and saves
+- `ReadModel`: carries the event deduplication record
+- `IdempotentDecorator`: ignores an event already applied to the read model
 
 **Complete Code**:
 
 ```csharp
+using EzDdd.Cqrs;
+using EzDdd.Cqrs.Command;
+using EzDdd.Cqrs.Entity.Query;
 using EzDdd.Cqrs.Query;
 using EzDdd.Entity;
 using EzDdd.UseCase.Port.In;
 using EzDdd.UseCase.Port.InOut;
 
-// Uses BankAccount events, AccountSummaryReadModel and InMemoryArchive
-// from the previous examples.
+// Uses BankAccount events, AccountSummaryReadModel (which derives from ReadModel)
+// and InMemoryArchive from the previous examples.
 
-// Projector implementation (IProjector<TInput> inherits ExecuteAsync from IReactor<TInput>)
-public sealed class AccountProjector : IProjector<DomainEventData>
+// 1. Pure projection logic: no archive, no deduplication bookkeeping
+public sealed record AccountProjectionInput(AccountSummaryReadModel? Current, IInternalDomainEvent Event);
+
+public sealed class AccountSummaryProjector
+    : IProjector<AccountProjectionInput, AccountSummaryReadModel?>
+{
+    public AccountSummaryReadModel? Project(AccountProjectionInput input)
+    {
+        var current = input.Current;
+        return input.Event switch
+        {
+            AccountCreated e => new AccountSummaryReadModel(
+                e.Source, e.Owner, e.InitialBalance.Amount, e.OccurredOn, e.OccurredOn, 0),
+            MoneyDeposited e when current is not null => current with
+            {
+                Balance = current.Balance + e.Amount.Amount,
+                LastTransactionDate = e.OccurredOn,
+                TransactionCount = current.TransactionCount + 1
+            },
+            MoneyWithdrawn e when current is not null => current with
+            {
+                Balance = current.Balance - e.Amount.Amount,
+                LastTransactionDate = e.OccurredOn,
+                TransactionCount = current.TransactionCount + 1
+            },
+            _ => null // the event changes nothing
+        };
+    }
+}
+
+// 2. The use case: load, project, record the event id, save once
+public sealed class AccountProjector : IReactor<DomainEventDataInput>
 {
     private readonly IArchive<AccountSummaryReadModel, AccountId> _archive;
+    private readonly AccountSummaryProjector _projector = new();
 
     public AccountProjector(IArchive<AccountSummaryReadModel, AccountId> archive)
     {
         _archive = archive ?? throw new ArgumentNullException(nameof(archive));
     }
 
-    public async Task ExecuteAsync(DomainEventData eventData)
+    public async Task<DefaultOutput> ExecuteAsync(DomainEventDataInput input)
     {
-        try
-        {
-            var domainEvent = _DeserializeDomainEvent(eventData);
+        var domainEvent = DomainEventMapper.ToDomain<IInternalDomainEvent>(input.Event);
+        var accountId = new AccountId(domainEvent.Source);
+        var current = await _archive.FindByIdAsync(accountId);
 
-            switch (domainEvent)
+        if (domainEvent is AccountClosed)
+        {
+            if (current is not null)
             {
-                case AccountCreated e:
-                    await _HandleAccountCreatedAsync(e);
-                    break;
-
-                case MoneyDeposited e:
-                    await _HandleMoneyDepositedAsync(e);
-                    break;
-
-                case MoneyWithdrawn e:
-                    await _HandleMoneyWithdrawnAsync(e);
-                    break;
-
-                case AccountClosed e:
-                    await _HandleAccountClosedAsync(e);
-                    break;
+                await _archive.DeleteAsync(current);
             }
+            return DefaultOutput.Create().Succeed();
         }
-        catch (Exception ex)
+
+        var projected = _projector.Project(new AccountProjectionInput(current, domainEvent));
+        if (projected is null)
         {
-            await Console.Error.WriteLineAsync(
-                $"Error processing event {eventData.Id}: {ex.Message}");
-            throw;
+            return DefaultOutput.Create().Ignore();
         }
-    }
 
-    private async Task _HandleAccountCreatedAsync(AccountCreated @event)
-    {
-        var readModel = new AccountSummaryReadModel(
-            @event.Source, // positional AccountId parameter of the event record
-            @event.Owner,
-            @event.InitialBalance.Amount,
-            @event.OccurredOn,
-            @event.OccurredOn,
-            0);
-
-        await _archive.SaveAsync(readModel);
-    }
-
-    private async Task _HandleMoneyDepositedAsync(MoneyDeposited @event)
-    {
-        var existing = await _archive.FindByIdAsync(@event.Source);
-        if (existing == null) return;
-
-        var updated = existing with
-        {
-            Balance = existing.Balance + @event.Amount.Amount,
-            LastTransactionDate = @event.OccurredOn,
-            TransactionCount = existing.TransactionCount + 1
-        };
-
-        await _archive.SaveAsync(updated);
-    }
-
-    private async Task _HandleMoneyWithdrawnAsync(MoneyWithdrawn @event)
-    {
-        var existing = await _archive.FindByIdAsync(@event.Source);
-        if (existing == null) return;
-
-        var updated = existing with
-        {
-            Balance = existing.Balance - @event.Amount.Amount,
-            LastTransactionDate = @event.OccurredOn,
-            TransactionCount = existing.TransactionCount + 1
-        };
-
-        await _archive.SaveAsync(updated);
-    }
-
-    private async Task _HandleAccountClosedAsync(AccountClosed @event)
-    {
-        var existing = await _archive.FindByIdAsync(@event.Source);
-        if (existing == null) return;
-
-        await _archive.DeleteAsync(existing);
-    }
-
-    private static IInternalDomainEvent _DeserializeDomainEvent(DomainEventData eventData)
-    {
-        return eventData.EventType switch
-        {
-            "AccountCreated" => DomainEventMapper.ToDomain<AccountCreated>(eventData),
-            "MoneyDeposited" => DomainEventMapper.ToDomain<MoneyDeposited>(eventData),
-            "MoneyWithdrawn" => DomainEventMapper.ToDomain<MoneyWithdrawn>(eventData),
-            "AccountClosed" => DomainEventMapper.ToDomain<AccountClosed>(eventData),
-            _ => throw new InvalidOperationException($"Unknown event type: {eventData.EventType}")
-        };
+        // Record the event id in the same write as the model (also on the first event)
+        projected.UpdateEventDeduplicationRecord(domainEvent.Id);
+        await _archive.SaveAsync(projected);
+        return DefaultOutput.Create().Succeed();
     }
 }
 
-// Demo: Projector in action
+// 3. The inquiry the decorator asks: was this event already applied to this read model?
+public sealed class AccountEventHandledInquiry(IArchive<AccountSummaryReadModel, AccountId> archive)
+    : IInquiry<IdempotentInquiryInput, bool>
+{
+    public async Task<bool> QueryAsync(IdempotentInquiryInput input)
+    {
+        var readModel = await archive.FindByIdAsync(new AccountId(input.DataId));
+        return readModel?.EventDeduplicationRecord.IsEventHandled(input.EventId) ?? false;
+    }
+}
+
+// Demo: an idempotent projection in action
 public static async Task DemoProjectorAsync()
 {
     // Setup
@@ -2651,7 +2628,14 @@ public static async Task DemoProjectorAsync()
     DomainEventTypeMapper.Register<MoneyDeposited>("MoneyDeposited");
 
     var archive = new InMemoryArchive<AccountSummaryReadModel, AccountId>(m => m.AccountId);
-    var projector = new AccountProjector(archive);
+
+    // IdempotentDecorator is not an IReactor, so hold it as IUseCase<,>
+    IUseCase<DomainEventDataInput, DefaultOutput> reactor =
+        new IdempotentDecorator<DomainEventDataInput, DefaultOutput>(
+            new AccountProjector(archive),
+            new AccountEventHandledInquiry(archive),
+            () => new DefaultOutput(),
+            (IInternalDomainEvent e) => e.Source); // the data id is the account id
 
     Console.WriteLine("=== Projector Demo ===\n");
 
@@ -2671,17 +2655,23 @@ public static async Task DemoProjectorAsync()
         accountId,
         new Money(500m));
 
-    // Process events through projector
+    // Process events through the decorated reactor
     Console.WriteLine("Event 1: AccountCreated");
-    await projector.ExecuteAsync(DomainEventMapper.ToData(event1));
+    var output1 = await reactor.ExecuteAsync(new DomainEventDataInput { Event = DomainEventMapper.ToData(event1) });
     var readModel1 = await archive.FindByIdAsync(accountId);
-    Console.WriteLine($"Read model created: Balance = ${readModel1?.Balance:F2}");
+    Console.WriteLine($"{output1.ExitCode}: Balance = ${readModel1?.Balance:F2}");
 
     Console.WriteLine("\nEvent 2: MoneyDeposited");
-    await projector.ExecuteAsync(DomainEventMapper.ToData(event2));
+    var deposit = new DomainEventDataInput { Event = DomainEventMapper.ToData(event2) };
+    var output2 = await reactor.ExecuteAsync(deposit);
     var readModel2 = await archive.FindByIdAsync(accountId);
-    Console.WriteLine($"Read model updated: Balance = ${readModel2?.Balance:F2}");
-    Console.WriteLine($"Transaction count: {readModel2?.TransactionCount}");
+    Console.WriteLine($"{output2.ExitCode}: Balance = ${readModel2?.Balance:F2}");
+
+    Console.WriteLine("\nEvent 2 redelivered");
+    var output3 = await reactor.ExecuteAsync(deposit);
+    var readModel3 = await archive.FindByIdAsync(accountId);
+    Console.WriteLine($"{output3.ExitCode}: Balance = ${readModel3?.Balance:F2}");
+    Console.WriteLine($"Transaction count: {readModel3?.TransactionCount}");
 }
 
 await DemoProjectorAsync();
@@ -2689,30 +2679,35 @@ await DemoProjectorAsync();
 
 **Explanation**:
 
-1. **IProjector<DomainEventData>**: Projector interface, a specialized `IReactor<TInput>` (ADR-0028)
-2. **ExecuteAsync**: Handles events delivered by infrastructure (e.g., an event store relay)
-3. **Event Handlers**: Update read models based on events
-4. **Immutable Updates**: Use `with` expressions for record updates
-5. **Error Handling**: Log errors but don't crash projector
+1. **IProjector<TInput, TOutput>**: A pure function in the entities layer; it can be unit-tested without an archive
+2. **IReactor<DomainEventDataInput>**: The use case around it — loads the read model, calls the projector, records the event id with `UpdateEventDeduplicationRecord`, and saves once
+3. **ReadModel**: The deduplication record is stored inside the read model, so the model and the record are written together
+4. **IdempotentDecorator**: Parses the data id from the event, asks the inquiry, and returns `ExitCode.Ignore` instead of running the reactor when the event was already applied
+5. **Immutable Updates**: `with` expressions copy the deduplication record along with the model
 
 **Output**:
 ```
 === Projector Demo ===
 
 Event 1: AccountCreated
-Read model created: Balance = $1000.00
+Success: Balance = $1000.00
 
 Event 2: MoneyDeposited
-Read model updated: Balance = $1500.00
+Success: Balance = $1500.00
+
+Event 2 redelivered
+Ignore: Balance = $1500.00
 Transaction count: 1
 ```
 
 **Notes**:
-- ✅ Projectors listen to domain events
-- ✅ Update read models asynchronously
+- ✅ Projection logic stays free of I/O
+- ✅ Redelivered events are ignored instead of double-counted
 - ✅ Eventually consistent with write model
-- ✅ Can rebuild from event stream
-- ⚠️ Handle events idempotently if possible
+- ⚠️ The archive's `FindByIdAsync` must return a copy (the demo archive stores JSON); otherwise a failed save can leave an event marked as handled
+- ⚠️ The decorator is a best-effort filter: deliver all events for one data id serially (e.g., partition by data id). An archive with optimistic concurrency helps only when the save is the reactor's only effect
+- ⚠️ Deleting the read model (on `AccountClosed`) deletes its record; a redelivered `AccountCreated` would recreate it
+- ⚠️ Only the most recent 50 event ids are remembered by default (`ReadModel(int maxEventCapacity)` changes it); an older redelivery is projected again
 
 ---
 
@@ -2722,21 +2717,23 @@ Transaction count: 1
 
 **Key Concepts**:
 - Command → Aggregate → Events → Repository
-- Events → Relay → Projector → Archive
+- Events → Relay → Reactor (projector) → Archive
 - Archive → Query → Output
 - Eventual consistency
 
 **Complete Code**:
 
 ```csharp
+using EzDdd.Cqrs;
 using EzDdd.Cqrs.Command;
 using EzDdd.Cqrs.Query;
 using EzDdd.Entity;
+using EzDdd.UseCase.Port.In;
 using EzDdd.UseCase.Port.InOut;
 using EzDdd.UseCase.Port.Out;
 
-// Reuses BankAccount, the commands, the query, the projector and the
-// in-memory peer/archive from the previous examples.
+// Reuses BankAccount, the commands, the query, the projector reactor, the
+// inquiry and the in-memory peer/archive from the previous examples.
 
 // Complete CQRS infrastructure setup
 public static async Task DemoCompleteCqrsFlowAsync()
@@ -2754,7 +2751,12 @@ public static async Task DemoCompleteCqrsFlowAsync()
 
     // Setup read side (query)
     var archive = new InMemoryArchive<AccountSummaryReadModel, AccountId>(m => m.AccountId);
-    var projector = new AccountProjector(archive);
+    IUseCase<DomainEventDataInput, DefaultOutput> projector =
+        new IdempotentDecorator<DomainEventDataInput, DefaultOutput>(
+            new AccountProjector(archive),
+            new AccountEventHandledInquiry(archive),
+            () => new DefaultOutput(),
+            (IInternalDomainEvent e) => e.Source);
 
     // Create commands and queries
     var createCommand = new CreateAccountCommand(repository);
@@ -2775,7 +2777,7 @@ public static async Task DemoCompleteCqrsFlowAsync()
         {
             var eventData = DomainEventMapper.ToData(
                 (IInternalDomainEvent)events[relayPosition]);
-            await projector.ExecuteAsync(eventData);
+            await projector.ExecuteAsync(new DomainEventDataInput { Event = eventData });
         }
     }
 
@@ -2849,7 +2851,7 @@ await DemoCompleteCqrsFlowAsync();
 
 1. **Write Side**: Commands → Aggregates → Events → Repository
 2. **Relay**: A background relay polls the event store and delivers stored events to reactors (Transactional Outbox; simulated inline here)
-3. **Read Side**: Projectors → Read Models → Archive
+3. **Read Side**: Idempotent reactor → entities-layer projector → Read Models → Archive
 4. **Query Side**: Queries read from archive (optimized read models)
 5. **Eventual Consistency**: Read models updated asynchronously
 
@@ -2901,12 +2903,12 @@ STEP 6: CQRS Benefits Demonstrated
 
 ---
 
-### CqrsOutput Fluent API
+### DefaultOutput Fluent API
 
-**Scenario**: Use CqrsOutput's self-referential fluent API for unified outputs.
+**Scenario**: Use DefaultOutput's self-referential fluent API for unified outputs.
 
 **Key Concepts**:
-- CqrsOutput<T> self-referential generic base class
+- DefaultOutput<T> self-referential generic base class
 - Fluent method chaining that preserves the concrete type
 - Success/failure handling via ExitCode
 - Domain-specific payload via subclass properties
@@ -2914,13 +2916,12 @@ STEP 6: CQRS Benefits Demonstrated
 **Complete Code**:
 
 ```csharp
-using EzDdd.Cqrs;
-using EzDdd.UseCase.Port.In;
+using EzDdd.UseCase.Port.In; // DefaultOutput<T> (package ezDDD.UseCase)
 
 // The generic parameter T is the concrete output type itself
-// (self-referential constraint: T : CqrsOutput<T>, new()).
+// (self-referential constraint: T : DefaultOutput<T>, new()).
 // Payload data lives in subclass properties, added with fluent setters.
-public sealed class GetBalanceOutput : CqrsOutput<GetBalanceOutput>
+public sealed class GetBalanceOutput : DefaultOutput<GetBalanceOutput>
 {
     public decimal Balance { get; set; }
 
@@ -2931,10 +2932,10 @@ public sealed class GetBalanceOutput : CqrsOutput<GetBalanceOutput>
     }
 }
 
-// Demo: CqrsOutput fluent API
-public static void DemoCqrsOutputApi()
+// Demo: DefaultOutput fluent API
+public static void DemoDefaultOutputApi()
 {
-    Console.WriteLine("=== CqrsOutput Fluent API Demo ===\n");
+    Console.WriteLine("=== DefaultOutput Fluent API Demo ===\n");
 
     // Example 1: Simple success output
     Console.WriteLine("Example 1: Simple Success");
@@ -2980,7 +2981,7 @@ public static void DemoCqrsOutputApi()
     // Example 5: Type-safe chaining
     Console.WriteLine("\nExample 5: Type-Safe Chaining");
     // Every fluent call - including the inherited SetId/SetMessage/Succeed -
-    // returns GetBalanceOutput, not CqrsOutput, so custom setters can be
+    // returns GetBalanceOutput, not DefaultOutput<GetBalanceOutput>, so custom setters can be
     // chained in any order:
     GetBalanceOutput chained = GetBalanceOutput.Create()
         .SetId("ACC-456")
@@ -2990,26 +2991,26 @@ public static void DemoCqrsOutputApi()
 
     // Example 6: Used through the IOutput interface
     Console.WriteLine("\nExample 6: IOutput Interoperability");
-    IOutput asInterface = chained; // CqrsOutput<T> implements IOutput
+    IOutput asInterface = chained; // DefaultOutput<T> implements IOutput
     Console.WriteLine($"IOutput.Message: '{asInterface.Message}'");
     Console.WriteLine($"IOutput.ExitCode: {asInterface.ExitCode}");
 }
 
-DemoCqrsOutputApi();
+DemoDefaultOutputApi();
 ```
 
 **Explanation**:
 
 1. **Create()**: Static factory method to start building (requires `new()` constraint)
-2. **Succeed()/Fail()**: Set exit code to Success/Failure
+2. **Succeed()/Fail()/Ignore()/Reject()**: Set exit code to Success/Failure/Ignore/Reject
 3. **SetExitCode()**: Set exit code explicitly
 4. **SetMessage()/SetId()**: Add human-readable message and associated identifier
 5. **Method Chaining**: All fluent methods return the concrete type `T` — subclass setters stay chainable
-6. **Payload**: Domain data is expressed as subclass properties (there is no generic `Data` payload on `CqrsOutput`)
+6. **Payload**: Domain data is expressed as subclass properties (there is no generic `Data` payload on `DefaultOutput<T>`)
 
 **Output**:
 ```
-=== CqrsOutput Fluent API Demo ===
+=== DefaultOutput Fluent API Demo ===
 
 Example 1: Simple Success
 ExitCode: Success
@@ -3039,10 +3040,10 @@ IOutput.ExitCode: Success
 
 **Notes**:
 - ✅ Fluent API preserves the concrete subclass type (self-referential generic)
-- ✅ Exit code + message pattern (`ExitCode.Success` / `ExitCode.Failure` only)
+- ✅ Exit code + message pattern (`Success`, `Failure`, `Ignore`, `Reject`)
 - ✅ Optional ID field
 - ✅ Implements `IOutput` for interface interoperability
-- ⚠️ `T` must be the subclass itself: `class MyOutput : CqrsOutput<MyOutput>`
+- ⚠️ `T` must be the subclass itself: `class MyOutput : DefaultOutput<MyOutput>`
 - ⚠️ No built-in `Data`/pagination members — model the payload as subclass properties
 
 ---
@@ -3116,6 +3117,8 @@ public sealed class TransferMoneyOutput : IOutput
     public IOutput SetId(string id) { Id = id; return this; }
     public IOutput Fail() { ExitCode = ExitCode.Failure; return this; }
     public IOutput Succeed() { ExitCode = ExitCode.Success; return this; }
+    public IOutput Ignore() { ExitCode = ExitCode.Ignore; return this; }
+    public IOutput Reject() { ExitCode = ExitCode.Reject; return this; }
 }
 
 public sealed class TransferMoneyUseCase
@@ -3171,6 +3174,8 @@ public sealed class GetAccountBalanceOutput : IOutput
     public IOutput SetId(string id) { Id = id; return this; }
     public IOutput Fail() { ExitCode = ExitCode.Failure; return this; }
     public IOutput Succeed() { ExitCode = ExitCode.Success; return this; }
+    public IOutput Ignore() { ExitCode = ExitCode.Ignore; return this; }
+    public IOutput Reject() { ExitCode = ExitCode.Reject; return this; }
 }
 
 public sealed class GetAccountBalanceUseCase

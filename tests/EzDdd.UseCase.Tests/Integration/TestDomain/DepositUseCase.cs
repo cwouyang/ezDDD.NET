@@ -50,6 +50,18 @@ public sealed class DepositOutput : IOutput
         return this;
     }
 
+    public IOutput Ignore()
+    {
+        ExitCode = ExitCode.Ignore;
+        return this;
+    }
+
+    public IOutput Reject()
+    {
+        ExitCode = ExitCode.Reject;
+        return this;
+    }
+
     public IOutput Succeed()
     {
         ExitCode = ExitCode.Success;

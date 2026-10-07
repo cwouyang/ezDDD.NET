@@ -1,28 +1,31 @@
+using EzDdd.Cqrs.Entity.Query;
 using EzDdd.Cqrs.Query;
 using EzDdd.Entity;
+using EzDdd.UseCase.Port.In;
 using EzDdd.UseCase.Port.InOut;
 using EzDdd.UseCase.Tests.Integration.TestDomain;
 
 namespace EzDdd.Cqrs.Tests.Integration.TestDomain;
 
 /// <summary>
-///     Projector that maintains the <see cref="AccountSummaryReadModel" /> by listening
+///     Reactor that maintains the <see cref="AccountSummaryReadModel" /> by listening
 ///     to domain events from the write side (BankAccount aggregate).
 /// </summary>
 /// <remarks>
 ///     <para>
-///         This projector processes domain events and updates the read model in the Archive
-///         to keep the query side eventually consistent with the write side.
+///         It loads the read model from the archive, applies the pure <see cref="AccountSummaryProjector" />,
+///         records the event id in the read model's deduplication record, and saves once. Wrap it in an
+///         <see cref="IdempotentDecorator{TInput,TOutput}" /> to ignore redelivered events.
 ///     </para>
 ///     <para>
-///         In production scenarios, this projector would typically also implement
-///         <c>BackgroundService</c> or <c>IHostedService</c> for lifecycle management,
-///         subscribing to events from a message broker (e.g., Kafka, RabbitMQ).
+///         In production scenarios, this reactor would typically also be hosted by a
+///         <c>BackgroundService</c> or <c>IHostedService</c>, subscribing to events from a message broker.
 ///     </para>
 /// </remarks>
-public sealed class AccountProjector : IProjector<DomainEventData>
+public sealed class AccountProjector : IReactor<DomainEventDataInput>
 {
     private readonly IArchive<AccountSummaryReadModel, AccountId> _archive;
+    private readonly AccountSummaryProjector _projector = new();
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="AccountProjector" /> class.
@@ -34,134 +37,63 @@ public sealed class AccountProjector : IProjector<DomainEventData>
     }
 
     /// <summary>
-    ///     Executes the projector logic to update the read model based on the received domain event.
-    ///     This method is called by the event relay infrastructure when events are published.
+    ///     Projects the received domain event into the read model.
     /// </summary>
-    /// <param name="input">The domain event data to process.</param>
-    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <param name="input">The input carrying the domain event data to process.</param>
+    /// <returns>A task yielding a successful <see cref="DefaultOutput" />.</returns>
     /// <remarks>
-    ///     <para>
-    ///         <b>Error Handling</b>: This implementation uses a try-catch block to prevent
-    ///         individual event processing failures from stopping the entire projector.
-    ///     </para>
-    ///     <para>
-    ///         In production scenarios, failed events should be logged and potentially moved
-    ///         to a dead-letter queue for manual inspection. This test implementation rethrows
-    ///         exceptions to make test failures visible.
-    ///     </para>
+    ///     Failures are rethrown so the caller can redeliver the event; a failed save records nothing.
     /// </remarks>
-    public async Task ExecuteAsync(DomainEventData input)
+    public async Task<DefaultOutput> ExecuteAsync(DomainEventDataInput input)
     {
+        DomainEventData eventData = input.Event;
         try
         {
-            IInternalDomainEvent domainEvent = _DeserializeDomainEvent(input);
-
-            switch (domainEvent)
+            IInternalDomainEvent domainEvent = _DeserializeDomainEvent(eventData);
+            if (domainEvent is AccountClosed closed)
             {
-                case AccountCreated e:
-                    await _HandleAccountCreatedAsync(e);
-                    break;
-
-                case MoneyDeposited e:
-                    await _HandleMoneyDepositedAsync(e);
-                    break;
-
-                case MoneyWithdrawn e:
-                    await _HandleMoneyWithdrawnAsync(e);
-                    break;
-
-                case AccountClosed e:
-                    await _HandleAccountClosedAsync(e);
-                    break;
+                await _DeleteAsync(closed.AccountId);
             }
+            else
+            {
+                await _ProjectAsync(domainEvent);
+            }
+
+            return DefaultOutput.Create().Succeed();
         }
         catch (Exception ex)
         {
-            // In test scenarios: rethrow to make failures visible in test results
-            // In production: log error and continue processing (don't crash projector)
             await Console.Error.WriteLineAsync(
-                $"Error processing event {input.Id} (type: {input.EventType}): {ex.Message}"
+                $"Error processing event {eventData.Id} (type: {eventData.EventType}): {ex.Message}"
             );
-            throw; // Rethrow for test observability
+            throw;
         }
     }
 
-    /// <summary>
-    ///     Handles AccountCreated event by creating a new read model.
-    /// </summary>
-    private async Task _HandleAccountCreatedAsync(AccountCreated @event)
+    private async Task _ProjectAsync(IInternalDomainEvent domainEvent)
     {
-        AccountSummaryReadModel readModel = new(
-            @event.AccountId,
-            @event.Owner,
-            @event.InitialBalance.Amount,
-            @event.OccurredOn,
-            @event.OccurredOn,
-            0
-        );
+        AccountId accountId = new(domainEvent.Source);
+        AccountSummaryReadModel? current = await _archive.FindByIdAsync(accountId);
 
-        await _archive.SaveAsync(readModel);
-    }
-
-    /// <summary>
-    ///     Handles MoneyDeposited event by updating balance and transaction info.
-    /// </summary>
-    private async Task _HandleMoneyDepositedAsync(MoneyDeposited @event)
-    {
-        AccountSummaryReadModel? existing = await _archive.FindByIdAsync(@event.AccountId);
-        if (existing == null)
+        AccountSummaryReadModel? projected = _projector.Project(new AccountProjectionInput(current, domainEvent));
+        if (projected is null)
         {
             return;
         }
 
-        AccountSummaryReadModel updated = existing with
-        {
-            Balance = existing.Balance + @event.Amount.Amount,
-            LastTransactionDate = @event.OccurredOn,
-            TransactionCount = existing.TransactionCount + 1,
-        };
-
-        await _archive.SaveAsync(updated);
+        projected.UpdateEventDeduplicationRecord(domainEvent.Id);
+        await _archive.SaveAsync(projected);
     }
 
-    /// <summary>
-    ///     Handles MoneyWithdrawn event by updating balance and transaction info.
-    /// </summary>
-    private async Task _HandleMoneyWithdrawnAsync(MoneyWithdrawn @event)
+    private async Task _DeleteAsync(AccountId accountId)
     {
-        AccountSummaryReadModel? existing = await _archive.FindByIdAsync(@event.AccountId);
-        if (existing == null)
+        AccountSummaryReadModel? existing = await _archive.FindByIdAsync(accountId);
+        if (existing is not null)
         {
-            return;
+            await _archive.DeleteAsync(existing);
         }
-
-        AccountSummaryReadModel updated = existing with
-        {
-            Balance = existing.Balance - @event.Amount.Amount,
-            LastTransactionDate = @event.OccurredOn,
-            TransactionCount = existing.TransactionCount + 1,
-        };
-
-        await _archive.SaveAsync(updated);
     }
 
-    /// <summary>
-    ///     Handles AccountClosed event by removing the read model from the archive.
-    /// </summary>
-    private async Task _HandleAccountClosedAsync(AccountClosed @event)
-    {
-        AccountSummaryReadModel? existing = await _archive.FindByIdAsync(@event.AccountId);
-        if (existing == null)
-        {
-            return;
-        }
-
-        await _archive.DeleteAsync(existing);
-    }
-
-    /// <summary>
-    ///     Deserializes domain event data to the appropriate event type.
-    /// </summary>
     private static IInternalDomainEvent _DeserializeDomainEvent(DomainEventData eventData)
     {
         return eventData.EventType switch

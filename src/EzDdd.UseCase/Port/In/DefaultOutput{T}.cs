@@ -1,17 +1,17 @@
 using System.Diagnostics.CodeAnalysis;
-using EzDdd.UseCase.Port.In;
 
-namespace EzDdd.Cqrs;
+namespace EzDdd.UseCase.Port.In;
 
 /// <summary>
-///     <c>CqrsOutput</c> is a base class for CQRS command and query outputs.
+///     <c>DefaultOutput</c> is the default implementation of <see cref="IOutput" /> used by use cases,
+///     commands, and queries.
 ///     <para>
 ///         This class provides a type-safe fluent API using self-referential generics,
 ///         allowing subclasses to maintain their concrete type when chaining methods.
 ///     </para>
 /// </summary>
 /// <typeparam name="T">
-///     The concrete output type that extends CqrsOutput.
+///     The concrete output type that extends DefaultOutput.
 ///     Must be the same type as the subclass (self-referential constraint).
 /// </typeparam>
 /// <remarks>
@@ -30,7 +30,7 @@ namespace EzDdd.Cqrs;
 ///     <para>
 ///         <b>Example</b>:
 ///         <code>
-///         public class CreateAccountOutput : CqrsOutput&lt;CreateAccountOutput&gt;
+///         public class CreateAccountOutput : DefaultOutput&lt;CreateAccountOutput&gt;
 ///         {
 ///             public string AccountNumber { get; set; } = string.Empty;
 ///
@@ -51,29 +51,29 @@ namespace EzDdd.Cqrs;
 ///     </para>
 ///     <para>
 ///         <b>Type Safety</b>: The self-referential constraint ensures that fluent methods
-///         always return the concrete subclass type, not the base CqrsOutput type.
+///         always return the concrete subclass type, not the base DefaultOutput type.
 ///     </para>
 ///     <para>
 ///         <b>Extensibility</b>:
 ///     </para>
 ///     <list type="bullet">
 ///         <item>Subclass to add domain-specific fluent methods (e.g., <c>SetOrderTotal()</c>, <c>SetCustomerName()</c>)</item>
-///         <item>Self-referential generic <c>TSelf</c> parameter preserves concrete type in fluent method chains</item>
+///         <item>Self-referential generic <c>T</c> parameter preserves concrete type in fluent method chains</item>
 ///         <item>
-///             Override <c>Self()</c> protected method to return concrete subclass instance (required for proper type
-///             preservation)
+///             Fluent methods cast <c>this</c> to <c>T</c>, so <c>T</c> must be the subclass itself
 ///         </item>
 ///         <item>Use <c>new()</c> constraint to ensure parameterless constructor exists for <c>Create()</c> factory method</item>
 ///         <item>Compatible with both <c>ICommand</c> and <c>IQuery</c> output types</item>
 ///         <item>Can add validation logic in fluent methods before setting properties</item>
 ///     </list>
 ///     <para>
-///         See ADR-0017 (CqrsOutput Implementation Strategy) for detailed explanation of the
-///         self-referential generic pattern and design rationale.
+///         See ADR-0017 (CqrsOutput Implementation Strategy) for the self-referential generic pattern and its
+///         rationale, and ADR-0031 (Alignment with Java ezddd 9.0.1), which supersedes it, for the rename to
+///         <c>DefaultOutput</c> and the move to EzDdd.UseCase.
 ///     </para>
 /// </remarks>
-public class CqrsOutput<T> : IOutput
-    where T : CqrsOutput<T>, new()
+public class DefaultOutput<T> : IOutput
+    where T : DefaultOutput<T>, new()
 {
     /// <summary>
     ///     Gets or sets the identifier associated with this output.
@@ -91,7 +91,7 @@ public class CqrsOutput<T> : IOutput
     public ExitCode ExitCode { get; set; } = ExitCode.Success;
 
     // Explicit IOutput interface implementations
-    // These allow CqrsOutput to be used wherever IOutput is expected,
+    // These allow DefaultOutput to be used wherever IOutput is expected,
     // while the public methods return the concrete type T
 
     /// <inheritdoc />
@@ -119,6 +119,18 @@ public class CqrsOutput<T> : IOutput
     }
 
     /// <inheritdoc />
+    IOutput IOutput.Ignore()
+    {
+        return Ignore();
+    }
+
+    /// <inheritdoc />
+    IOutput IOutput.Reject()
+    {
+        return Reject();
+    }
+
+    /// <inheritdoc />
     IOutput IOutput.SetId(string id)
     {
         return SetId(id);
@@ -135,7 +147,7 @@ public class CqrsOutput<T> : IOutput
     [SuppressMessage(
         "Design",
         "CA1000:Do not declare static members on generic types",
-        Justification = "CqrsOutput<T>.Create() is the designed fluent entry point of the self-referential generic builder, matching Java ezddd's CqrsOutput.create() API; the type argument is always inferred from the concrete subclass."
+        Justification = "DefaultOutput<T>.Create() is the designed fluent entry point of the self-referential generic builder, matching Java ezddd's DefaultOutput.create() API; the type argument is always inferred from the concrete subclass."
     )]
     public static T Create()
     {
@@ -200,6 +212,26 @@ public class CqrsOutput<T> : IOutput
     public T Succeed()
     {
         ExitCode = ExitCode.Success;
+        return _Self();
+    }
+
+    /// <summary>
+    ///     Sets the exit code to <see cref="ExitCode.Ignore" />.
+    /// </summary>
+    /// <returns>This output instance as type T for fluent API.</returns>
+    public T Ignore()
+    {
+        ExitCode = ExitCode.Ignore;
+        return _Self();
+    }
+
+    /// <summary>
+    ///     Sets the exit code to <see cref="ExitCode.Reject" />.
+    /// </summary>
+    /// <returns>This output instance as type T for fluent API.</returns>
+    public T Reject()
+    {
+        ExitCode = ExitCode.Reject;
         return _Self();
     }
 

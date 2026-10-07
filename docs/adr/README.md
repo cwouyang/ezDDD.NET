@@ -199,19 +199,18 @@ AGENTS.md
 | [ADR-0014](0014-domaineventdata-equality-semantics.md) | DomainEventData Equality Semantics | 2025-11-10 | Accepted |
 | [ADR-0015](0015-cross-platform-dto-structure.md) | Cross-Platform DTO Structure (InternalDomainEventDto) | 2025-11-10 | Accepted |
 | [ADR-0016](0016-async-await-throughout.md) | Async/Await Throughout (All I/O Operations) | 2025-11-10 | Accepted |
-| [ADR-0017](0017-cqrsoutput-implementation-strategy.md) | CqrsOutput Implementation Strategy | 2025-11-17 | Accepted |
 | [ADR-0018](0018-iarchive-async-method-design.md) | IArchive Async Method Design | 2025-11-17 | Accepted |
 | [ADR-0019](0019-iinquiry-iprojection-independence.md) | IInquiry and IProjection Independence from IUseCase | 2025-11-17 | Accepted |
 | [ADR-0021](0021-generic-variance-annotations.md) | Generic Variance Annotations for CQRS Interfaces | 2025-11-18 | Accepted |
-| [ADR-0022](0022-read-model-design-patterns.md) | Read Model Design Patterns | 2025-11-18 | Accepted |
-| [ADR-0023](0023-archive-idempotency-requirements.md) | Archive Idempotency Requirements | 2025-11-18 | Accepted |
+| [ADR-0022](0022-read-model-design-patterns.md) | Read Model Design Patterns | 2025-11-18 | Accepted (Amended by [ADR-0031](0031-align-with-java-ezddd-9-0-1.md)) |
+| [ADR-0023](0023-archive-idempotency-requirements.md) | Archive Idempotency Requirements | 2025-11-18 | Accepted (Amended by [ADR-0031](0031-align-with-java-ezddd-9-0-1.md)) |
 | [ADR-0024](0024-ireconciler-interface-system-reconciliation.md) | IReconciler Interface for System State Reconciliation | 2026-01-07 | Accepted |
 | [ADR-0025](0025-messageproducer-refactoring-java-4-1-0-alignment.md) | MessageProducer Refactoring - Java 4.1.0 Alignment | 2026-01-07 | Accepted (Amended by [ADR-0029](0029-messageproducer-removal-gateway-deferral.md)) |
 | [ADR-0026](0026-service-layer-pattern.md) | Service Layer Pattern for Complex Business Logic | 2026-01-08 | Accepted |
 | [ADR-0027](0027-thread-null-safety-review.md) | Thread Safety and Null Safety Review (Java 4.1.0 Sync - Stage S5) | 2026-01-08 | Accepted |
-| [ADR-0028](0028-reactor-hierarchy-projector-notifier-genericization.md) | Reactor Type Hierarchy and Projector/Notifier Genericization | 2026-07-04 | Accepted |
 | [ADR-0029](0029-messageproducer-removal-gateway-deferral.md) | MessageProducer Removal from Core & Gateway Package Deferral | 2026-07-04 | Accepted |
 | [ADR-0030](0030-ucontract-2-contracts-enforced-by-default.md) | uContract 2.0.0 — Precondition Contracts Enforced by Default | 2026-10-05 | Accepted |
+| [ADR-0031](0031-align-with-java-ezddd-9-0-1.md) | Alignment with Java ezddd 9.0.1 | 2026-10-06 | Accepted |
 
 ### Proposed
 
@@ -225,7 +224,9 @@ AGENTS.md
 
 | ADR | Title | Date | Status |
 |-----|-------|------|--------|
-| [ADR-0020](0020-iprojector-lifecycle-management.md) | IProjector Lifecycle Management Integration | 2025-11-18 | Superseded by [ADR-0028](0028-reactor-hierarchy-projector-notifier-genericization.md) |
+| [ADR-0017](0017-cqrsoutput-implementation-strategy.md) | CqrsOutput Implementation Strategy | 2025-11-17 | Superseded by [ADR-0031](0031-align-with-java-ezddd-9-0-1.md) |
+| [ADR-0020](0020-iprojector-lifecycle-management.md) | IProjector Lifecycle Management Integration | 2025-11-18 | Superseded by [ADR-0028](0028-reactor-hierarchy-projector-notifier-genericization.md), then by [ADR-0031](0031-align-with-java-ezddd-9-0-1.md) |
+| [ADR-0028](0028-reactor-hierarchy-projector-notifier-genericization.md) | Reactor Type Hierarchy and Projector/Notifier Genericization | 2026-07-04 | Superseded by [ADR-0031](0031-align-with-java-ezddd-9-0-1.md) |
 
 ---
 
@@ -303,4 +304,4 @@ done
 ---
 
 *This README follows the ADR maintenance workflow defined above.*
-*Last Updated: 2026-10-05*
+*Last Updated: 2026-10-06*

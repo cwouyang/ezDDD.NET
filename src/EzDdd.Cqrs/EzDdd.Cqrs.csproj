@@ -6,17 +6,17 @@
 
   <PropertyGroup>
     <PackageId>ezDDD.Cqrs</PackageId>
-    <Description>CQRS patterns for ezDDD.NET - Command, Query, Projection, Projector, and Archive interfaces.
+    <Description>CQRS patterns for ezDDD.NET - Command, Query, Projection, read model, idempotency, and Archive interfaces.
 
 Features:
 • ICommand&lt;TInput, TOutput&gt; - Write operations marker
 • IQuery&lt;TInput, TOutput&gt; - Read operations marker
 • IInquiry&lt;TInput, TOutput&gt; - Validation queries usable within commands
-• IProjection&lt;TInput, TOutput&gt; - Read model builder
-• IProjector&lt;TInput&gt; - Reactor that maintains read models in the query database
-• INotifier&lt;TInput&gt; - Reactor that dispatches external domain events (integration events)
+• IProjection&lt;TInput, TOutput&gt; - Read model view builder
+• INotifier&lt;TInput&gt; - Use case that dispatches external domain events (integration events)
 • IArchive&lt;TData, TId&gt; - Query database interface (read-side repository)
-• CqrsOutput&lt;T&gt; - Unified output with fluent API
+• IProjector&lt;TInput, TOutput&gt;, ReadModel, IReadValue - Entities layer of the query side; read models remember the events projected into them
+• IdempotentDecorator&lt;TInput, TOutput&gt; - Skips domain events that were already applied
 • Generic variance (contravariant input, covariant output)
 
 Enables Command Query Responsibility Segregation with eventual consistency.</Description>

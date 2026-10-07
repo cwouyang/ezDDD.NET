@@ -122,7 +122,7 @@ public class ProjectionTests
         }
     }
 
-    private sealed class TestQueryOutput : CqrsOutput<TestQueryOutput>
+    private sealed class TestQueryOutput : DefaultOutput<TestQueryOutput>
     {
         public string CustomerInfo { get; set; } = string.Empty;
 

@@ -11,6 +11,8 @@
 > producer-only pattern, the MessageBus removal, and the Relay (Transactional Outbox)
 > guidance in this ADR remain in force.
 
+> **Status note (2026-10-06)**: `IReactor`, removed here with the message bus, was re-added by ADR-0028 and redefined by [ADR-0031](0031-align-with-java-ezddd-9-0-1.md) as an `IUseCase<TInput, DefaultOutput>`. This ADR's file lists describe the state at the time.
+
 - **Date**: 2026-01-07
 - **Deciders**: Development Team
 - **Status Date**: 2026-07-04

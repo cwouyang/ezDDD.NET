@@ -4,6 +4,8 @@
 
 **Accepted**
 
+> **Status note (2026-10-06)**: Type names in this ADR predate [ADR-0031](0031-align-with-java-ezddd-9-0-1.md): `CqrsOutput<T>` is now `DefaultOutput<T>` in EzDdd.UseCase; `IReactor<TInput>` is a use case returning `DefaultOutput`; the use-case `IProjector` was removed, and EzDdd.Cqrs gained the entities-layer `IProjector<TInput, TOutput>`, `ReadModel` and `IdempotentDecorator`. The module architecture and dependency chain are unchanged.
+
 - **Date**: 2025-10-31
 - **Deciders**: Project maintainers
 - **Status Date**: 2025-10-31

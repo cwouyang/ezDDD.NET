@@ -1,9 +1,11 @@
+using EzDdd.UseCase.Port.In;
+
 namespace EzDdd.Cqrs.Tests.Integration.TestDomain;
 
 /// <summary>
 ///     Output for getting account summary query.
 /// </summary>
-public sealed class GetAccountSummaryOutput : CqrsOutput<GetAccountSummaryOutput>
+public sealed class GetAccountSummaryOutput : DefaultOutput<GetAccountSummaryOutput>
 {
     /// <summary>
     ///     Gets or sets the account identifier.

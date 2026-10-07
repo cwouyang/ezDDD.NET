@@ -15,7 +15,7 @@ public class QueryTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_WhenCalled_ShouldReturnCqrsOutput()
+    public async Task ExecuteAsync_WhenCalled_ShouldReturnDefaultOutput()
     {
         TestQuery query = new();
         TestInput input = new("test-id");
@@ -55,7 +55,7 @@ public class QueryTests
 
     private sealed record TestInput(string Id) : IInput;
 
-    private sealed class TestOutput : CqrsOutput<TestOutput>
+    private sealed class TestOutput : DefaultOutput<TestOutput>
     {
         public string RetrievedData { get; set; } = string.Empty;
 

@@ -1,1 +1,45 @@
 #nullable enable
+*REMOVED*EzDdd.Cqrs.CqrsOutput<T>
+*REMOVED*EzDdd.Cqrs.CqrsOutput<T>.CqrsOutput() -> void
+*REMOVED*EzDdd.Cqrs.CqrsOutput<T>.ExitCode.get -> EzDdd.UseCase.Port.In.ExitCode
+*REMOVED*EzDdd.Cqrs.CqrsOutput<T>.ExitCode.set -> void
+*REMOVED*EzDdd.Cqrs.CqrsOutput<T>.Fail() -> T!
+*REMOVED*EzDdd.Cqrs.CqrsOutput<T>.Id.get -> string!
+*REMOVED*EzDdd.Cqrs.CqrsOutput<T>.Id.set -> void
+*REMOVED*EzDdd.Cqrs.CqrsOutput<T>.Message.get -> string!
+*REMOVED*EzDdd.Cqrs.CqrsOutput<T>.Message.set -> void
+*REMOVED*EzDdd.Cqrs.CqrsOutput<T>.SetExitCode(EzDdd.UseCase.Port.In.ExitCode exitCode) -> T!
+*REMOVED*EzDdd.Cqrs.CqrsOutput<T>.SetId(string! id) -> T!
+*REMOVED*EzDdd.Cqrs.CqrsOutput<T>.SetMessage(string! message) -> T!
+*REMOVED*EzDdd.Cqrs.CqrsOutput<T>.Succeed() -> T!
+*REMOVED*static EzDdd.Cqrs.CqrsOutput<T>.Create() -> T!
+*REMOVED*EzDdd.Cqrs.Query.IProjector<TInput>
+const EzDdd.Cqrs.Entity.Query.EventDeduplicationRecord.DefaultMaxEventCapacity = 50 -> int
+EzDdd.Cqrs.Entity.Query.EventDeduplicationRecord
+EzDdd.Cqrs.Entity.Query.EventDeduplicationRecord.EventDeduplicationRecord() -> void
+EzDdd.Cqrs.Entity.Query.EventDeduplicationRecord.IsEventHandled(System.Guid eventId) -> bool
+EzDdd.Cqrs.Entity.Query.EventDeduplicationRecord.SetEventId(System.Guid eventId) -> void
+EzDdd.Cqrs.Entity.Query.EventDeduplicationRecord.EventDeduplicationRecord(int maxEventCapacity) -> void
+EzDdd.Cqrs.Entity.Query.ReadModel
+EzDdd.Cqrs.Entity.Query.ReadModel.EventDeduplicationRecord.get -> EzDdd.Cqrs.Entity.Query.EventDeduplicationRecord!
+EzDdd.Cqrs.Entity.Query.ReadModel.UpdateEventDeduplicationRecord(System.Guid eventId) -> void
+EzDdd.Cqrs.Entity.Query.ReadModel.ReadModel() -> void
+EzDdd.Cqrs.Entity.Query.ReadModel.ReadModel(int maxEventCapacity) -> void
+EzDdd.Cqrs.Entity.Query.ReadModel.ReadModel(EzDdd.Cqrs.Entity.Query.ReadModel! original) -> void
+virtual EzDdd.Cqrs.Entity.Query.ReadModel.Equals(EzDdd.Cqrs.Entity.Query.ReadModel? other) -> bool
+override EzDdd.Cqrs.Entity.Query.ReadModel.GetHashCode() -> int
+EzDdd.Cqrs.Entity.Query.IReadValue
+EzDdd.Cqrs.Entity.Query.IProjector<TInput, TOutput>
+EzDdd.Cqrs.Entity.Query.IProjector<TInput, TOutput>.Project(TInput input) -> TOutput
+EzDdd.Cqrs.IIdempotentIdParser<TInput>
+EzDdd.Cqrs.IIdempotentIdParser<TInput>.Parse(TInput input) -> string?
+EzDdd.Cqrs.IdempotentInquiryInput
+EzDdd.Cqrs.IdempotentInquiryInput.DataId.get -> string!
+EzDdd.Cqrs.IdempotentInquiryInput.DataId.set -> void
+EzDdd.Cqrs.IdempotentInquiryInput.EventId.get -> System.Guid
+EzDdd.Cqrs.IdempotentInquiryInput.EventId.set -> void
+EzDdd.Cqrs.IdempotentInquiryInput.IdempotentInquiryInput() -> void
+EzDdd.Cqrs.IdempotentDecorator<TInput, TOutput>
+EzDdd.Cqrs.IdempotentDecorator<TInput, TOutput>.IdempotentDecorator(EzDdd.UseCase.Port.In.IUseCase<TInput!, TOutput>! useCase, EzDdd.Cqrs.Command.IInquiry<EzDdd.Cqrs.IdempotentInquiryInput!, bool>! inquiry, System.Func<TOutput>! outputFactory, System.Func<EzDdd.Entity.IInternalDomainEvent!, string?>! idParser) -> void
+override EzDdd.Cqrs.IdempotentDecorator<TInput, TOutput>.ExecuteAsync(TInput! input) -> System.Threading.Tasks.Task<TOutput>!
+EzDdd.Cqrs.IdempotentDecorator<TInput, TOutput>.IdempotentDecorator(EzDdd.UseCase.Port.In.IUseCase<TInput!, TOutput>! useCase, EzDdd.Cqrs.Command.IInquiry<EzDdd.Cqrs.IdempotentInquiryInput!, bool>! inquiry, System.Func<TOutput>! outputFactory, EzDdd.Cqrs.IIdempotentIdParser<EzDdd.Entity.IInternalDomainEvent!>! idParser) -> void

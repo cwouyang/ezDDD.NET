@@ -47,6 +47,18 @@ public interface IOutput
     IOutput Succeed();
 
     /// <summary>
+    ///     Sets the exit code to <see cref="ExitCode.Ignore" />.
+    /// </summary>
+    /// <returns>This output instance for fluent API.</returns>
+    IOutput Ignore();
+
+    /// <summary>
+    ///     Sets the exit code to <see cref="ExitCode.Reject" />.
+    /// </summary>
+    /// <returns>This output instance for fluent API.</returns>
+    IOutput Reject();
+
+    /// <summary>
     ///     Sets the identifier for this output.
     /// </summary>
     /// <param name="id">The identifier to set.</param>

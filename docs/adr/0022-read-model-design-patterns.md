@@ -2,11 +2,21 @@
 
 ## Status
 
-**Accepted**
+**Accepted (Amended by [ADR-0031](0031-align-with-java-ezddd-9-0-1.md))**
+
+> Partially amended: a read model that needs event deduplication derives from the
+> `abstract record ReadModel` (`EzDdd.Cqrs.Entity.Query`, Java ezddd 9.0.0), for example
+> `public sealed record AccountSummaryReadModel(...) : ReadModel;`. It then carries an
+> `EventDeduplicationRecord` that is serialized with the model, is deep-copied by `with`
+> expressions, and does not take part in equality — value equality compares the runtime type and
+> the derived members only. Projection logic moves into the entities-layer
+> `IProjector<TInput, TOutput>`, driven by an `IReactor`; the `IProjector, IReactor, BackgroundService`
+> example below shows the removed shape. Positional records, the `[Entity]ReadModel` suffix and
+> `with`-expression updates remain in force.
 
 - **Date**: 2025-11-18
 - **Deciders**: Development Team
-- **Status Date**: 2025-11-18
+- **Status Date**: 2026-10-06
 
 ---
 
@@ -386,5 +396,6 @@ public record OrderLineReadModel(
 | Date       | Status      | Notes                          |
 |------------|-------------|--------------------------------|
 | 2025-11-18 | Accepted    | Initial decision after Iteration 6 integration tests |
+| 2026-10-06 | Amended     | Amended by ADR-0031: read models derive from `ReadModel` for event deduplication |
 
 ---

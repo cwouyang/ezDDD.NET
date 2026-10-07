@@ -1,3 +1,6 @@
+using EzDdd.Cqrs.Command;
+using EzDdd.Cqrs.Entity.Query;
+using EzDdd.Cqrs.Query;
 using EzDdd.Cqrs.Tests.Integration.TestDomain;
 using EzDdd.Cqrs.Tests.Query.TestHelpers;
 using EzDdd.Entity;
@@ -13,40 +16,168 @@ namespace EzDdd.Cqrs.Tests.Integration;
 ///     Integration tests for complete CQRS flow.
 ///     Tests the entire flow: Command → Aggregate → Events → Repository → Relay → Projector → Archive → Query.
 /// </summary>
+[Collection("DomainEventTypeMapper")]
 public sealed class CompleteCqrsFlowTests
 {
     #region Setup Infrastructure
+
+    private static void _RegisterAccountEventTypes()
+    {
+        DomainEventTypeMapper.Register<AccountCreated>("AccountCreated");
+        DomainEventTypeMapper.Register<MoneyDeposited>("MoneyDeposited");
+        DomainEventTypeMapper.Register<MoneyWithdrawn>("MoneyWithdrawn");
+        DomainEventTypeMapper.Register<AccountClosed>("AccountClosed");
+    }
 
     /// <summary>
     ///     Creates the complete CQRS infrastructure for testing.
     /// </summary>
     private static CqrsTestInfrastructure _CreateInfrastructure()
     {
-        DomainEventTypeMapper.Register<AccountCreated>("AccountCreated");
-        DomainEventTypeMapper.Register<MoneyDeposited>("MoneyDeposited");
-        DomainEventTypeMapper.Register<MoneyWithdrawn>("MoneyWithdrawn");
-        DomainEventTypeMapper.Register<AccountClosed>("AccountClosed");
+        _RegisterAccountEventTypes();
 
         InMemoryEventStorePeer eventStorePeer = new();
         EsRepository<BankAccount, AccountId> repository = new(eventStorePeer);
-        InMemoryArchive<AccountSummaryReadModel, AccountId> archive = new(m => m.AccountId);
-        AccountProjector projector = new(archive);
-        GetAccountSummaryQuery query = new(archive);
+        JsonCopyArchive<AccountSummaryReadModel, AccountId> archive = new(m => m.AccountId);
+        return _CreateInfrastructure(repository, archive, archive);
+    }
+
+    private static CqrsTestInfrastructure _CreateInfrastructure(
+        EsRepository<BankAccount, AccountId> repository,
+        JsonCopyArchive<AccountSummaryReadModel, AccountId> storeArchive,
+        IArchive<AccountSummaryReadModel, AccountId> projectorArchive
+    )
+    {
+        AccountProjector projector = new(projectorArchive);
+        IUseCase<DomainEventDataInput, DefaultOutput> reactor = new IdempotentDecorator<
+            DomainEventDataInput,
+            DefaultOutput
+        >(
+            projector,
+            new AccountEventHandledInquiry(projectorArchive),
+            () => new DefaultOutput(),
+            (IInternalDomainEvent e) => e.Source
+        );
 
         return new CqrsTestInfrastructure
         {
             Repository = repository,
-            Archive = archive,
-            Projector = projector,
-            Query = query,
+            Archive = storeArchive,
+            Reactor = reactor,
+            Query = new GetAccountSummaryQuery(storeArchive),
         };
+    }
+
+    private sealed class AccountEventHandledInquiry : IInquiry<IdempotentInquiryInput, bool>
+    {
+        private readonly IArchive<AccountSummaryReadModel, AccountId> _archive;
+
+        public AccountEventHandledInquiry(IArchive<AccountSummaryReadModel, AccountId> archive)
+        {
+            _archive = archive;
+        }
+
+        public async Task<bool> QueryAsync(IdempotentInquiryInput input)
+        {
+            AccountSummaryReadModel? readModel = await _archive.FindByIdAsync(new AccountId(input.DataId));
+            return readModel?.EventDeduplicationRecord.IsEventHandled(input.EventId) ?? false;
+        }
+    }
+
+    /// <summary>
+    ///     Archive spy that makes the first save of a model with at least one transaction fail, like a store
+    ///     outage, and delegates every other call.
+    /// </summary>
+    private sealed class SaveFailsOnceArchive : IArchive<AccountSummaryReadModel, AccountId>
+    {
+        private readonly IArchive<AccountSummaryReadModel, AccountId> _inner;
+        private bool _failed;
+
+        public SaveFailsOnceArchive(IArchive<AccountSummaryReadModel, AccountId> inner)
+        {
+            _inner = inner;
+        }
+
+        public Task<AccountSummaryReadModel?> FindByIdAsync(AccountId id)
+        {
+            return _inner.FindByIdAsync(id);
+        }
+
+        public Task SaveAsync(AccountSummaryReadModel data)
+        {
+            if (_failed || data.TransactionCount < 1)
+            {
+                return _inner.SaveAsync(data);
+            }
+
+            _failed = true;
+            throw new InvalidOperationException("Simulated save failure.");
+        }
+
+        public Task DeleteAsync(AccountSummaryReadModel data)
+        {
+            return _inner.DeleteAsync(data);
+        }
+    }
+
+    /// <summary>
+    ///     Test-only read model that remembers just three event ids.
+    /// </summary>
+    private sealed record CappedCounterReadModel : ReadModel
+    {
+        public CappedCounterReadModel(AccountId accountId, int applied)
+            : base(3)
+        {
+            AccountId = accountId;
+            Applied = applied;
+        }
+
+        public AccountId AccountId { get; init; }
+        public int Applied { get; init; }
+    }
+
+    private sealed class CappedCounterReactor : IReactor<DomainEventDataInput>
+    {
+        private readonly IArchive<CappedCounterReadModel, AccountId> _archive;
+
+        public CappedCounterReactor(IArchive<CappedCounterReadModel, AccountId> archive)
+        {
+            _archive = archive;
+        }
+
+        public async Task<DefaultOutput> ExecuteAsync(DomainEventDataInput input)
+        {
+            IInternalDomainEvent domainEvent = DomainEventMapper.ToDomain<IInternalDomainEvent>(input.Event);
+            AccountId id = new(domainEvent.Source);
+            CappedCounterReadModel current = await _archive.FindByIdAsync(id) ?? new CappedCounterReadModel(id, 0);
+            CappedCounterReadModel updated = current with { Applied = current.Applied + 1 };
+            updated.UpdateEventDeduplicationRecord(domainEvent.Id);
+            await _archive.SaveAsync(updated);
+            return DefaultOutput.Create().Succeed();
+        }
+    }
+
+    private sealed class CappedCounterInquiry : IInquiry<IdempotentInquiryInput, bool>
+    {
+        private readonly IArchive<CappedCounterReadModel, AccountId> _archive;
+
+        public CappedCounterInquiry(IArchive<CappedCounterReadModel, AccountId> archive)
+        {
+            _archive = archive;
+        }
+
+        public async Task<bool> QueryAsync(IdempotentInquiryInput input)
+        {
+            CappedCounterReadModel? readModel = await _archive.FindByIdAsync(new AccountId(input.DataId));
+            return readModel?.EventDeduplicationRecord.IsEventHandled(input.EventId) ?? false;
+        }
     }
 
     private sealed class CqrsTestInfrastructure
     {
         public required EsRepository<BankAccount, AccountId> Repository { get; init; }
-        public required InMemoryArchive<AccountSummaryReadModel, AccountId> Archive { get; init; }
-        public required AccountProjector Projector { get; init; }
+        public required JsonCopyArchive<AccountSummaryReadModel, AccountId> Archive { get; init; }
+        public required IUseCase<DomainEventDataInput, DefaultOutput> Reactor { get; init; }
         public required GetAccountSummaryQuery Query { get; init; }
 
         /// <summary>
@@ -65,10 +196,113 @@ public sealed class CompleteCqrsFlowTests
             {
                 DomainEventData eventData = DomainEventMapper.ToData(domainEvent);
 
-                // Process event through projector (the relay's downstream consumer)
-                await Projector.ExecuteAsync(eventData);
+                // Process event through the decorated reactor (the relay's downstream consumer)
+                await Reactor.ExecuteAsync(new DomainEventDataInput { Event = eventData });
             }
         }
+    }
+
+    #endregion
+
+    #region Deduplication Tests
+
+    private static DomainEventDataInput _InputOf(IInternalDomainEvent domainEvent)
+    {
+        return new DomainEventDataInput { Event = DomainEventMapper.ToData(domainEvent) };
+    }
+
+    [Fact]
+    public async Task FirstDelivery_ShouldSucceedAndProjectTheEvent()
+    {
+        CqrsTestInfrastructure infra = _CreateInfrastructure();
+        AccountId accountId = new("ACC-DEDUP-001");
+        BankAccount account = new(accountId, "Heidi Klein", new Money(100m));
+        DomainEventDataInput created = _InputOf(account.GetDomainEvents().Single());
+
+        DefaultOutput output = await infra.Reactor.ExecuteAsync(created);
+
+        AccountSummaryReadModel? stored = await infra.Archive.FindByIdAsync(accountId);
+        Assert.Equal(ExitCode.Success, output.ExitCode);
+        Assert.NotNull(stored);
+        Assert.Equal(100m, stored.Balance);
+        Assert.True(stored.EventDeduplicationRecord.IsEventHandled(created.Event.Id));
+    }
+
+    [Fact]
+    public async Task Redelivery_ShouldBeIgnoredAndLeaveTheStoredReadModelUnchanged()
+    {
+        CqrsTestInfrastructure infra = _CreateInfrastructure();
+        AccountId accountId = new("ACC-DEDUP-002");
+        BankAccount account = new(accountId, "Judy Lane", new Money(100m));
+        account.Deposit(new Money(25m));
+        List<DomainEventDataInput> inputs = account.GetDomainEvents().Select(_InputOf).ToList();
+        foreach (DomainEventDataInput input in inputs)
+        {
+            await infra.Reactor.ExecuteAsync(input);
+        }
+
+        string? jsonBefore = infra.Archive.GetStoredJson(accountId);
+
+        DefaultOutput output = await infra.Reactor.ExecuteAsync(inputs[1]);
+
+        Assert.Equal(ExitCode.Ignore, output.ExitCode);
+        Assert.Equal(jsonBefore, infra.Archive.GetStoredJson(accountId));
+    }
+
+    [Fact]
+    public async Task RedeliveryAfterFailedSave_ShouldProjectTheEventExactlyOnce()
+    {
+        EsRepository<BankAccount, AccountId> repository = new(new InMemoryEventStorePeer());
+        JsonCopyArchive<AccountSummaryReadModel, AccountId> store = new(m => m.AccountId);
+        CqrsTestInfrastructure infra = _CreateInfrastructure(repository, store, new SaveFailsOnceArchive(store));
+        AccountId accountId = new("ACC-DEDUP-003");
+        BankAccount account = new(accountId, "Karl Moore", new Money(100m));
+        account.Deposit(new Money(25m));
+        List<DomainEventDataInput> inputs = account.GetDomainEvents().Select(_InputOf).ToList();
+        DomainEventDataInput created = inputs[0];
+        DomainEventDataInput deposited = inputs[1];
+        await infra.Reactor.ExecuteAsync(created);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => infra.Reactor.ExecuteAsync(deposited));
+
+        DefaultOutput output = await infra.Reactor.ExecuteAsync(deposited);
+
+        AccountSummaryReadModel? stored = await store.FindByIdAsync(accountId);
+        Assert.Equal(ExitCode.Success, output.ExitCode);
+        Assert.NotNull(stored);
+        Assert.Equal(125m, stored.Balance);
+        Assert.Equal(1, stored.TransactionCount);
+        Assert.True(stored.EventDeduplicationRecord.IsEventHandled(deposited.Event.Id));
+    }
+
+    [Fact]
+    public async Task RedeliveryOlderThanTheCapacity_ShouldBeProjectedAgain()
+    {
+        _RegisterAccountEventTypes();
+        const int capacity = 3;
+        const int furtherEvents = capacity + 1;
+        JsonCopyArchive<CappedCounterReadModel, AccountId> archive = new(m => m.AccountId);
+        IdempotentDecorator<DomainEventDataInput, DefaultOutput> reactor = new(
+            new CappedCounterReactor(archive),
+            new CappedCounterInquiry(archive),
+            () => new DefaultOutput(),
+            (IInternalDomainEvent e) => e.Source
+        );
+        AccountId accountId = new("ACC-DEDUP-004");
+        List<DomainEventDataInput> inputs = Enumerable
+            .Range(0, 1 + furtherEvents)
+            .Select(_ => _InputOf(new MoneyDeposited(Guid.NewGuid(), DateTimeOffset.UtcNow, accountId, new Money(1m))))
+            .ToList();
+        foreach (DomainEventDataInput input in inputs)
+        {
+            await reactor.ExecuteAsync(input);
+        }
+
+        DefaultOutput output = await reactor.ExecuteAsync(inputs[0]);
+
+        CappedCounterReadModel? stored = await archive.FindByIdAsync(accountId);
+        Assert.Equal(ExitCode.Success, output.ExitCode);
+        Assert.NotNull(stored);
+        Assert.Equal(inputs.Count + 1, stored.Applied);
     }
 
     #endregion

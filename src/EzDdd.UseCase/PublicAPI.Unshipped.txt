@@ -1,1 +1,31 @@
 #nullable enable
+EzDdd.UseCase.Port.In.DefaultOutput<T>
+EzDdd.UseCase.Port.In.DefaultOutput<T>.DefaultOutput() -> void
+EzDdd.UseCase.Port.In.DefaultOutput<T>.ExitCode.get -> EzDdd.UseCase.Port.In.ExitCode
+EzDdd.UseCase.Port.In.DefaultOutput<T>.ExitCode.set -> void
+EzDdd.UseCase.Port.In.DefaultOutput<T>.Fail() -> T!
+EzDdd.UseCase.Port.In.DefaultOutput<T>.Id.get -> string!
+EzDdd.UseCase.Port.In.DefaultOutput<T>.Id.set -> void
+EzDdd.UseCase.Port.In.DefaultOutput<T>.Message.get -> string!
+EzDdd.UseCase.Port.In.DefaultOutput<T>.Message.set -> void
+EzDdd.UseCase.Port.In.DefaultOutput<T>.SetExitCode(EzDdd.UseCase.Port.In.ExitCode exitCode) -> T!
+EzDdd.UseCase.Port.In.DefaultOutput<T>.SetId(string! id) -> T!
+EzDdd.UseCase.Port.In.DefaultOutput<T>.SetMessage(string! message) -> T!
+EzDdd.UseCase.Port.In.DefaultOutput<T>.Succeed() -> T!
+static EzDdd.UseCase.Port.In.DefaultOutput<T>.Create() -> T!
+EzDdd.UseCase.Port.In.ExitCode.Ignore = 2 -> EzDdd.UseCase.Port.In.ExitCode
+EzDdd.UseCase.Port.In.ExitCode.Reject = 3 -> EzDdd.UseCase.Port.In.ExitCode
+EzDdd.UseCase.Port.In.DefaultOutput<T>.Ignore() -> T!
+EzDdd.UseCase.Port.In.DefaultOutput<T>.Reject() -> T!
+EzDdd.UseCase.Port.In.IOutput.Ignore() -> EzDdd.UseCase.Port.In.IOutput!
+EzDdd.UseCase.Port.In.IOutput.Reject() -> EzDdd.UseCase.Port.In.IOutput!
+*REMOVED*EzDdd.UseCase.Port.In.IReactor<TInput>.ExecuteAsync(TInput input) -> System.Threading.Tasks.Task!
+EzDdd.UseCase.Port.In.DefaultOutput
+EzDdd.UseCase.Port.In.DefaultOutput.DefaultOutput() -> void
+EzDdd.UseCase.Port.In.DomainEventDataInput
+EzDdd.UseCase.Port.In.DomainEventDataInput.Event.get -> EzDdd.UseCase.Port.InOut.DomainEventData!
+EzDdd.UseCase.Port.In.DomainEventDataInput.Event.init -> void
+abstract EzDdd.UseCase.Port.In.UseCaseDecorator<TInput, TOutput>.ExecuteAsync(TInput input) -> System.Threading.Tasks.Task<TOutput>!
+EzDdd.UseCase.Port.In.UseCaseDecorator<TInput, TOutput>
+EzDdd.UseCase.Port.In.UseCaseDecorator<TInput, TOutput>.DecoratedUseCase.get -> EzDdd.UseCase.Port.In.IUseCase<TInput, TOutput>!
+EzDdd.UseCase.Port.In.UseCaseDecorator<TInput, TOutput>.UseCaseDecorator(EzDdd.UseCase.Port.In.IUseCase<TInput, TOutput>! useCase) -> void

@@ -11,6 +11,8 @@
 > the "ezDDD.NET 1.x will depend on uContract.NET 1.x" statement in this ADR are replaced. The
 > choice of uContract.NET for Design by Contract remains in force.
 
+> **Status note (2026-10-06)**: The `CqrsOutput<T>` in this ADR's example is now `DefaultOutput<T>` in EzDdd.UseCase.Port.In ([ADR-0031](0031-align-with-java-ezddd-9-0-1.md)).
+
 - **Date**: 2025-10-31
 - **Deciders**: Project maintainers
 - **Status Date**: 2026-10-05
